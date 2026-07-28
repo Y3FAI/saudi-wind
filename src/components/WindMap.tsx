@@ -4,6 +4,7 @@ import {
   useEffect,
   useRef,
   useState,
+  type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react";
 
@@ -505,6 +506,50 @@ export function WindMap({
   };
 
   const resetView = () => setView(INITIAL_VIEW);
+  const handleKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    const panDistance = 28;
+    const pan = (x: number, y: number) =>
+      setView((current) =>
+        clampViewTransform(
+          { ...current, x: current.x + x, y: current.y + y },
+          [size.width, size.height],
+          boundaryBoundsRef.current,
+        ),
+      );
+
+    switch (event.key) {
+      case "ArrowLeft":
+        pan(-panDistance, 0);
+        break;
+      case "ArrowRight":
+        pan(panDistance, 0);
+        break;
+      case "ArrowUp":
+        pan(0, -panDistance);
+        break;
+      case "ArrowDown":
+        pan(0, panDistance);
+        break;
+      case "+":
+      case "=":
+        zoomAt(1.35, [size.width / 2, size.height / 2]);
+        break;
+      case "-":
+      case "_":
+        zoomAt(1 / 1.35, [size.width / 2, size.height / 2]);
+        break;
+      case "Home":
+        resetView();
+        break;
+      case "Enter":
+      case " ":
+        inspect(size.width / 2, size.height / 2);
+        break;
+      default:
+        return;
+    }
+    event.preventDefault();
+  };
 
   return (
     <div
@@ -512,6 +557,9 @@ export function WindMap({
       className="wind-map"
       role="application"
       aria-label="خريطة تفاعلية لحركة الرياح فوق السعودية"
+      aria-describedby="wind-map-keyboard-help"
+      aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight + - Home Enter"
+      tabIndex={0}
       data-zoom={view.scale.toFixed(2)}
       data-reduced-motion={reducedMotion ? "true" : "false"}
       data-wind-style={FLOW_WIND_STYLE.id}
@@ -519,12 +567,22 @@ export function WindMap({
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
+      onKeyDown={handleKeyDown}
       onDoubleClick={(event) => {
         const bounds = event.currentTarget.getBoundingClientRect();
         zoomAt(1.5, [event.clientX - bounds.left, event.clientY - bounds.top]);
       }}
     >
-      <canvas ref={baseCanvasRef} className="map-canvas map-canvas--base" />
+      <p id="wind-map-keyboard-help" className="visually-hidden">
+        استخدم أسهم لوحة المفاتيح للتنقل، وزري زائد وناقص للتكبير والتصغير،
+        ومفتاح البداية لإعادة العرض، ومفتاح الإدخال لقراءة الرياح في وسط
+        الخريطة.
+      </p>
+      <canvas
+        ref={baseCanvasRef}
+        className="map-canvas map-canvas--base"
+        aria-hidden="true"
+      />
       <canvas
         ref={windCanvasRef}
         className="map-canvas map-canvas--wind"
@@ -544,6 +602,7 @@ export function WindMap({
 
       <div
         className="map-controls"
+        role="group"
         aria-label="أدوات تكبير الخريطة"
         onPointerDown={(event) => event.stopPropagation()}
       >

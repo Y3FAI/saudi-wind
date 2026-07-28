@@ -90,6 +90,20 @@ test("zooms and returns to the approved initial framing", async ({ page }) => {
   await expect(map).toHaveAttribute("data-zoom", "1.00");
 });
 
+test("supports keyboard navigation and inspection", async ({ page }) => {
+  await page.goto("/");
+  const map = page.getByRole("application");
+  await map.focus();
+
+  await page.keyboard.press("+");
+  await expect(map).not.toHaveAttribute("data-zoom", "1.00");
+  await page.keyboard.press("Home");
+  await expect(map).toHaveAttribute("data-zoom", "1.00");
+  await page.keyboard.press("Enter");
+  await expect(page.getByText("الموقع المحدد")).toBeVisible();
+  await expect(page.locator(".location-coordinates bdi")).toHaveCount(2);
+});
+
 test("inspects an inside point and ignores an outside point", async ({
   page,
 }) => {

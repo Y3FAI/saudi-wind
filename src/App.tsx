@@ -194,7 +194,24 @@ export function App() {
         </aside>
 
         <footer className="map-credit">
-          بيانات نموذج NOAA GFS · الحدود: Natural Earth
+          بيانات نموذج{" "}
+          <a
+            href="https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast"
+            rel="noreferrer"
+          >
+            NOAA GFS
+          </a>{" "}
+          · الحدود:{" "}
+          <a
+            href="https://www.naturalearthdata.com/about/terms-of-use/"
+            rel="noreferrer"
+          >
+            Natural Earth
+          </a>{" "}
+          · الخط:{" "}
+          <a href="/licenses/IBM-Plex-Sans-Arabic-OFL-1.1.txt">
+            IBM Plex Sans Arabic
+          </a>
         </footer>
       </section>
     </main>

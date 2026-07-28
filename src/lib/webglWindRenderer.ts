@@ -52,6 +52,10 @@ void main() {
   outColor = u_color;
 }`;
 
+const FADE_VERTICES = new Float32Array([
+  -1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1,
+]);
+
 function compileShader(
   gl: WebGL2RenderingContext,
   type: number,
@@ -105,10 +109,17 @@ export class WebglWindRenderer {
   private readonly solidProgram: WebGLProgram;
   private readonly lineBuffer: WebGLBuffer;
   private readonly solidBuffer: WebGLBuffer;
+  private readonly linePositionLocation: number;
+  private readonly lineAlphaLocation: number;
+  private readonly solidPositionLocation: number;
+  private readonly solidColorLocation: WebGLUniformLocation | null;
   private readonly random = seededRandom(1446);
   private viewport: Viewport | null = null;
   private animationFrame = 0;
   private previousTime = 0;
+  private frameWindowStart = 0;
+  private frameWindowCount = 0;
+  private solidBufferContainsFade = false;
   private particleCount = 0;
   private longitude = new Float32Array();
   private latitude = new Float32Array();
@@ -153,6 +164,19 @@ export class WebglWindRenderer {
     }
     this.lineBuffer = lineBuffer;
     this.solidBuffer = solidBuffer;
+    this.linePositionLocation = gl.getAttribLocation(
+      this.lineProgram,
+      "a_position",
+    );
+    this.lineAlphaLocation = gl.getAttribLocation(this.lineProgram, "a_alpha");
+    this.solidPositionLocation = gl.getAttribLocation(
+      this.solidProgram,
+      "a_position",
+    );
+    this.solidColorLocation = gl.getUniformLocation(
+      this.solidProgram,
+      "u_color",
+    );
   }
 
   setViewport(viewport: Viewport) {
@@ -181,6 +205,8 @@ export class WebglWindRenderer {
   start() {
     if (!this.viewport || this.animationFrame) return;
     this.previousTime = performance.now();
+    this.frameWindowStart = 0;
+    this.frameWindowCount = 0;
     this.animationFrame = requestAnimationFrame(this.animate);
   }
 
@@ -204,6 +230,18 @@ export class WebglWindRenderer {
     );
     this.previousTime = time;
     this.drawFrame(elapsed);
+    if (!this.frameWindowStart) this.frameWindowStart = time;
+    this.frameWindowCount += 1;
+    const frameWindowElapsed = time - this.frameWindowStart;
+    if (frameWindowElapsed >= 1000) {
+      this.canvas.dataset.fps = (
+        (this.frameWindowCount * 1000) /
+        frameWindowElapsed
+      ).toFixed(1);
+      this.canvas.dataset.particles = this.particleCount.toString();
+      this.frameWindowStart = time;
+      this.frameWindowCount = 0;
+    }
     this.animationFrame = requestAnimationFrame(this.animate);
   };
 
@@ -227,6 +265,12 @@ export class WebglWindRenderer {
     this.age = new Float32Array(target);
     this.lifetime = new Float32Array(target);
     this.lineVertices = new Float32Array(target * 18);
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.lineBuffer);
+    this.gl.bufferData(
+      this.gl.ARRAY_BUFFER,
+      this.lineVertices.byteLength,
+      this.gl.DYNAMIC_DRAW,
+    );
     for (let index = 0; index < target; index += 1) {
       this.resetParticle(index, true);
     }
@@ -322,9 +366,16 @@ export class WebglWindRenderer {
     gl.useProgram(this.solidProgram);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.solidBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(triangles), gl.STATIC_DRAW);
-    const position = gl.getAttribLocation(this.solidProgram, "a_position");
-    gl.enableVertexAttribArray(position);
-    gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+    this.solidBufferContainsFade = false;
+    gl.enableVertexAttribArray(this.solidPositionLocation);
+    gl.vertexAttribPointer(
+      this.solidPositionLocation,
+      2,
+      gl.FLOAT,
+      false,
+      0,
+      0,
+    );
     gl.drawArrays(gl.TRIANGLES, 0, triangles.length / 2);
     gl.colorMask(true, true, true, true);
     gl.stencilMask(0);
@@ -337,16 +388,20 @@ export class WebglWindRenderer {
     const opacity = 1 - Math.exp(-elapsed * this.style.fadeRate);
     gl.useProgram(this.solidProgram);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.solidBuffer);
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]),
-      gl.STATIC_DRAW,
+    if (!this.solidBufferContainsFade) {
+      gl.bufferData(gl.ARRAY_BUFFER, FADE_VERTICES, gl.STATIC_DRAW);
+      this.solidBufferContainsFade = true;
+    }
+    gl.enableVertexAttribArray(this.solidPositionLocation);
+    gl.vertexAttribPointer(
+      this.solidPositionLocation,
+      2,
+      gl.FLOAT,
+      false,
+      0,
+      0,
     );
-    const position = gl.getAttribLocation(this.solidProgram, "a_position");
-    gl.enableVertexAttribArray(position);
-    gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
-    const color = gl.getUniformLocation(this.solidProgram, "u_color");
-    gl.uniform4f(color, 0, 0, 0, opacity);
+    gl.uniform4f(this.solidColorLocation, 0, 0, 0, opacity);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ZERO, gl.ONE_MINUS_SRC_ALPHA);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
@@ -469,17 +524,18 @@ export class WebglWindRenderer {
 
     gl.useProgram(this.lineProgram);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.lineBuffer);
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      this.lineVertices.subarray(0, used),
-      gl.DYNAMIC_DRAW,
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.lineVertices, 0, used);
+    gl.enableVertexAttribArray(this.linePositionLocation);
+    gl.vertexAttribPointer(
+      this.linePositionLocation,
+      2,
+      gl.FLOAT,
+      false,
+      12,
+      0,
     );
-    const position = gl.getAttribLocation(this.lineProgram, "a_position");
-    const alpha = gl.getAttribLocation(this.lineProgram, "a_alpha");
-    gl.enableVertexAttribArray(position);
-    gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 12, 0);
-    gl.enableVertexAttribArray(alpha);
-    gl.vertexAttribPointer(alpha, 1, gl.FLOAT, false, 12, 8);
+    gl.enableVertexAttribArray(this.lineAlphaLocation);
+    gl.vertexAttribPointer(this.lineAlphaLocation, 1, gl.FLOAT, false, 12, 8);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.drawArrays(gl.TRIANGLES, 0, used / 3);
