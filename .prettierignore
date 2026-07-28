@@ -1,0 +1,5 @@
+dist
+node_modules
+public/data/sample/*.bin
+public/data/saudi-boundary.geo.json
+bun.lock
