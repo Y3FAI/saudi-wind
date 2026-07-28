@@ -5,10 +5,14 @@
 - CPU particle advection using bilinear interpolation over the frozen U/V
   grid.
 - WebGL2 triangle-segment rendering with persistent fading trails.
+- The approved “Flow” profile with denser, thicker trails, gradual particle
+  fade-in/fade-out, and pre-warmed viewport changes.
 - Stencil clipping generated from the complete Saudi multipolygon, including
   islands.
 - Adaptive particle counts for desktop and mobile.
 - Pointer, touch, wheel, and pinch interaction.
+- Trail continuity when inspecting a point and immediate pre-warmed trails
+  after zooming or panning.
 - Constrained zoom and pan with an exact reset to the approved initial frame.
 - Inside-Saudi inspection with coordinates, speed, meteorological direction,
   and a full Arabic compass label.
@@ -26,10 +30,11 @@ bun run check
 bun run test:ui
 ```
 
-The current suite verifies twelve calculation/view tests and twelve browser
+The current suite verifies twelve calculation/view tests and fourteen browser
 scenarios across desktop and mobile Chromium. Browser coverage includes the
-initial Saudi frame, visible frame advancement, zoom/reset, inside/outside
-inspection, reduced motion, and WebGL2 failure.
+initial Saudi frame, visible frame advancement, retained trail density through
+inspection and zoom, zoom/reset, inside/outside inspection, reduced motion,
+and WebGL2 failure.
 
 A two-second headless Chromium probe rendered approximately 60 frames per
 second at both the 1440 × 900 desktop viewport and the emulated mobile

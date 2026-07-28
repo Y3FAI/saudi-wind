@@ -3,6 +3,7 @@ import earcut, { flatten } from "earcut";
 
 import { applyViewTransform, type ViewTransform } from "./map";
 import { sampleWind, speedKmh } from "./wind";
+import type { WindStylePreset } from "./windStyle";
 import type { SaudiBoundary } from "../types/geo";
 import type { WindDataset } from "../types/wind";
 
@@ -119,6 +120,7 @@ export class WebglWindRenderer {
     private readonly canvas: HTMLCanvasElement,
     private readonly boundary: SaudiBoundary,
     private readonly dataset: WindDataset,
+    private readonly style: WindStylePreset,
   ) {
     const gl = canvas.getContext("webgl2", {
       alpha: true,
@@ -170,14 +172,14 @@ export class WebglWindRenderer {
     this.gl.viewport(0, 0, pixelWidth, pixelHeight);
     this.ensureParticles(viewport.width, viewport.height);
     this.rebuildStencil();
+    for (let index = 0; index < 10; index += 1) {
+      this.drawFrame(1 / 60);
+    }
     this.previousTime = performance.now();
   }
 
   start() {
     if (!this.viewport || this.animationFrame) return;
-    for (let index = 0; index < 18; index += 1) {
-      this.drawFrame(1 / 45);
-    }
     this.previousTime = performance.now();
     this.animationFrame = requestAnimationFrame(this.animate);
   }
@@ -207,10 +209,14 @@ export class WebglWindRenderer {
 
   private ensureParticles(width: number, height: number) {
     const mobile = width < 680;
+    const { density } = this.style;
     const target = Math.round(
       Math.min(
-        mobile ? 1_600 : 3_600,
-        Math.max(mobile ? 900 : 2_200, (width * height) / 260),
+        mobile ? density.mobileMax : density.desktopMax,
+        Math.max(
+          mobile ? density.mobileMin : density.desktopMin,
+          (width * height) / density.areaDivisor,
+        ),
       ),
     );
     if (target === this.particleCount) return;
@@ -228,19 +234,34 @@ export class WebglWindRenderer {
 
   private resetParticle(index: number, stagger: boolean) {
     const { grid } = this.dataset.manifest;
-    for (let attempt = 0; attempt < 80; attempt += 1) {
+    for (let attempt = 0; attempt < 180; attempt += 1) {
       const longitude = grid.west + this.random() * (grid.east - grid.west);
       const latitude = grid.south + this.random() * (grid.north - grid.south);
       if (!geoContains(this.boundary, [longitude, latitude])) continue;
+      const point = this.project(longitude, latitude);
+      const viewport = this.viewport;
+      if (
+        viewport &&
+        (!point ||
+          point[0] < -12 ||
+          point[0] > viewport.width + 12 ||
+          point[1] < -12 ||
+          point[1] > viewport.height + 12)
+      ) {
+        continue;
+      }
       this.longitude[index] = longitude;
       this.latitude[index] = latitude;
-      this.age[index] = stagger ? this.random() * 5 : 0;
+      this.age[index] = stagger
+        ? this.random() * 5
+        : -this.style.warmup[0] -
+          this.random() * (this.style.warmup[1] - this.style.warmup[0]);
       this.lifetime[index] = 3.2 + this.random() * 6.8;
       return;
     }
     this.longitude[index] = 46.6753;
     this.latitude[index] = 24.7136;
-    this.age[index] = 0;
+    this.age[index] = -this.style.warmup[1];
     this.lifetime[index] = 4;
   }
 
@@ -313,7 +334,7 @@ export class WebglWindRenderer {
 
   private fadeTrails(elapsed: number) {
     const gl = this.gl;
-    const opacity = 1 - Math.exp(-elapsed * 0.72);
+    const opacity = 1 - Math.exp(-elapsed * this.style.fadeRate);
     gl.useProgram(this.solidProgram);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.solidBuffer);
     gl.bufferData(
@@ -348,13 +369,23 @@ export class WebglWindRenderer {
       const previous = this.project(longitude, latitude);
       this.age[index] += elapsed;
 
-      if (!wind || !previous || this.age[index] > this.lifetime[index]) {
+      if (
+        !wind ||
+        !previous ||
+        previous[0] < -12 ||
+        previous[0] > this.viewport.width + 12 ||
+        previous[1] < -12 ||
+        previous[1] > this.viewport.height + 12 ||
+        this.age[index] > this.lifetime[index]
+      ) {
         this.resetParticle(index, false);
         continue;
       }
 
       const latitudeRadians = (latitude * Math.PI) / 180;
-      const advection = elapsed * 0.038;
+      const mobile = this.viewport.width < 680;
+      const advection =
+        elapsed * (mobile ? this.style.advection[1] : this.style.advection[0]);
       const nextLongitude =
         longitude +
         (wind[0] * advection) / Math.max(Math.cos(latitudeRadians), 0.32);
@@ -367,25 +398,55 @@ export class WebglWindRenderer {
 
       this.longitude[index] = nextLongitude;
       this.latitude[index] = nextLatitude;
+      if (this.age[index] <= 0) continue;
+
       const intensity = Math.min(1, speedKmh(wind) / 45);
-      const alpha = 0.2 + intensity * 0.5;
-      const dx = next[0] - previous[0];
-      const dy = next[1] - previous[1];
-      const length = Math.max(0.001, Math.hypot(dx, dy));
-      const halfWidth = 0.36 + intensity * 0.34;
-      const offsetX = (-dy / length) * halfWidth;
-      const offsetY = (dx / length) * halfWidth;
+      const fadeIn = Math.min(1, this.age[index] / this.style.fadeInSeconds);
+      const fadeOut = Math.min(
+        1,
+        Math.max(
+          0,
+          (this.lifetime[index] - this.age[index]) / this.style.fadeOutSeconds,
+        ),
+      );
+      const smoothFadeIn = fadeIn * fadeIn * (3 - 2 * fadeIn);
+      const smoothFadeOut = fadeOut * fadeOut * (3 - 2 * fadeOut);
+      const opacityEnvelope = smoothFadeIn * smoothFadeOut;
+      const alpha =
+        (this.style.alpha[0] + intensity * this.style.alpha[1]) *
+        opacityEnvelope;
+      const movementX = next[0] - previous[0];
+      const movementY = next[1] - previous[1];
+      const movementLength = Math.max(0.001, Math.hypot(movementX, movementY));
+      const minimumLength = mobile
+        ? this.style.minimumLength[1]
+        : this.style.minimumLength[0];
+      const length = Math.max(minimumLength, movementLength);
+      const directionX = movementX / movementLength;
+      const directionY = movementY / movementLength;
+      const renderStart: [number, number] = [
+        next[0] - directionX * length,
+        next[1] - directionY * length,
+      ];
+      const widthScale = mobile
+        ? this.style.width.mobileScale
+        : this.style.width.desktopScale;
+      const halfWidth =
+        (this.style.width.base + intensity * this.style.width.speed) *
+        widthScale;
+      const offsetX = -directionY * halfWidth;
+      const offsetY = directionX * halfWidth;
       const startA = this.toClip([
-        previous[0] + offsetX,
-        previous[1] + offsetY,
+        renderStart[0] + offsetX,
+        renderStart[1] + offsetY,
       ]);
       const startB = this.toClip([
-        previous[0] - offsetX,
-        previous[1] - offsetY,
+        renderStart[0] - offsetX,
+        renderStart[1] - offsetY,
       ]);
       const endA = this.toClip([next[0] + offsetX, next[1] + offsetY]);
       const endB = this.toClip([next[0] - offsetX, next[1] - offsetY]);
-      const fadedAlpha = alpha * 0.52;
+      const fadedAlpha = alpha * 0.62;
       this.lineVertices[used++] = startA[0];
       this.lineVertices[used++] = startA[1];
       this.lineVertices[used++] = fadedAlpha;

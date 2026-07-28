@@ -1,5 +1,32 @@
 import { expect, test } from "@playwright/test";
 
+async function countVisibleTrailPixels(
+  canvas: import("@playwright/test").Locator,
+) {
+  return canvas.evaluate((element) => {
+    const windCanvas = element as HTMLCanvasElement;
+    const context = windCanvas.getContext("webgl2");
+    if (!context) return 0;
+
+    const pixels = new Uint8Array(windCanvas.width * windCanvas.height * 4);
+    context.readPixels(
+      0,
+      0,
+      windCanvas.width,
+      windCanvas.height,
+      context.RGBA,
+      context.UNSIGNED_BYTE,
+      pixels,
+    );
+
+    let visible = 0;
+    for (let index = 3; index < pixels.length; index += 16) {
+      if (pixels[index] > 2) visible += 1;
+    }
+    return visible;
+  });
+}
+
 test("loads with the complete Saudi framing and animated canvas", async ({
   page,
 }) => {
@@ -10,6 +37,7 @@ test("loads with the complete Saudi framing and animated canvas", async ({
   ).toBeVisible();
   const map = page.getByRole("application");
   await expect(map).toHaveAttribute("data-zoom", "1.00");
+  await expect(map).toHaveAttribute("data-wind-style", "flow");
   await expect(map.locator(".map-canvas--wind")).toBeVisible();
   await expect(page.getByRole("alert")).toHaveCount(0);
 });
@@ -23,6 +51,30 @@ test("advances the visible wind trails between frames", async ({ page }) => {
   const secondFrame = await map.screenshot();
 
   expect(Buffer.compare(firstFrame, secondFrame)).not.toBe(0);
+});
+
+test("keeps trails populated through inspection and zoom", async ({ page }) => {
+  await page.goto("/");
+  const map = page.getByRole("application");
+  const canvas = map.locator(".map-canvas--wind");
+  const bounds = await map.boundingBox();
+  if (!bounds) throw new Error("Map bounds are unavailable.");
+
+  await page.waitForTimeout(900);
+  const before = await countVisibleTrailPixels(canvas);
+  expect(before).toBeGreaterThan(200);
+
+  await map.click({
+    position: { x: bounds.width * 0.63, y: bounds.height * 0.51 },
+  });
+  await page.waitForTimeout(80);
+  const afterInspection = await countVisibleTrailPixels(canvas);
+  expect(afterInspection).toBeGreaterThan(before * 0.35);
+
+  await page.getByRole("button", { name: "تكبير" }).click();
+  await page.waitForTimeout(80);
+  const afterZoom = await countVisibleTrailPixels(canvas);
+  expect(afterZoom).toBeGreaterThan(before * 0.15);
 });
 
 test("zooms and returns to the approved initial framing", async ({ page }) => {

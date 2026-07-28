@@ -271,16 +271,17 @@ h1 {
 
 .legend-wind {
   display: block;
-  border-top: 1px solid rgba(229, 232, 230, 0.25);
+  border-top: 1.5px solid rgba(229, 232, 230, 0.34);
 }
 
 .legend-wind--medium {
+  border-width: 2px;
   border-color: rgba(229, 232, 230, 0.5);
   box-shadow: 0 0 5px rgba(229, 232, 230, 0.08);
 }
 
 .legend-wind--high {
-  border-width: 2px;
+  border-width: 3px;
   border-color: rgba(229, 232, 230, 0.82);
   box-shadow: 0 0 8px rgba(229, 232, 230, 0.18);
 }

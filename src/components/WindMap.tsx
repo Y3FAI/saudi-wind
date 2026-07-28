@@ -23,6 +23,7 @@ import {
   sampleWind,
   speedKmh,
 } from "../lib/wind";
+import { FLOW_WIND_STYLE } from "../lib/windStyle";
 import type { SaudiBoundary } from "../types/geo";
 import type { WindDataset } from "../types/wind";
 
@@ -230,6 +231,7 @@ export function WindMap({
   const baseCanvasRef = useRef<HTMLCanvasElement>(null);
   const windCanvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<WebglWindRenderer | null>(null);
+  const rendererSceneRef = useRef("");
   const projectionRef = useRef<GeoProjection | null>(null);
   const boundaryBoundsRef = useRef<ScreenBounds>([
     [0, 0],
@@ -276,8 +278,14 @@ export function WindMap({
     const canvas = windCanvasRef.current;
     if (!canvas) return;
     try {
-      const renderer = new WebglWindRenderer(canvas, boundary, dataset);
+      const renderer = new WebglWindRenderer(
+        canvas,
+        boundary,
+        dataset,
+        FLOW_WIND_STYLE,
+      );
       rendererRef.current = renderer;
+      rendererSceneRef.current = "";
       setWebglError(null);
       return () => {
         renderer.destroy();
@@ -327,12 +335,23 @@ export function WindMap({
     }
     const renderer = rendererRef.current;
     if (renderer && !reducedMotion) {
-      renderer.setViewport({
-        ...size,
-        project: (coordinates) =>
-          projection(coordinates) as [number, number] | null,
-        view,
-      });
+      const sceneKey = [
+        size.width,
+        size.height,
+        size.ratio,
+        view.scale,
+        view.x,
+        view.y,
+      ].join(":");
+      if (rendererSceneRef.current !== sceneKey) {
+        rendererSceneRef.current = sceneKey;
+        renderer.setViewport({
+          ...size,
+          project: (coordinates) =>
+            projection(coordinates) as [number, number] | null,
+          view,
+        });
+      }
       renderer.start();
     }
   }, [boundary, dataset, reducedMotion, selection, size, view]);
@@ -493,6 +512,7 @@ export function WindMap({
       aria-label="خريطة تفاعلية لحركة الرياح فوق السعودية"
       data-zoom={view.scale.toFixed(2)}
       data-reduced-motion={reducedMotion ? "true" : "false"}
+      data-wind-style={FLOW_WIND_STYLE.id}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
