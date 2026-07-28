@@ -67,6 +67,9 @@ Cloudflare Pages should use `bun run build` and publish `dist`.
 
 ## Milestone previews
 
+Milestone 4 review deployment:
+<https://agent-milestone-4-live-cloud.saudi-wind.pages.dev>
+
 | Milestone | Desktop                                                | Mobile                                                |
 | --------- | ------------------------------------------------------ | ----------------------------------------------------- |
 | 1         | [1440 × 900](docs/screenshots/milestone-1-desktop.png) | [390 × 928](docs/screenshots/milestone-1-mobile.png)  |

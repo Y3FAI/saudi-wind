@@ -26,6 +26,16 @@ The seeded live manifest was processed directly from NOAA after Milestone 4
 implementation. The preview reads it through the same Pages Function and
 private R2 binding used by production.
 
+- Preview: <https://agent-milestone-4-live-cloud.saudi-wind.pages.dev>
+- Model run and validity: `2026-07-28T12:00:00Z`
+- Published to R2: `2026-07-28T20:20:01.577186Z`
+- Run ID: `gfs-20260728-12-f000`
+- Grid: 58,200 bytes
+- SHA-256:
+  `7f333b2bf2749fbd16a28a184e140e0035ebc451ccc88838f5e6838a62e6cc78`
+- Saudi area-weighted mean: 21.6 km/h
+- Highest Saudi model-grid cell: 44.2 km/h
+
 ## Validation
 
 ```sh
@@ -39,6 +49,11 @@ bun run test:ui
 - 18 desktop/mobile browser scenarios, including stale and unavailable data.
 - Pages Function bundle compilation.
 - Generated binding types checked against `wrangler.jsonc`.
+- Public edge GET and HEAD responses validated.
+- Manifest conditional request returned HTTP 304.
+- Invalid grid path returned HTTP 404.
+- POST returned HTTP 405 with `Allow: GET, HEAD`.
+- Downloaded grid length and SHA-256 matched the manifest.
 
 ## Review images
 
