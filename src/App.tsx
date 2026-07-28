@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { StaticWindMap } from "./components/StaticWindMap";
+import { WindMap, type WindSelection } from "./components/WindMap";
 import { formatKmh, formatSaudiDate } from "./lib/format";
 import { loadWindDataset } from "./lib/wind";
 import type { SaudiBoundary } from "./types/geo";
@@ -14,6 +14,7 @@ interface AppState {
 export function App() {
   const [state, setState] = useState<AppState | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selection, setSelection] = useState<WindSelection | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -46,7 +47,12 @@ export function App() {
     <main className="app-shell">
       <section className="map-stage" aria-busy={!state && !error}>
         {state ? (
-          <StaticWindMap boundary={state.boundary} dataset={state.dataset} />
+          <WindMap
+            boundary={state.boundary}
+            dataset={state.dataset}
+            selection={selection}
+            onSelection={setSelection}
+          />
         ) : (
           <div className="loading-state" role={error ? "alert" : "status"}>
             <span className="loading-mark" aria-hidden="true" />
@@ -92,11 +98,38 @@ export function App() {
               </div>
             </dl>
 
-            <div className="location-placeholder">
+            <div
+              className={
+                selection
+                  ? "location-readout location-readout--active"
+                  : "location-readout"
+              }
+              aria-live="polite"
+            >
               <span className="location-cross" aria-hidden="true">
                 +
               </span>
-              <p>سيظهر هنا اتجاه الرياح وسرعتها عند اختيار موقع.</p>
+              {selection ? (
+                <div>
+                  <p className="location-title">الموقع المحدد</p>
+                  <p className="location-coordinates">
+                    <bdi>{selection.latitude.toFixed(2)}°</bdi> شمالاً ·{" "}
+                    <bdi>{selection.longitude.toFixed(2)}°</bdi> شرقاً
+                  </p>
+                  <p className="location-wind">
+                    <strong>
+                      <bdi>{formatKmh(selection.speedKmh)}</bdi>
+                      <span> كم/س</span>
+                    </strong>
+                    <span>
+                      {selection.directionLabel} ·{" "}
+                      <bdi>{Math.round(selection.directionDegrees)}°</bdi>
+                    </span>
+                  </p>
+                </div>
+              ) : (
+                <p>اضغط داخل المملكة لعرض اتجاه الرياح وسرعتها.</p>
+              )}
             </div>
 
             <div className="source-line">

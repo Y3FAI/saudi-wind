@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   arabicCompass,
+  arabicCompassName,
   normalizedDirection,
   sampleWind,
   speedKmh,
@@ -61,6 +62,12 @@ describe("wind calculations", () => {
     expect(arabicCompass(0)).toBe("ش");
     expect(arabicCompass(90)).toBe("ق");
     expect(arabicCompass(225)).toBe("ج غ");
+  });
+
+  it("provides full Arabic direction names for the point readout", () => {
+    expect(arabicCompassName(0)).toBe("شمالية");
+    expect(arabicCompassName(135)).toBe("جنوبية شرقية");
+    expect(arabicCompassName(270)).toBe("غربية");
   });
 
   it("bilinearly interpolates a north-to-south grid", () => {

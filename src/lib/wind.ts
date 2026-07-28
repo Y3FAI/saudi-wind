@@ -24,6 +24,25 @@ const ARABIC_DIRECTIONS = [
   "ش ش غ",
 ] as const;
 
+const ARABIC_DIRECTION_NAMES = [
+  "شمالية",
+  "شمالية شمالية شرقية",
+  "شمالية شرقية",
+  "شرقية شمالية شرقية",
+  "شرقية",
+  "شرقية جنوبية شرقية",
+  "جنوبية شرقية",
+  "جنوبية جنوبية شرقية",
+  "جنوبية",
+  "جنوبية جنوبية غربية",
+  "جنوبية غربية",
+  "غربية جنوبية غربية",
+  "غربية",
+  "غربية شمالية غربية",
+  "شمالية غربية",
+  "شمالية شمالية غربية",
+] as const;
+
 export function speedKmh([u, v]: WindVector): number {
   return Math.hypot(u, v) * 3.6;
 }
@@ -39,6 +58,11 @@ export function normalizedDirection(vector: WindVector): number {
 export function arabicCompass(degrees: number): string {
   const normalized = ((degrees % 360) + 360) % 360;
   return ARABIC_DIRECTIONS[Math.round(normalized / 22.5) % 16];
+}
+
+export function arabicCompassName(degrees: number): string {
+  const normalized = ((degrees % 360) + 360) % 360;
+  return ARABIC_DIRECTION_NAMES[Math.round(normalized / 22.5) % 16];
 }
 
 export function sampleWind(
