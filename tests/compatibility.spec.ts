@@ -19,9 +19,7 @@ test("renders the Arabic application and wind map", async ({ page }) => {
   if (supportsWebgl2) {
     await expect(page.locator(".webgl-error")).toHaveCount(0);
   } else {
-    await expect(page.getByRole("alert")).toContainText(
-      "تعذر تحريك الرياح",
-    );
+    await expect(page.getByRole("alert")).toContainText("تعذر تحريك الرياح");
     await expect(page.getByRole("alert")).toContainText("WebGL2");
   }
 });
