@@ -1,0 +1,7 @@
+{
+  "date": "20260728",
+  "hour": "12",
+  "forecastHour": 0,
+  "sourceUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260728/12/atmos/gfs.t12z.pgrb2.0p25.f000",
+  "sourceSha256": "2e97649ad7c6169a5bc9342b8c9f3a8fcb62c7533b946375ecf440dc370c1e08"
+}
