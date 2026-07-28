@@ -5,3 +5,5 @@ dist
 coverage
 *.tsbuildinfo
 .wrangler
+playwright-report
+test-results

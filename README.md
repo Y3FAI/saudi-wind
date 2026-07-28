@@ -6,10 +6,11 @@ Beccario's Tokyo Air map with the clear data context of hint.fm/wind.
 
 ## Current milestone
 
-Milestone 1 is a non-live visual prototype. It uses a frozen NOAA GFS 0.25°
-analysis at 10 metres and is clearly labelled as sample data. Live ingestion,
-animation, and inspection are intentionally reserved for later approval-gated
-milestones.
+Milestone 2 adds an interactive WebGL2 wind field to the approved visual
+foundation. It supports constrained zoom and pan, point inspection, reduced
+motion, and responsive desktop/mobile controls. It still uses a frozen NOAA
+GFS 0.25° analysis at 10 metres and remains clearly labelled as sample data.
+Live ingestion begins in a later approval-gated milestone.
 
 ## Local development
 
@@ -26,6 +27,7 @@ Quality checks:
 
 ```sh
 bun run check
+bun run test:ui
 ```
 
 Create the committed source assets:
@@ -44,19 +46,20 @@ bun run build
 
 Cloudflare Pages should use `bun run build` and publish `dist`.
 
-## Milestone 1 preview
+## Milestone previews
 
-| Desktop                                                | Mobile                                               |
-| ------------------------------------------------------ | ---------------------------------------------------- |
-| [1440 × 900](docs/screenshots/milestone-1-desktop.png) | [390 × 928](docs/screenshots/milestone-1-mobile.png) |
+| Milestone | Desktop                                                | Mobile                                                |
+| --------- | ------------------------------------------------------ | ----------------------------------------------------- |
+| 1         | [1440 × 900](docs/screenshots/milestone-1-desktop.png) | [390 × 928](docs/screenshots/milestone-1-mobile.png)  |
+| 2         | [1440 × 900](docs/screenshots/milestone-2-desktop.png) | [390 × 1056](docs/screenshots/milestone-2-mobile.png) |
 
-See the [Milestone 1 review notes](docs/MILESTONE_1.md) for the approval
-checklist and known limitations.
+See the [Milestone 2 review notes](docs/MILESTONE_2.md) for the active
+approval checklist and known limitations.
 
 ## Data and accuracy
 
-The Milestone 1 display is a design fixture, not current observation data.
-NOAA GFS is numerical weather-model output. Its smooth lines are an
+The current display is an interaction fixture, not current observation data.
+NOAA GFS is numerical weather-model output. Its animated lines are an
 interpolation of a 0.25° grid and must not be interpreted as measurements at
 every visible point.
 
