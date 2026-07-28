@@ -25,6 +25,10 @@ The R2 API token should be restricted to Object Read & Write for only
 `saudi-wind-data`. Never store these values in repository files, workflow
 arguments, logs, `archive/`, `.env`, or `.dev.vars`.
 
+If any secret is absent, the scheduled workflow emits a warning and skips
+processing without changing R2. After all three are added, use manual dispatch
+once and verify a `published` or `unchanged` result.
+
 ## Publication sequence
 
 1. Discover the newest complete GFS cycle.
@@ -70,3 +74,28 @@ Use `bunx wrangler r2 bucket info saudi-wind-data` and
 storage and retention. Use the GitHub Actions run log to confirm the processed
 run ID and whether publication was `published`, `unchanged`, or
 `older-than-current`.
+
+## Production health monitor
+
+`Monitor production wind` runs every six hours and can be manually dispatched.
+It fails if the manifest is invalid, the run is older than 12 hours, the grid
+cannot be downloaded, or its length/SHA-256 differs from the manifest.
+
+Run the same check locally:
+
+```sh
+bun run monitor:production
+```
+
+## Credential rotation
+
+1. Create a replacement bucket-scoped Object Read & Write R2 token.
+2. Replace `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY` in GitHub Actions.
+3. Manually dispatch `Ingest NOAA wind`.
+4. Confirm an unchanged or published result and a passing production monitor.
+5. Revoke the previous token in Cloudflare.
+
+Rotation never requires a frontend build or manifest-format change.
+
+Current capacity assumptions and provider links are in
+[`QUOTAS.md`](QUOTAS.md).

@@ -17,18 +17,36 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v9.0.0
+      - name: Check publication credentials
+        id: credentials
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: |
+          if [[ -n "$CLOUDFLARE_ACCOUNT_ID" && -n "$R2_ACCESS_KEY_ID" && -n "$R2_SECRET_ACCESS_KEY" ]]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::R2 publication secrets are not configured; ingestion was skipped safely."
+          fi
+      - if: steps.credentials.outputs.configured == 'true'
+        uses: actions/checkout@v7
+      - if: steps.credentials.outputs.configured == 'true'
+        uses: astral-sh/setup-uv@v9.0.0
         with:
           version: 0.11.32
           enable-cache: true
-      - run: uv sync --all-groups --frozen
+      - if: steps.credentials.outputs.configured == 'true'
+        run: uv sync --all-groups --frozen
       - name: Process newest complete NOAA cycle
+        if: steps.credentials.outputs.configured == 'true'
         run: >-
           uv run saudi-wind-pipeline latest
           --output .wind-artifacts
           --data-url-prefix /api/wind/grids
       - name: Publish immutable grid then latest manifest
+        if: steps.credentials.outputs.configured == 'true'
         run: uv run python -m saudi_wind_pipeline.r2_publish
         env:
           WIND_OUTPUT_DIRECTORY: .wind-artifacts

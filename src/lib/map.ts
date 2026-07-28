@@ -10,6 +10,18 @@ export type ScreenBounds = readonly [ScreenPoint, ScreenPoint];
 export const MIN_ZOOM = 1;
 export const MAX_ZOOM = 4.5;
 
+export function createMercatorProjector(scale: number, translate: ScreenPoint) {
+  const radians = Math.PI / 180;
+  return ([longitude, latitude]: ScreenPoint): [number, number] => {
+    const latitudeRadians = latitude * radians;
+    return [
+      translate[0] + scale * longitude * radians,
+      translate[1] -
+        scale * Math.log(Math.tan((Math.PI / 2 + latitudeRadians) / 2)),
+    ];
+  };
+}
+
 export function applyViewTransform(
   point: ScreenPoint,
   view: ViewTransform,

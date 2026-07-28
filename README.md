@@ -4,14 +4,13 @@ An Arabic-first visualization of current surface wind across Saudi Arabia.
 The project combines the restrained, monochrome character of Cameron
 Beccario's Tokyo Air map with the clear data context of hint.fm/wind.
 
-## Current milestone
+## Version 1 release
 
-Milestone 4 connects the approved map and NOAA processor to live Cloudflare
-delivery. A private R2 bucket retains 30 days of immutable grids, a read-only
-Pages Function exposes only the current manifest and validated grid paths, and
-an hourly GitHub Actions workflow publishes the newest complete NOAA cycle.
-The UI continues to show the last valid grid with an Arabic stale warning
-after 12 hours.
+Saudi Wind v1 combines the approved animated map, reproducible NOAA processor,
+private Cloudflare delivery, stale-data handling, keyboard and reduced-motion
+accessibility, cross-browser checks, and production monitoring. A private R2
+bucket retains 30 days of immutable grids and a read-only Pages Function
+exposes only the current manifest and validated grid paths.
 
 ## Local development
 
@@ -31,6 +30,8 @@ Quality checks:
 bun run check
 bun run check:pipeline
 bun run test:ui
+bun run test:performance
+bun run monitor:production
 ```
 
 Rebuild the production-format data entirely offline from the committed source
@@ -67,8 +68,7 @@ Cloudflare Pages should use `bun run build` and publish `dist`.
 
 ## Milestone previews
 
-Milestone 4 review deployment:
-<https://agent-milestone-4-live-cloud.saudi-wind.pages.dev>
+Production: <https://saudi-wind.pages.dev>
 
 | Milestone | Desktop                                                | Mobile                                                |
 | --------- | ------------------------------------------------------ | ----------------------------------------------------- |
@@ -76,9 +76,10 @@ Milestone 4 review deployment:
 | 2         | [1440 × 900](docs/screenshots/milestone-2-desktop.png) | [390 × 1056](docs/screenshots/milestone-2-mobile.png) |
 | 3         | [1440 × 900](docs/screenshots/milestone-3-desktop.png) | [mobile](docs/screenshots/milestone-3-mobile.png)     |
 | 4         | [1440 × 900](docs/screenshots/milestone-4-desktop.png) | [mobile](docs/screenshots/milestone-4-mobile.png)     |
+| 5         | [1440 × 900](docs/screenshots/milestone-5-desktop.png) | [mobile](docs/screenshots/milestone-5-mobile.png)     |
 
-See the [Milestone 4 review notes](docs/MILESTONE_4.md) for the active
-approval checklist and known limitations.
+See the [Milestone 5 review notes](docs/MILESTONE_5.md) and
+[release checklist](docs/RELEASE_CHECKLIST.md).
 
 ## Data and accuracy
 
@@ -89,7 +90,8 @@ measurements at every visible point.
 
 See [data methodology](docs/DATA.md) and the
 [approval-gated project plan](docs/PROJECT_PLAN.md). Operational setup and
-recovery are documented in [operations](docs/OPERATIONS.md).
+recovery are documented in [operations](docs/OPERATIONS.md), with current
+free-tier assumptions in [infrastructure quotas](docs/QUOTAS.md).
 
 ## License
 

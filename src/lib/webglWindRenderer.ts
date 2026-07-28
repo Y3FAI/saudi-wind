@@ -1,4 +1,3 @@
-import { geoContains } from "d3-geo";
 import earcut, { flatten } from "earcut";
 
 import { applyViewTransform, type ViewTransform } from "./map";
@@ -51,6 +50,47 @@ out vec4 outColor;
 void main() {
   outColor = u_color;
 }`;
+
+const FADE_VERTICES = new Float32Array([
+  -1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1,
+]);
+
+function createSeedMesh(boundary: SaudiBoundary) {
+  const polygons =
+    boundary.geometry.type === "Polygon"
+      ? [boundary.geometry.coordinates]
+      : boundary.geometry.coordinates;
+  const triangles: number[] = [];
+  const cumulativeAreas: number[] = [];
+  let cumulativeArea = 0;
+
+  polygons.forEach((polygon) => {
+    const flat = flatten(polygon);
+    const indices = earcut(flat.vertices, flat.holes, flat.dimensions);
+    for (let index = 0; index < indices.length; index += 3) {
+      const a = indices[index] * 2;
+      const b = indices[index + 1] * 2;
+      const c = indices[index + 2] * 2;
+      const ax = flat.vertices[a];
+      const ay = flat.vertices[a + 1];
+      const bx = flat.vertices[b];
+      const by = flat.vertices[b + 1];
+      const cx = flat.vertices[c];
+      const cy = flat.vertices[c + 1];
+      const area = Math.abs((bx - ax) * (cy - ay) - (cx - ax) * (by - ay));
+      if (area <= Number.EPSILON) continue;
+      triangles.push(ax, ay, bx, by, cx, cy);
+      cumulativeArea += area;
+      cumulativeAreas.push(cumulativeArea);
+    }
+  });
+
+  return {
+    triangles: new Float32Array(triangles),
+    cumulativeAreas: new Float64Array(cumulativeAreas),
+    totalArea: cumulativeArea,
+  };
+}
 
 function compileShader(
   gl: WebGL2RenderingContext,
@@ -105,16 +145,29 @@ export class WebglWindRenderer {
   private readonly solidProgram: WebGLProgram;
   private readonly lineBuffer: WebGLBuffer;
   private readonly solidBuffer: WebGLBuffer;
+  private readonly linePositionLocation: number;
+  private readonly lineAlphaLocation: number;
+  private readonly solidPositionLocation: number;
+  private readonly solidColorLocation: WebGLUniformLocation | null;
+  private readonly seedMesh;
   private readonly random = seededRandom(1446);
   private viewport: Viewport | null = null;
   private animationFrame = 0;
   private previousTime = 0;
+  private frameWindowStart = 0;
+  private frameWindowCount = 0;
+  private lastQualityAdjustment = 0;
+  private solidBufferContainsFade = false;
   private particleCount = 0;
+  private activeParticleCount = 0;
   private longitude = new Float32Array();
   private latitude = new Float32Array();
+  private screenX = new Float32Array();
+  private screenY = new Float32Array();
   private age = new Float32Array();
   private lifetime = new Float32Array();
   private lineVertices = new Float32Array();
+  private readonly windSample: [number, number] = [0, 0];
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -153,6 +206,20 @@ export class WebglWindRenderer {
     }
     this.lineBuffer = lineBuffer;
     this.solidBuffer = solidBuffer;
+    this.linePositionLocation = gl.getAttribLocation(
+      this.lineProgram,
+      "a_position",
+    );
+    this.lineAlphaLocation = gl.getAttribLocation(this.lineProgram, "a_alpha");
+    this.solidPositionLocation = gl.getAttribLocation(
+      this.solidProgram,
+      "a_position",
+    );
+    this.solidColorLocation = gl.getUniformLocation(
+      this.solidProgram,
+      "u_color",
+    );
+    this.seedMesh = createSeedMesh(boundary);
   }
 
   setViewport(viewport: Viewport) {
@@ -171,16 +238,16 @@ export class WebglWindRenderer {
     }
     this.gl.viewport(0, 0, pixelWidth, pixelHeight);
     this.ensureParticles(viewport.width, viewport.height);
+    this.refreshParticleProjections();
     this.rebuildStencil();
-    for (let index = 0; index < 10; index += 1) {
-      this.drawFrame(1 / 60);
-    }
     this.previousTime = performance.now();
   }
 
   start() {
     if (!this.viewport || this.animationFrame) return;
     this.previousTime = performance.now();
+    this.frameWindowStart = 0;
+    this.frameWindowCount = 0;
     this.animationFrame = requestAnimationFrame(this.animate);
   }
 
@@ -203,7 +270,21 @@ export class WebglWindRenderer {
       Math.max(0.001, (time - this.previousTime) / 1000),
     );
     this.previousTime = time;
+    const renderStart = performance.now();
     this.drawFrame(elapsed);
+    this.adjustParticleBudget(performance.now() - renderStart, time);
+    if (!this.frameWindowStart) this.frameWindowStart = time;
+    this.frameWindowCount += 1;
+    const frameWindowElapsed = time - this.frameWindowStart;
+    if (frameWindowElapsed >= 1000) {
+      this.canvas.dataset.fps = (
+        (this.frameWindowCount * 1000) /
+        frameWindowElapsed
+      ).toFixed(1);
+      this.canvas.dataset.particles = this.activeParticleCount.toString();
+      this.frameWindowStart = time;
+      this.frameWindowCount = 0;
+    }
     this.animationFrame = requestAnimationFrame(this.animate);
   };
 
@@ -222,36 +303,100 @@ export class WebglWindRenderer {
     if (target === this.particleCount) return;
 
     this.particleCount = target;
+    this.activeParticleCount = Math.min(target, mobile ? 700 : 900);
     this.longitude = new Float32Array(target);
     this.latitude = new Float32Array(target);
+    this.screenX = new Float32Array(target);
+    this.screenY = new Float32Array(target);
     this.age = new Float32Array(target);
     this.lifetime = new Float32Array(target);
     this.lineVertices = new Float32Array(target * 18);
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.lineBuffer);
+    this.gl.bufferData(
+      this.gl.ARRAY_BUFFER,
+      this.lineVertices.byteLength,
+      this.gl.DYNAMIC_DRAW,
+    );
     for (let index = 0; index < target; index += 1) {
       this.resetParticle(index, true);
     }
   }
 
+  private adjustParticleBudget(renderDuration: number, time: number) {
+    if (!this.viewport || time - this.lastQualityAdjustment < 250) return;
+    const mobile = this.viewport.width < 680;
+    const renderBudget = mobile ? 24 : 12;
+    const minimum = mobile ? 450 : 600;
+
+    if (renderDuration > renderBudget && this.activeParticleCount > minimum) {
+      this.activeParticleCount = Math.max(
+        minimum,
+        Math.floor(this.activeParticleCount * 0.8),
+      );
+      this.lastQualityAdjustment = time;
+      return;
+    }
+
+    if (
+      renderDuration < renderBudget * 0.45 &&
+      this.activeParticleCount < this.particleCount
+    ) {
+      const previous = this.activeParticleCount;
+      this.activeParticleCount = Math.min(
+        this.particleCount,
+        previous + Math.max(60, Math.round(this.particleCount * 0.08)),
+      );
+      this.lastQualityAdjustment = time;
+    }
+  }
+
+  private refreshParticleProjections() {
+    for (let index = 0; index < this.particleCount; index += 1) {
+      const point = this.project(this.longitude[index], this.latitude[index]);
+      this.screenX[index] = point?.[0] ?? Number.NaN;
+      this.screenY[index] = point?.[1] ?? Number.NaN;
+    }
+  }
+
   private resetParticle(index: number, stagger: boolean) {
-    const { grid } = this.dataset.manifest;
     for (let attempt = 0; attempt < 180; attempt += 1) {
-      const longitude = grid.west + this.random() * (grid.east - grid.west);
-      const latitude = grid.south + this.random() * (grid.north - grid.south);
-      if (!geoContains(this.boundary, [longitude, latitude])) continue;
+      const area = this.random() * this.seedMesh.totalArea;
+      let low = 0;
+      let high = this.seedMesh.cumulativeAreas.length - 1;
+      while (low < high) {
+        const middle = (low + high) >>> 1;
+        if (this.seedMesh.cumulativeAreas[middle] < area) low = middle + 1;
+        else high = middle;
+      }
+      const triangle = low * 6;
+      const root = Math.sqrt(this.random());
+      const mix = this.random();
+      const a = 1 - root;
+      const b = root * (1 - mix);
+      const c = root * mix;
+      const longitude =
+        this.seedMesh.triangles[triangle] * a +
+        this.seedMesh.triangles[triangle + 2] * b +
+        this.seedMesh.triangles[triangle + 4] * c;
+      const latitude =
+        this.seedMesh.triangles[triangle + 1] * a +
+        this.seedMesh.triangles[triangle + 3] * b +
+        this.seedMesh.triangles[triangle + 5] * c;
       const point = this.project(longitude, latitude);
       const viewport = this.viewport;
+      if (!viewport || !point) continue;
       if (
-        viewport &&
-        (!point ||
-          point[0] < -12 ||
-          point[0] > viewport.width + 12 ||
-          point[1] < -12 ||
-          point[1] > viewport.height + 12)
+        point[0] < -12 ||
+        point[0] > viewport.width + 12 ||
+        point[1] < -12 ||
+        point[1] > viewport.height + 12
       ) {
         continue;
       }
       this.longitude[index] = longitude;
       this.latitude[index] = latitude;
+      this.screenX[index] = point[0];
+      this.screenY[index] = point[1];
       this.age[index] = stagger
         ? this.random() * 5
         : -this.style.warmup[0] -
@@ -261,6 +406,9 @@ export class WebglWindRenderer {
     }
     this.longitude[index] = 46.6753;
     this.latitude[index] = 24.7136;
+    const fallback = this.project(46.6753, 24.7136);
+    this.screenX[index] = fallback?.[0] ?? Number.NaN;
+    this.screenY[index] = fallback?.[1] ?? Number.NaN;
     this.age[index] = -this.style.warmup[1];
     this.lifetime[index] = 4;
   }
@@ -322,9 +470,16 @@ export class WebglWindRenderer {
     gl.useProgram(this.solidProgram);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.solidBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(triangles), gl.STATIC_DRAW);
-    const position = gl.getAttribLocation(this.solidProgram, "a_position");
-    gl.enableVertexAttribArray(position);
-    gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+    this.solidBufferContainsFade = false;
+    gl.enableVertexAttribArray(this.solidPositionLocation);
+    gl.vertexAttribPointer(
+      this.solidPositionLocation,
+      2,
+      gl.FLOAT,
+      false,
+      0,
+      0,
+    );
     gl.drawArrays(gl.TRIANGLES, 0, triangles.length / 2);
     gl.colorMask(true, true, true, true);
     gl.stencilMask(0);
@@ -337,16 +492,20 @@ export class WebglWindRenderer {
     const opacity = 1 - Math.exp(-elapsed * this.style.fadeRate);
     gl.useProgram(this.solidProgram);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.solidBuffer);
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]),
-      gl.STATIC_DRAW,
+    if (!this.solidBufferContainsFade) {
+      gl.bufferData(gl.ARRAY_BUFFER, FADE_VERTICES, gl.STATIC_DRAW);
+      this.solidBufferContainsFade = true;
+    }
+    gl.enableVertexAttribArray(this.solidPositionLocation);
+    gl.vertexAttribPointer(
+      this.solidPositionLocation,
+      2,
+      gl.FLOAT,
+      false,
+      0,
+      0,
     );
-    const position = gl.getAttribLocation(this.solidProgram, "a_position");
-    gl.enableVertexAttribArray(position);
-    gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
-    const color = gl.getUniformLocation(this.solidProgram, "u_color");
-    gl.uniform4f(color, 0, 0, 0, opacity);
+    gl.uniform4f(this.solidColorLocation, 0, 0, 0, opacity);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ZERO, gl.ONE_MINUS_SRC_ALPHA);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
@@ -356,8 +515,10 @@ export class WebglWindRenderer {
     if (!this.viewport) return;
     const gl = this.gl;
     this.fadeTrails(elapsed);
+    const clipScaleX = 2 / this.viewport.width;
+    const clipScaleY = 2 / this.viewport.height;
     let used = 0;
-    for (let index = 0; index < this.particleCount; index += 1) {
+    for (let index = 0; index < this.activeParticleCount; index += 1) {
       const longitude = this.longitude[index];
       const latitude = this.latitude[index];
       const wind = sampleWind(
@@ -365,17 +526,20 @@ export class WebglWindRenderer {
         this.dataset.manifest.grid,
         longitude,
         latitude,
+        this.windSample,
       );
-      const previous = this.project(longitude, latitude);
+      const previousX = this.screenX[index];
+      const previousY = this.screenY[index];
       this.age[index] += elapsed;
 
       if (
         !wind ||
-        !previous ||
-        previous[0] < -12 ||
-        previous[0] > this.viewport.width + 12 ||
-        previous[1] < -12 ||
-        previous[1] > this.viewport.height + 12 ||
+        !Number.isFinite(previousX) ||
+        !Number.isFinite(previousY) ||
+        previousX < -12 ||
+        previousX > this.viewport.width + 12 ||
+        previousY < -12 ||
+        previousY > this.viewport.height + 12 ||
         this.age[index] > this.lifetime[index]
       ) {
         this.resetParticle(index, false);
@@ -398,6 +562,8 @@ export class WebglWindRenderer {
 
       this.longitude[index] = nextLongitude;
       this.latitude[index] = nextLatitude;
+      this.screenX[index] = next[0];
+      this.screenY[index] = next[1];
       if (this.age[index] <= 0) continue;
 
       const intensity = Math.min(1, speedKmh(wind) / 45);
@@ -415,8 +581,8 @@ export class WebglWindRenderer {
       const alpha =
         (this.style.alpha[0] + intensity * this.style.alpha[1]) *
         opacityEnvelope;
-      const movementX = next[0] - previous[0];
-      const movementY = next[1] - previous[1];
+      const movementX = next[0] - previousX;
+      const movementY = next[1] - previousY;
       const movementLength = Math.max(0.001, Math.hypot(movementX, movementY));
       const minimumLength = mobile
         ? this.style.minimumLength[1]
@@ -424,10 +590,8 @@ export class WebglWindRenderer {
       const length = Math.max(minimumLength, movementLength);
       const directionX = movementX / movementLength;
       const directionY = movementY / movementLength;
-      const renderStart: [number, number] = [
-        next[0] - directionX * length,
-        next[1] - directionY * length,
-      ];
+      const renderStartX = next[0] - directionX * length;
+      const renderStartY = next[1] - directionY * length;
       const widthScale = mobile
         ? this.style.width.mobileScale
         : this.style.width.desktopScale;
@@ -436,50 +600,49 @@ export class WebglWindRenderer {
         widthScale;
       const offsetX = -directionY * halfWidth;
       const offsetY = directionX * halfWidth;
-      const startA = this.toClip([
-        renderStart[0] + offsetX,
-        renderStart[1] + offsetY,
-      ]);
-      const startB = this.toClip([
-        renderStart[0] - offsetX,
-        renderStart[1] - offsetY,
-      ]);
-      const endA = this.toClip([next[0] + offsetX, next[1] + offsetY]);
-      const endB = this.toClip([next[0] - offsetX, next[1] - offsetY]);
+      const startAX = (renderStartX + offsetX) * clipScaleX - 1;
+      const startAY = 1 - (renderStartY + offsetY) * clipScaleY;
+      const startBX = (renderStartX - offsetX) * clipScaleX - 1;
+      const startBY = 1 - (renderStartY - offsetY) * clipScaleY;
+      const endAX = (next[0] + offsetX) * clipScaleX - 1;
+      const endAY = 1 - (next[1] + offsetY) * clipScaleY;
+      const endBX = (next[0] - offsetX) * clipScaleX - 1;
+      const endBY = 1 - (next[1] - offsetY) * clipScaleY;
       const fadedAlpha = alpha * 0.62;
-      this.lineVertices[used++] = startA[0];
-      this.lineVertices[used++] = startA[1];
+      this.lineVertices[used++] = startAX;
+      this.lineVertices[used++] = startAY;
       this.lineVertices[used++] = fadedAlpha;
-      this.lineVertices[used++] = startB[0];
-      this.lineVertices[used++] = startB[1];
+      this.lineVertices[used++] = startBX;
+      this.lineVertices[used++] = startBY;
       this.lineVertices[used++] = fadedAlpha;
-      this.lineVertices[used++] = endA[0];
-      this.lineVertices[used++] = endA[1];
+      this.lineVertices[used++] = endAX;
+      this.lineVertices[used++] = endAY;
       this.lineVertices[used++] = alpha;
-      this.lineVertices[used++] = endA[0];
-      this.lineVertices[used++] = endA[1];
+      this.lineVertices[used++] = endAX;
+      this.lineVertices[used++] = endAY;
       this.lineVertices[used++] = alpha;
-      this.lineVertices[used++] = startB[0];
-      this.lineVertices[used++] = startB[1];
+      this.lineVertices[used++] = startBX;
+      this.lineVertices[used++] = startBY;
       this.lineVertices[used++] = fadedAlpha;
-      this.lineVertices[used++] = endB[0];
-      this.lineVertices[used++] = endB[1];
+      this.lineVertices[used++] = endBX;
+      this.lineVertices[used++] = endBY;
       this.lineVertices[used++] = alpha;
     }
 
     gl.useProgram(this.lineProgram);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.lineBuffer);
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      this.lineVertices.subarray(0, used),
-      gl.DYNAMIC_DRAW,
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.lineVertices, 0, used);
+    gl.enableVertexAttribArray(this.linePositionLocation);
+    gl.vertexAttribPointer(
+      this.linePositionLocation,
+      2,
+      gl.FLOAT,
+      false,
+      12,
+      0,
     );
-    const position = gl.getAttribLocation(this.lineProgram, "a_position");
-    const alpha = gl.getAttribLocation(this.lineProgram, "a_alpha");
-    gl.enableVertexAttribArray(position);
-    gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 12, 0);
-    gl.enableVertexAttribArray(alpha);
-    gl.vertexAttribPointer(alpha, 1, gl.FLOAT, false, 12, 8);
+    gl.enableVertexAttribArray(this.lineAlphaLocation);
+    gl.vertexAttribPointer(this.lineAlphaLocation, 1, gl.FLOAT, false, 12, 8);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.drawArrays(gl.TRIANGLES, 0, used / 3);

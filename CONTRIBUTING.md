@@ -6,7 +6,8 @@ Saudi Wind is developed through approval-gated milestones.
 
 1. Create a focused branch from `main`.
 2. Keep changes within the currently approved milestone.
-3. Run `bun run check`, `bun run check:pipeline`, and `bun run test:ui`.
+3. Run `bun run check`, `bun run check:pipeline`, `bun run test:ui`, and
+   `bun run test:performance`.
 4. Open a draft pull request with a Cloudflare Pages preview.
 5. Include desktop and mobile screenshots, checks, and known limitations.
 6. Do not begin the next milestone until the current preview is explicitly

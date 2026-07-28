@@ -1,8 +1,10 @@
+import { geoMercator } from "d3-geo";
 import { describe, expect, it } from "vitest";
 
 import {
   applyViewTransform,
   clampViewTransform,
+  createMercatorProjector,
   invertViewTransform,
   rectanglesOverlap,
   zoomViewAt,
@@ -15,6 +17,25 @@ const boundaryBounds = [
 ] as const;
 
 describe("map view transforms", () => {
+  it("matches d3's default Mercator projection for Saudi coordinates", () => {
+    const projection = geoMercator().scale(620).translate([410, 310]);
+    const project = createMercatorProjector(
+      projection.scale(),
+      projection.translate() as [number, number],
+    );
+
+    for (const coordinates of [
+      [46.6753, 24.7136],
+      [39.1979, 21.4858],
+      [50.1033, 26.4207],
+    ] as const) {
+      const expected = projection([...coordinates]);
+      expect(expected).not.toBeNull();
+      expect(project(coordinates)[0]).toBeCloseTo(expected![0], 10);
+      expect(project(coordinates)[1]).toBeCloseTo(expected![1], 10);
+    }
+  });
+
   it("round-trips screen coordinates", () => {
     const view = { scale: 2.25, x: -140, y: 80 };
     const point = [420, 175] as const;

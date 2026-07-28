@@ -1,6 +1,6 @@
 {
   "name": "saudi-wind",
-  "version": "0.4.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "packageManager": "bun@1.3.14",
@@ -11,8 +11,10 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:ui": "playwright test",
+    "test:ui": "playwright test --grep-invert @performance",
+    "test:performance": "playwright test tests/performance.spec.ts --project=desktop-chromium --project=mobile-chromium --workers=1",
     "test:pipeline": "uv run pytest",
+    "monitor:production": "bun scripts/check-production.mjs",
     "check:pipeline": "uv run ruff format --check pipeline && uv run ruff check pipeline && uv run pytest",
     "typecheck": "tsc -b",
     "typecheck:functions": "wrangler types --check --path ./functions/types.d.ts && tsc -p functions/tsconfig.json",
@@ -28,6 +30,7 @@
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.12.1",
     "@cloudflare/workers-types": "5.20260728.1",
     "@playwright/test": "1.62.0",
     "@types/d3-geo": "3.1.0",

@@ -93,3 +93,15 @@ GFS is numerical model output. It represents broad atmospheric flow and does
 not resolve street-level wind or every local terrain effect. The trails are a
 visual advection of interpolated model vectors, not literal particle travel or
 sensor observations.
+
+“10 m wind” is the model wind represented ten metres above ground level. It
+does not describe rooftop height, street canyons, gusts, or a person's exact
+location. A 0.25° grid describes regional flow; interpolation makes the
+display smooth but does not add local forecast detail.
+
+References and attribution:
+
+- [NOAA/NCEI GFS description and data access](https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast)
+- [NCEP operational GFS 0.25° products](https://www.nco.ncep.noaa.gov/pmb/products/gfs/)
+- [NOAA GFS on the AWS Open Data Registry](https://registry.opendata.aws/noaa-gfs-bdp-pds/)
+- [Natural Earth terms](https://www.naturalearthdata.com/about/terms-of-use/)
