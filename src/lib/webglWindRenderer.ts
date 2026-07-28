@@ -119,8 +119,10 @@ export class WebglWindRenderer {
   private previousTime = 0;
   private frameWindowStart = 0;
   private frameWindowCount = 0;
+  private lastQualityAdjustment = 0;
   private solidBufferContainsFade = false;
   private particleCount = 0;
+  private activeParticleCount = 0;
   private longitude = new Float32Array();
   private latitude = new Float32Array();
   private screenX = new Float32Array();
@@ -230,7 +232,9 @@ export class WebglWindRenderer {
       Math.max(0.001, (time - this.previousTime) / 1000),
     );
     this.previousTime = time;
+    const renderStart = performance.now();
     this.drawFrame(elapsed);
+    this.adjustParticleBudget(performance.now() - renderStart, time);
     if (!this.frameWindowStart) this.frameWindowStart = time;
     this.frameWindowCount += 1;
     const frameWindowElapsed = time - this.frameWindowStart;
@@ -239,7 +243,7 @@ export class WebglWindRenderer {
         (this.frameWindowCount * 1000) /
         frameWindowElapsed
       ).toFixed(1);
-      this.canvas.dataset.particles = this.particleCount.toString();
+      this.canvas.dataset.particles = this.activeParticleCount.toString();
       this.frameWindowStart = time;
       this.frameWindowCount = 0;
     }
@@ -261,6 +265,7 @@ export class WebglWindRenderer {
     if (target === this.particleCount) return;
 
     this.particleCount = target;
+    this.activeParticleCount = Math.min(target, mobile ? 700 : 900);
     this.longitude = new Float32Array(target);
     this.latitude = new Float32Array(target);
     this.screenX = new Float32Array(target);
@@ -276,6 +281,34 @@ export class WebglWindRenderer {
     );
     for (let index = 0; index < target; index += 1) {
       this.resetParticle(index, true);
+    }
+  }
+
+  private adjustParticleBudget(renderDuration: number, time: number) {
+    if (!this.viewport || time - this.lastQualityAdjustment < 250) return;
+    const mobile = this.viewport.width < 680;
+    const renderBudget = mobile ? 24 : 12;
+    const minimum = mobile ? 450 : 600;
+
+    if (renderDuration > renderBudget && this.activeParticleCount > minimum) {
+      this.activeParticleCount = Math.max(
+        minimum,
+        Math.floor(this.activeParticleCount * 0.8),
+      );
+      this.lastQualityAdjustment = time;
+      return;
+    }
+
+    if (
+      renderDuration < renderBudget * 0.45 &&
+      this.activeParticleCount < this.particleCount
+    ) {
+      const previous = this.activeParticleCount;
+      this.activeParticleCount = Math.min(
+        this.particleCount,
+        previous + Math.max(60, Math.round(this.particleCount * 0.08)),
+      );
+      this.lastQualityAdjustment = time;
     }
   }
 
@@ -429,7 +462,7 @@ export class WebglWindRenderer {
     const clipScaleX = 2 / this.viewport.width;
     const clipScaleY = 2 / this.viewport.height;
     let used = 0;
-    for (let index = 0; index < this.particleCount; index += 1) {
+    for (let index = 0; index < this.activeParticleCount; index += 1) {
       const longitude = this.longitude[index];
       const latitude = this.latitude[index];
       const wind = sampleWind(
