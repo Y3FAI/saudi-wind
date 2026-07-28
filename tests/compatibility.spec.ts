@@ -10,7 +10,20 @@ test("renders the Arabic application and wind map", async ({ page }) => {
   ).toBeVisible();
   await expect(page.getByRole("application")).toBeVisible();
   await expect(page.locator(".map-canvas--wind")).toBeVisible();
-  await expect(page.locator(".webgl-error")).toHaveCount(0);
+
+  const supportsWebgl2 = await page.evaluate(() => {
+    const canvas = document.createElement("canvas");
+    return Boolean(canvas.getContext("webgl2"));
+  });
+
+  if (supportsWebgl2) {
+    await expect(page.locator(".webgl-error")).toHaveCount(0);
+  } else {
+    await expect(page.getByRole("alert")).toContainText(
+      "تعذر تحريك الرياح",
+    );
+    await expect(page.getByRole("alert")).toContainText("WebGL2");
+  }
 });
 
 test("supports reduced motion without WebGL animation", async ({ page }) => {
