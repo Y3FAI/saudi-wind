@@ -11,8 +11,4 @@
       "preview_bucket_name": "saudi-wind-data",
     },
   ],
-  "observability": {
-    "enabled": true,
-    "head_sampling_rate": 1,
-  },
 }
