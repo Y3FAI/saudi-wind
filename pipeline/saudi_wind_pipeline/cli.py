@@ -44,12 +44,14 @@ def _parser() -> argparse.ArgumentParser:
     process.add_argument("--hour", required=True)
     process.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     process.add_argument("--boundary", type=Path, default=DEFAULT_BOUNDARY)
+    process.add_argument("--data-url-prefix", default="/api/wind/grids")
 
     latest = subparsers.add_parser(
         "latest", help="Discover and process the newest complete GFS cycle."
     )
     latest.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     latest.add_argument("--boundary", type=Path, default=DEFAULT_BOUNDARY)
+    latest.add_argument("--data-url-prefix", default="/api/wind/grids")
 
     capture = subparsers.add_parser(
         "capture-fixture",
@@ -62,7 +64,11 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def _process_network(
-    run: RunSpec, *, output: Path, boundary: Path
+    run: RunSpec,
+    *,
+    output: Path,
+    boundary: Path,
+    data_url_prefix: str,
 ) -> dict[str, object]:
     index_text = fetch_bytes(f"{run.base_url}.idx").decode("utf-8")
     ranges = select_wind_ranges(parse_index(index_text))
@@ -72,6 +78,7 @@ def _process_network(
         index_text=index_text,
         source_payload=payload,
         boundary_path=boundary,
+        data_url_prefix=data_url_prefix,
         published_at=datetime.now(UTC),
     )
     paths = publish_artifacts(artifacts, output)
@@ -107,6 +114,7 @@ def main() -> None:
             RunSpec(args.date, args.hour),
             output=args.output,
             boundary=args.boundary,
+            data_url_prefix=args.data_url_prefix,
         )
     else:
         run, index_text, ranges = discover_latest_complete()
@@ -116,6 +124,7 @@ def main() -> None:
             index_text=index_text,
             source_payload=payload,
             boundary_path=args.boundary,
+            data_url_prefix=args.data_url_prefix,
             published_at=datetime.now(UTC),
         )
         paths = publish_artifacts(artifacts, args.output)

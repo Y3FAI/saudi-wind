@@ -4,4 +4,5 @@ public/data/sample/*.bin
 public/data/processed
 public/data/saudi-boundary.geo.json
 pipeline/fixtures
+functions/types.d.ts
 bun.lock

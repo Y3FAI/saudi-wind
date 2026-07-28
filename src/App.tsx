@@ -11,6 +11,12 @@ interface AppState {
   dataset: WindDataset;
 }
 
+const STALE_AFTER_MS = 12 * 60 * 60 * 1000;
+const REFRESH_INTERVAL_MS = 15 * 60 * 1000;
+const WIND_MANIFEST_URL =
+  import.meta.env.VITE_WIND_MANIFEST_URL ??
+  (import.meta.env.DEV ? "/data/processed/latest.json" : "/api/wind/latest");
+
 export function App() {
   const [state, setState] = useState<AppState | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -18,30 +24,49 @@ export function App() {
 
   useEffect(() => {
     let active = true;
+    let currentRunId: string | null = null;
 
-    Promise.all([
-      fetch("/data/saudi-boundary.geo.json").then((response) => {
-        if (!response.ok) throw new Error("تعذر تحميل حدود المملكة.");
-        return response.json() as Promise<SaudiBoundary>;
-      }),
-      loadWindDataset(),
-    ])
-      .then(([boundary, dataset]) => {
-        if (active) setState({ boundary, dataset });
-      })
-      .catch((reason: unknown) => {
+    const load = async () => {
+      try {
+        const [boundary, dataset] = await Promise.all([
+          fetch("/data/saudi-boundary.geo.json").then((response) => {
+            if (!response.ok) throw new Error("تعذر تحميل حدود المملكة.");
+            return response.json() as Promise<SaudiBoundary>;
+          }),
+          loadWindDataset(WIND_MANIFEST_URL),
+        ]);
         if (!active) return;
+        if (currentRunId && currentRunId !== dataset.manifest.runId) {
+          setSelection(null);
+        }
+        currentRunId = dataset.manifest.runId;
+        setState({ boundary, dataset });
+        setError(null);
+      } catch {
+        if (!active || currentRunId) return;
         setError(
-          reason instanceof Error
-            ? reason.message
-            : "حدث خطأ أثناء تحميل التصوّر.",
+          "لا تتوفر حالياً بيانات رياح صالحة. سنحاول مجدداً عند نشر دورة NOAA التالية.",
         );
-      });
+      }
+    };
+
+    void load();
+    const refresh = window.setInterval(() => void load(), REFRESH_INTERVAL_MS);
 
     return () => {
       active = false;
+      window.clearInterval(refresh);
     };
   }, []);
+
+  const stale = state
+    ? Date.now() - Date.parse(state.dataset.manifest.validTime) > STALE_AFTER_MS
+    : false;
+  const badge = state?.dataset.manifest.sample
+    ? "NOAA GFS · عينة معالجة"
+    : stale
+      ? "NOAA GFS · آخر بيانات متاحة"
+      : "NOAA GFS · بيانات حديثة";
 
   return (
     <main className="app-shell">
@@ -60,7 +85,13 @@ export function App() {
           </div>
         )}
 
-        <div className="sample-badge">NOAA GFS · عينة معالجة</div>
+        <div
+          className={
+            stale ? "sample-badge sample-badge--stale" : "sample-badge"
+          }
+        >
+          {badge}
+        </div>
 
         {state && (
           <aside className="information-panel" aria-label="معلومات الرياح">
@@ -71,6 +102,11 @@ export function App() {
                 {formatSaudiDate(state.dataset.manifest.validTime)}
                 <span>بتوقيت المملكة</span>
               </p>
+              {stale && (
+                <p className="freshness-warning" role="status">
+                  آخر بيانات صالحة أقدم من 12 ساعة
+                </p>
+              )}
             </header>
 
             <dl className="statistics">
@@ -158,7 +194,7 @@ export function App() {
         </aside>
 
         <footer className="map-credit">
-          بيانات نموذجية: NOAA GFS · الحدود: Natural Earth
+          بيانات نموذج NOAA GFS · الحدود: Natural Earth
         </footer>
       </section>
     </main>

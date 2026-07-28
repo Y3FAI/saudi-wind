@@ -4,6 +4,7 @@ version = "0.3.0"
 description = "Reproducible NOAA GFS wind processor for Saudi Wind"
 requires-python = ">=3.12,<3.13"
 dependencies = [
+  "boto3==1.43.58",
   "eccodes==2.44.0",
   "numpy==2.4.3",
 ]

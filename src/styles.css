@@ -243,6 +243,18 @@ h1 {
   font-size: 0.64rem;
 }
 
+.sample-badge--stale {
+  border-color: rgba(214, 177, 109, 0.34);
+  color: rgba(225, 198, 147, 0.72);
+}
+
+.freshness-warning {
+  color: rgba(225, 198, 147, 0.76);
+  font-size: 0.72rem;
+  font-weight: 400;
+  margin: 0.55rem 0 0;
+}
+
 .legend {
   position: absolute;
   z-index: 2;

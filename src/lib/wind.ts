@@ -291,7 +291,7 @@ export async function sha256Hex(buffer: ArrayBuffer): Promise<string> {
 }
 
 export async function loadWindDataset(
-  manifestUrl = "/data/processed/latest.json",
+  manifestUrl = "/api/wind/latest",
 ): Promise<WindDataset> {
   const manifestResponse = await fetch(manifestUrl);
   if (!manifestResponse.ok) {

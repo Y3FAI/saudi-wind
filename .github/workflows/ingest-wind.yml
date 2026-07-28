@@ -1,0 +1,37 @@
+name: Ingest NOAA wind
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: noaa-wind-ingestion
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v9.0.0
+        with:
+          version: 0.11.32
+          enable-cache: true
+      - run: uv sync --all-groups --frozen
+      - name: Process newest complete NOAA cycle
+        run: >-
+          uv run saudi-wind-pipeline latest
+          --output .wind-artifacts
+          --data-url-prefix /api/wind/grids
+      - name: Publish immutable grid then latest manifest
+        run: uv run python -m saudi_wind_pipeline.r2_publish
+        env:
+          WIND_OUTPUT_DIRECTORY: .wind-artifacts
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
