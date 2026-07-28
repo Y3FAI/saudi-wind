@@ -200,9 +200,6 @@ export class WebglWindRenderer {
     this.ensureParticles(viewport.width, viewport.height);
     this.refreshParticleProjections();
     this.rebuildStencil();
-    for (let index = 0; index < 10; index += 1) {
-      this.drawFrame(1 / 60);
-    }
     this.previousTime = performance.now();
   }
 

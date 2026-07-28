@@ -89,6 +89,7 @@ input {
 
 .map-canvas--wind {
   z-index: 1;
+  animation: reveal-wind 0.35s 0.15s both;
 }
 
 .information-panel {
@@ -458,6 +459,15 @@ h1 {
   }
 }
 
+@keyframes reveal-wind {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @media (max-width: 860px) {
   body {
     overflow: auto;
@@ -547,6 +557,10 @@ h1 {
 
 @media (prefers-reduced-motion: reduce) {
   .loading-mark {
+    animation: none;
+  }
+
+  .map-canvas--wind {
     animation: none;
   }
 }
