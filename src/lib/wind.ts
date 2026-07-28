@@ -70,6 +70,7 @@ export function sampleWind(
   grid: WindGridMetadata,
   longitude: number,
   latitude: number,
+  output?: [u: number, v: number],
 ): WindVector | null {
   if (
     longitude < grid.west ||
@@ -89,21 +90,18 @@ export function sampleWind(
   const tx = x - x0;
   const ty = y - y0;
 
-  const at = (column: number, row: number): WindVector => {
-    const index = (row * grid.width + column) * 2;
-    return [vectors[index], vectors[index + 1]];
-  };
-
-  const a = at(x0, y0);
-  const b = at(x1, y0);
-  const c = at(x0, y1);
-  const d = at(x1, y1);
-  const topU = a[0] + (b[0] - a[0]) * tx;
-  const topV = a[1] + (b[1] - a[1]) * tx;
-  const bottomU = c[0] + (d[0] - c[0]) * tx;
-  const bottomV = c[1] + (d[1] - c[1]) * tx;
-
-  return [topU + (bottomU - topU) * ty, topV + (bottomV - topV) * ty];
+  const a = (y0 * grid.width + x0) * 2;
+  const b = (y0 * grid.width + x1) * 2;
+  const c = (y1 * grid.width + x0) * 2;
+  const d = (y1 * grid.width + x1) * 2;
+  const topU = vectors[a] + (vectors[b] - vectors[a]) * tx;
+  const topV = vectors[a + 1] + (vectors[b + 1] - vectors[a + 1]) * tx;
+  const bottomU = vectors[c] + (vectors[d] - vectors[c]) * tx;
+  const bottomV = vectors[c + 1] + (vectors[d + 1] - vectors[c + 1]) * tx;
+  const result = output ?? [0, 0];
+  result[0] = topU + (bottomU - topU) * ty;
+  result[1] = topV + (bottomV - topV) * ty;
+  return result;
 }
 
 export function validateManifest(value: unknown): WindManifestV1 {

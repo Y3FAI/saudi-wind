@@ -11,6 +11,7 @@ import {
 import {
   applyViewTransform,
   clampViewTransform,
+  createMercatorProjector,
   invertViewTransform,
   rectanglesOverlap,
   zoomViewAt,
@@ -338,6 +339,10 @@ export function WindMap({
     }
     const renderer = rendererRef.current;
     if (renderer && !reducedMotion) {
+      const projectWind = createMercatorProjector(
+        projection.scale(),
+        projection.translate() as [number, number],
+      );
       const sceneKey = [
         size.width,
         size.height,
@@ -350,8 +355,7 @@ export function WindMap({
         rendererSceneRef.current = sceneKey;
         renderer.setViewport({
           ...size,
-          project: (coordinates) =>
-            projection(coordinates) as [number, number] | null,
+          project: projectWind,
           view,
         });
       }

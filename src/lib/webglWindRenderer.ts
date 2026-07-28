@@ -123,9 +123,12 @@ export class WebglWindRenderer {
   private particleCount = 0;
   private longitude = new Float32Array();
   private latitude = new Float32Array();
+  private screenX = new Float32Array();
+  private screenY = new Float32Array();
   private age = new Float32Array();
   private lifetime = new Float32Array();
   private lineVertices = new Float32Array();
+  private readonly windSample: [number, number] = [0, 0];
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -195,6 +198,7 @@ export class WebglWindRenderer {
     }
     this.gl.viewport(0, 0, pixelWidth, pixelHeight);
     this.ensureParticles(viewport.width, viewport.height);
+    this.refreshParticleProjections();
     this.rebuildStencil();
     for (let index = 0; index < 10; index += 1) {
       this.drawFrame(1 / 60);
@@ -262,6 +266,8 @@ export class WebglWindRenderer {
     this.particleCount = target;
     this.longitude = new Float32Array(target);
     this.latitude = new Float32Array(target);
+    this.screenX = new Float32Array(target);
+    this.screenY = new Float32Array(target);
     this.age = new Float32Array(target);
     this.lifetime = new Float32Array(target);
     this.lineVertices = new Float32Array(target * 18);
@@ -276,6 +282,14 @@ export class WebglWindRenderer {
     }
   }
 
+  private refreshParticleProjections() {
+    for (let index = 0; index < this.particleCount; index += 1) {
+      const point = this.project(this.longitude[index], this.latitude[index]);
+      this.screenX[index] = point?.[0] ?? Number.NaN;
+      this.screenY[index] = point?.[1] ?? Number.NaN;
+    }
+  }
+
   private resetParticle(index: number, stagger: boolean) {
     const { grid } = this.dataset.manifest;
     for (let attempt = 0; attempt < 180; attempt += 1) {
@@ -284,18 +298,19 @@ export class WebglWindRenderer {
       if (!geoContains(this.boundary, [longitude, latitude])) continue;
       const point = this.project(longitude, latitude);
       const viewport = this.viewport;
+      if (!viewport || !point) continue;
       if (
-        viewport &&
-        (!point ||
-          point[0] < -12 ||
-          point[0] > viewport.width + 12 ||
-          point[1] < -12 ||
-          point[1] > viewport.height + 12)
+        point[0] < -12 ||
+        point[0] > viewport.width + 12 ||
+        point[1] < -12 ||
+        point[1] > viewport.height + 12
       ) {
         continue;
       }
       this.longitude[index] = longitude;
       this.latitude[index] = latitude;
+      this.screenX[index] = point[0];
+      this.screenY[index] = point[1];
       this.age[index] = stagger
         ? this.random() * 5
         : -this.style.warmup[0] -
@@ -305,6 +320,9 @@ export class WebglWindRenderer {
     }
     this.longitude[index] = 46.6753;
     this.latitude[index] = 24.7136;
+    const fallback = this.project(46.6753, 24.7136);
+    this.screenX[index] = fallback?.[0] ?? Number.NaN;
+    this.screenY[index] = fallback?.[1] ?? Number.NaN;
     this.age[index] = -this.style.warmup[1];
     this.lifetime[index] = 4;
   }
@@ -411,6 +429,8 @@ export class WebglWindRenderer {
     if (!this.viewport) return;
     const gl = this.gl;
     this.fadeTrails(elapsed);
+    const clipScaleX = 2 / this.viewport.width;
+    const clipScaleY = 2 / this.viewport.height;
     let used = 0;
     for (let index = 0; index < this.particleCount; index += 1) {
       const longitude = this.longitude[index];
@@ -420,17 +440,20 @@ export class WebglWindRenderer {
         this.dataset.manifest.grid,
         longitude,
         latitude,
+        this.windSample,
       );
-      const previous = this.project(longitude, latitude);
+      const previousX = this.screenX[index];
+      const previousY = this.screenY[index];
       this.age[index] += elapsed;
 
       if (
         !wind ||
-        !previous ||
-        previous[0] < -12 ||
-        previous[0] > this.viewport.width + 12 ||
-        previous[1] < -12 ||
-        previous[1] > this.viewport.height + 12 ||
+        !Number.isFinite(previousX) ||
+        !Number.isFinite(previousY) ||
+        previousX < -12 ||
+        previousX > this.viewport.width + 12 ||
+        previousY < -12 ||
+        previousY > this.viewport.height + 12 ||
         this.age[index] > this.lifetime[index]
       ) {
         this.resetParticle(index, false);
@@ -453,6 +476,8 @@ export class WebglWindRenderer {
 
       this.longitude[index] = nextLongitude;
       this.latitude[index] = nextLatitude;
+      this.screenX[index] = next[0];
+      this.screenY[index] = next[1];
       if (this.age[index] <= 0) continue;
 
       const intensity = Math.min(1, speedKmh(wind) / 45);
@@ -470,8 +495,8 @@ export class WebglWindRenderer {
       const alpha =
         (this.style.alpha[0] + intensity * this.style.alpha[1]) *
         opacityEnvelope;
-      const movementX = next[0] - previous[0];
-      const movementY = next[1] - previous[1];
+      const movementX = next[0] - previousX;
+      const movementY = next[1] - previousY;
       const movementLength = Math.max(0.001, Math.hypot(movementX, movementY));
       const minimumLength = mobile
         ? this.style.minimumLength[1]
@@ -479,10 +504,8 @@ export class WebglWindRenderer {
       const length = Math.max(minimumLength, movementLength);
       const directionX = movementX / movementLength;
       const directionY = movementY / movementLength;
-      const renderStart: [number, number] = [
-        next[0] - directionX * length,
-        next[1] - directionY * length,
-      ];
+      const renderStartX = next[0] - directionX * length;
+      const renderStartY = next[1] - directionY * length;
       const widthScale = mobile
         ? this.style.width.mobileScale
         : this.style.width.desktopScale;
@@ -491,34 +514,32 @@ export class WebglWindRenderer {
         widthScale;
       const offsetX = -directionY * halfWidth;
       const offsetY = directionX * halfWidth;
-      const startA = this.toClip([
-        renderStart[0] + offsetX,
-        renderStart[1] + offsetY,
-      ]);
-      const startB = this.toClip([
-        renderStart[0] - offsetX,
-        renderStart[1] - offsetY,
-      ]);
-      const endA = this.toClip([next[0] + offsetX, next[1] + offsetY]);
-      const endB = this.toClip([next[0] - offsetX, next[1] - offsetY]);
+      const startAX = (renderStartX + offsetX) * clipScaleX - 1;
+      const startAY = 1 - (renderStartY + offsetY) * clipScaleY;
+      const startBX = (renderStartX - offsetX) * clipScaleX - 1;
+      const startBY = 1 - (renderStartY - offsetY) * clipScaleY;
+      const endAX = (next[0] + offsetX) * clipScaleX - 1;
+      const endAY = 1 - (next[1] + offsetY) * clipScaleY;
+      const endBX = (next[0] - offsetX) * clipScaleX - 1;
+      const endBY = 1 - (next[1] - offsetY) * clipScaleY;
       const fadedAlpha = alpha * 0.62;
-      this.lineVertices[used++] = startA[0];
-      this.lineVertices[used++] = startA[1];
+      this.lineVertices[used++] = startAX;
+      this.lineVertices[used++] = startAY;
       this.lineVertices[used++] = fadedAlpha;
-      this.lineVertices[used++] = startB[0];
-      this.lineVertices[used++] = startB[1];
+      this.lineVertices[used++] = startBX;
+      this.lineVertices[used++] = startBY;
       this.lineVertices[used++] = fadedAlpha;
-      this.lineVertices[used++] = endA[0];
-      this.lineVertices[used++] = endA[1];
+      this.lineVertices[used++] = endAX;
+      this.lineVertices[used++] = endAY;
       this.lineVertices[used++] = alpha;
-      this.lineVertices[used++] = endA[0];
-      this.lineVertices[used++] = endA[1];
+      this.lineVertices[used++] = endAX;
+      this.lineVertices[used++] = endAY;
       this.lineVertices[used++] = alpha;
-      this.lineVertices[used++] = startB[0];
-      this.lineVertices[used++] = startB[1];
+      this.lineVertices[used++] = startBX;
+      this.lineVertices[used++] = startBY;
       this.lineVertices[used++] = fadedAlpha;
-      this.lineVertices[used++] = endB[0];
-      this.lineVertices[used++] = endB[1];
+      this.lineVertices[used++] = endBX;
+      this.lineVertices[used++] = endBY;
       this.lineVertices[used++] = alpha;
     }
 
