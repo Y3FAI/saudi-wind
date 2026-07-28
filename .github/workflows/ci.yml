@@ -29,3 +29,8 @@ jobs:
       - run: bun run check:pipeline
       - run: bun run test:ui
       - run: bun run test:performance
+        env:
+          # GitHub-hosted runners do not provide representative GPU timing.
+          # Keep a regression floor here; release evidence is measured locally.
+          PERFORMANCE_DESKTOP_FPS_MINIMUM: 50
+          PERFORMANCE_MOBILE_FPS_MINIMUM: 30

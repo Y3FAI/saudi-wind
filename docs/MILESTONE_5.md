@@ -33,6 +33,9 @@
 - 34 UI, accessibility, compatibility, and visual checks.
 - Two serial frame-rate checks: desktop 60 FPS median and mobile 60 FPS
   median.
+- GitHub's shared software-rendered VM enforces a 50 FPS desktop regression
+  floor and a 30 FPS mobile floor; release acceptance uses the representative
+  local measurements above.
 - Lighthouse mobile simulation: Performance 91, Accessibility 100, Best
   Practices 100; FCP 1.8 s, LCP 2.9 s, TBT 190 ms, CLS 0.002.
 - Lighthouse desktop: Performance 100, Accessibility 100, Best Practices 100;

@@ -18,7 +18,19 @@ test("sustains the animation frame-rate target @performance", async ({
   }
   samples.sort((left, right) => left - right);
   const median = samples[1];
-  const minimum = isMobile ? 30 : 55;
+  const configuredMinimum = Number(
+    process.env[
+      isMobile
+        ? "PERFORMANCE_MOBILE_FPS_MINIMUM"
+        : "PERFORMANCE_DESKTOP_FPS_MINIMUM"
+    ],
+  );
+  const minimum =
+    Number.isFinite(configuredMinimum) && configuredMinimum > 0
+      ? configuredMinimum
+      : isMobile
+        ? 30
+        : 55;
   console.info(
     `${isMobile ? "mobile" : "desktop"} animation FPS: ${samples.join(", ")} (median ${median})`,
   );
