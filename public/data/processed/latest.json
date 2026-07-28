@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "runId": "gfs-20260728-12-f000",
+  "provider": "NOAA_GFS",
+  "modelRun": "2026-07-28T12:00:00Z",
+  "validTime": "2026-07-28T12:00:00Z",
+  "publishedAt": "2026-07-28T12:00:00Z",
+  "heightMeters": 10,
+  "sourceUnits": "m/s",
+  "displayUnits": "km/h",
+  "sample": true,
+  "grid": {
+    "west": 33.0,
+    "east": 57.0,
+    "south": 15.0,
+    "north": 33.5,
+    "width": 97,
+    "height": 75,
+    "dx": 0.25,
+    "dy": 0.25,
+    "scan": "north-to-south-west-to-east"
+  },
+  "data": {
+    "url": "/data/processed/grids/gfs-20260728-12-f000.bin",
+    "encoding": "float32-le-uv-interleaved",
+    "byteLength": 58200,
+    "sha256": "7f333b2bf2749fbd16a28a184e140e0035ebc451ccc88838f5e6838a62e6cc78"
+  },
+  "statistics": {
+    "areaWeightedMeanKmh": 21.6,
+    "maximumGridCellKmh": 44.2
+  }
+}

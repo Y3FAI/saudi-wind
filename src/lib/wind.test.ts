@@ -5,6 +5,8 @@ import {
   arabicCompassName,
   normalizedDirection,
   sampleWind,
+  sha256Hex,
+  sha256HexFallback,
   speedKmh,
   validateManifest,
 } from "./wind";
@@ -38,7 +40,7 @@ const manifest: WindManifestV1 = {
     url: "/fixture.bin",
     encoding: "float32-le-uv-interleaved",
     byteLength: 32,
-    sha256: "fixture",
+    sha256: "0".repeat(64),
   },
   statistics: {
     areaWeightedMeanKmh: 10,
@@ -88,5 +90,27 @@ describe("wind calculations", () => {
         data: { ...manifest.data, byteLength: 4 },
       }),
     ).toThrow("حجم شبكة الرياح");
+  });
+
+  it("rejects malformed timestamps and grid geometry", () => {
+    expect(() =>
+      validateManifest({ ...manifest, validTime: "not-a-date" }),
+    ).toThrow("توقيت بيانات الرياح");
+    expect(() =>
+      validateManifest({
+        ...manifest,
+        grid: { ...manifest.grid, east: 42 },
+      }),
+    ).toThrow("هندسة شبكة الرياح");
+  });
+
+  it("computes a lowercase SHA-256 checksum for downloaded grids", async () => {
+    const buffer = new TextEncoder().encode("saudi-wind").buffer;
+    await expect(sha256Hex(buffer)).resolves.toBe(
+      "89635e7e1ba8e3a8ebbb8d2d3487313a2b2ef90bdf5b54a140f1e9d1c212c105",
+    );
+    expect(sha256HexFallback(buffer)).toBe(
+      "89635e7e1ba8e3a8ebbb8d2d3487313a2b2ef90bdf5b54a140f1e9d1c212c105",
+    );
   });
 });

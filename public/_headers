@@ -5,3 +5,9 @@
 
 /data/sample/*
   Cache-Control: public, max-age=31536000, immutable
+
+/data/processed/latest.json
+  Cache-Control: no-cache
+
+/data/processed/grids/*
+  Cache-Control: public, max-age=31536000, immutable

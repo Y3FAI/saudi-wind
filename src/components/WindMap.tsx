@@ -241,7 +241,9 @@ export function WindMap({
   const gestureRef = useRef({ startX: 0, startY: 0, moved: false });
   const [size, setSize] = useState<Size>({ width: 0, height: 0, ratio: 1 });
   const [view, setView] = useState<ViewTransform>(INITIAL_VIEW);
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
   const [webglError, setWebglError] = useState<string | null>(null);
 
   useEffect(() => {

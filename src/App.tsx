@@ -60,7 +60,7 @@ export function App() {
           </div>
         )}
 
-        <div className="sample-badge">نموذج بصري · بيانات مجمّدة</div>
+        <div className="sample-badge">NOAA GFS · عينة معالجة</div>
 
         {state && (
           <aside className="information-panel" aria-label="معلومات الرياح">

@@ -1,0 +1,69 @@
+{
+  "runId": "gfs-20260728-12-f000",
+  "source": {
+    "provider": "NOAA_GFS",
+    "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260728/12/atmos/gfs.t12z.pgrb2.0p25.f000",
+    "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260728/12/atmos/gfs.t12z.pgrb2.0p25.f000.idx",
+    "indexSha256": "0486f10fc569abb16dd407c3163290feb9775d2b003be53c782c8bd30909443e",
+    "recordRanges": {
+      "UGRD": {
+        "start": 413206422,
+        "end": 414185566,
+        "byteLength": 979145
+      },
+      "VGRD": {
+        "start": 414185567,
+        "end": 415140803,
+        "byteLength": 955237
+      }
+    },
+    "downloadedByteLength": 1934382,
+    "downloadedSha256": "2e97649ad7c6169a5bc9342b8c9f3a8fcb62c7533b946375ecf440dc370c1e08"
+  },
+  "validation": {
+    "dimensions": [
+      97,
+      75
+    ],
+    "scan": "north-to-south-west-to-east",
+    "finiteValues": true,
+    "maximumSourceSpeedMs": 18.3259,
+    "plausibleSpeedLimitMs": 150.0,
+    "insideSaudiCellCount": 2742,
+    "gridByteLength": 58200,
+    "gridSha256": "7f333b2bf2749fbd16a28a184e140e0035ebc451ccc88838f5e6838a62e6cc78",
+    "comparisonPoints": [
+      {
+        "name": "Riyadh grid cell",
+        "longitude": 46.75,
+        "latitude": 24.75,
+        "uMs": 1.958,
+        "vMs": -8.2315,
+        "speedKmh": 30.5,
+        "serializedMatch": true
+      },
+      {
+        "name": "Jeddah grid cell",
+        "longitude": 39.25,
+        "latitude": 21.5,
+        "uMs": 7.158,
+        "vMs": -3.0615,
+        "speedKmh": 28.0,
+        "serializedMatch": true
+      },
+      {
+        "name": "Dammam grid cell",
+        "longitude": 50.0,
+        "latitude": 26.5,
+        "uMs": 1.098,
+        "vMs": -8.3115,
+        "speedKmh": 30.2,
+        "serializedMatch": true
+      }
+    ]
+  },
+  "statistics": {
+    "areaWeightedMeanKmh": 21.6,
+    "maximumGridCellKmh": 44.2
+  }
+}

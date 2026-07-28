@@ -20,7 +20,7 @@ export interface WindManifestV1 {
   heightMeters: 10;
   sourceUnits: "m/s";
   displayUnits: "km/h";
-  sample: boolean;
+  sample?: boolean;
   grid: WindGridMetadata;
   data: {
     url: string;

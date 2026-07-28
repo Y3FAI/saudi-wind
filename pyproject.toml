@@ -1,0 +1,33 @@
+[project]
+name = "saudi-wind-pipeline"
+version = "0.3.0"
+description = "Reproducible NOAA GFS wind processor for Saudi Wind"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "eccodes==2.44.0",
+  "numpy==2.4.3",
+]
+
+[project.scripts]
+saudi-wind-pipeline = "saudi_wind_pipeline.cli:main"
+
+[dependency-groups]
+dev = [
+  "pytest==9.0.2",
+  "ruff==0.16.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["pipeline/saudi_wind_pipeline"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["pipeline/tests"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
