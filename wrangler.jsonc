@@ -2,5 +2,13 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "saudi-wind",
   "compatibility_date": "2026-07-28",
+  "compatibility_flags": ["nodejs_compat"],
   "pages_build_output_dir": "./dist",
+  "r2_buckets": [
+    {
+      "binding": "WIND_DATA",
+      "bucket_name": "saudi-wind-data",
+      "preview_bucket_name": "saudi-wind-data",
+    },
+  ],
 }

@@ -59,6 +59,29 @@ independently. The immutable grid and validation report are staged before
 `latest.json` is atomically replaced. A failed run therefore leaves the
 previous manifest intact.
 
+## Live delivery
+
+Milestone 4 publishes validated output to the private `saudi-wind-data` R2
+bucket. Objects use two public API shapes:
+
+- `/api/wind/latest` maps only to R2 key `latest.json` and is revalidated.
+- `/api/wind/grids/{runId}.bin` accepts only the strict GFS run-ID pattern and
+  maps to an immutable `grids/{runId}.bin` key.
+
+The Pages Function accepts only `GET` and `HEAD`; it exposes no bucket
+listing, write operation, or arbitrary object path. The browser rechecks the
+grid byte length and SHA-256 after download.
+
+GitHub Actions checks hourly. It uploads and verifies an immutable grid before
+replacing the current manifest. Reprocessing the same run performs no writes,
+and a candidate older than the published run cannot roll the service back.
+R2 expires only the `grids/` prefix after 30 days. The current manifest is
+outside that lifecycle rule.
+
+The interface considers a grid stale when its `validTime` is more than 12
+hours old. It continues showing that last valid grid with an Arabic warning
+rather than replacing it with missing or unvalidated data.
+
 ## Geography
 
 The Saudi boundary is extracted from Natural Earth 1:10m Admin 0 data and

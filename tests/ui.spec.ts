@@ -1,4 +1,7 @@
 import { expect, test } from "@playwright/test";
+import { readFile } from "node:fs/promises";
+
+const SAMPLE_MANIFEST_PATH = "/data/processed/latest.json";
 
 async function countVisibleTrailPixels(
   canvas: import("@playwright/test").Locator,
@@ -136,4 +139,44 @@ test("explains when WebGL2 is unavailable", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.getByRole("alert")).toContainText("تعذر تحريك الرياح");
+});
+
+test("marks the last valid grid stale after twelve hours", async ({ page }) => {
+  const original = JSON.parse(
+    await readFile(
+      new URL("../public/data/processed/latest.json", import.meta.url),
+      "utf8",
+    ),
+  );
+  await page.route(`**${SAMPLE_MANIFEST_PATH}`, (route) =>
+    route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        ...original,
+        sample: false,
+        modelRun: "2020-01-01T00:00:00Z",
+        validTime: "2020-01-01T00:00:00Z",
+        publishedAt: "2020-01-01T04:00:00Z",
+      }),
+    }),
+  );
+  await page.goto("/");
+
+  await expect(page.getByText("NOAA GFS · آخر بيانات متاحة")).toBeVisible();
+  await expect(
+    page.getByText("آخر بيانات صالحة أقدم من 12 ساعة"),
+  ).toBeVisible();
+  await expect(page.getByRole("application")).toBeVisible();
+});
+
+test("explains when no valid dataset has ever loaded", async ({ page }) => {
+  await page.route(`**${SAMPLE_MANIFEST_PATH}`, (route) =>
+    route.fulfill({ status: 503, body: "Unavailable" }),
+  );
+  await page.goto("/");
+
+  await expect(page.getByRole("alert")).toContainText(
+    "لا تتوفر حالياً بيانات رياح صالحة",
+  );
+  await expect(page.getByRole("application")).toHaveCount(0);
 });
