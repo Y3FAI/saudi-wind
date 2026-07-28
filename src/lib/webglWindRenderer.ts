@@ -1,4 +1,3 @@
-import { geoContains } from "d3-geo";
 import earcut, { flatten } from "earcut";
 
 import { applyViewTransform, type ViewTransform } from "./map";
@@ -55,6 +54,43 @@ void main() {
 const FADE_VERTICES = new Float32Array([
   -1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1,
 ]);
+
+function createSeedMesh(boundary: SaudiBoundary) {
+  const polygons =
+    boundary.geometry.type === "Polygon"
+      ? [boundary.geometry.coordinates]
+      : boundary.geometry.coordinates;
+  const triangles: number[] = [];
+  const cumulativeAreas: number[] = [];
+  let cumulativeArea = 0;
+
+  polygons.forEach((polygon) => {
+    const flat = flatten(polygon);
+    const indices = earcut(flat.vertices, flat.holes, flat.dimensions);
+    for (let index = 0; index < indices.length; index += 3) {
+      const a = indices[index] * 2;
+      const b = indices[index + 1] * 2;
+      const c = indices[index + 2] * 2;
+      const ax = flat.vertices[a];
+      const ay = flat.vertices[a + 1];
+      const bx = flat.vertices[b];
+      const by = flat.vertices[b + 1];
+      const cx = flat.vertices[c];
+      const cy = flat.vertices[c + 1];
+      const area = Math.abs((bx - ax) * (cy - ay) - (cx - ax) * (by - ay));
+      if (area <= Number.EPSILON) continue;
+      triangles.push(ax, ay, bx, by, cx, cy);
+      cumulativeArea += area;
+      cumulativeAreas.push(cumulativeArea);
+    }
+  });
+
+  return {
+    triangles: new Float32Array(triangles),
+    cumulativeAreas: new Float64Array(cumulativeAreas),
+    totalArea: cumulativeArea,
+  };
+}
 
 function compileShader(
   gl: WebGL2RenderingContext,
@@ -113,6 +149,7 @@ export class WebglWindRenderer {
   private readonly lineAlphaLocation: number;
   private readonly solidPositionLocation: number;
   private readonly solidColorLocation: WebGLUniformLocation | null;
+  private readonly seedMesh;
   private readonly random = seededRandom(1446);
   private viewport: Viewport | null = null;
   private animationFrame = 0;
@@ -182,6 +219,7 @@ export class WebglWindRenderer {
       this.solidProgram,
       "u_color",
     );
+    this.seedMesh = createSeedMesh(boundary);
   }
 
   setViewport(viewport: Viewport) {
@@ -321,11 +359,29 @@ export class WebglWindRenderer {
   }
 
   private resetParticle(index: number, stagger: boolean) {
-    const { grid } = this.dataset.manifest;
     for (let attempt = 0; attempt < 180; attempt += 1) {
-      const longitude = grid.west + this.random() * (grid.east - grid.west);
-      const latitude = grid.south + this.random() * (grid.north - grid.south);
-      if (!geoContains(this.boundary, [longitude, latitude])) continue;
+      const area = this.random() * this.seedMesh.totalArea;
+      let low = 0;
+      let high = this.seedMesh.cumulativeAreas.length - 1;
+      while (low < high) {
+        const middle = (low + high) >>> 1;
+        if (this.seedMesh.cumulativeAreas[middle] < area) low = middle + 1;
+        else high = middle;
+      }
+      const triangle = low * 6;
+      const root = Math.sqrt(this.random());
+      const mix = this.random();
+      const a = 1 - root;
+      const b = root * (1 - mix);
+      const c = root * mix;
+      const longitude =
+        this.seedMesh.triangles[triangle] * a +
+        this.seedMesh.triangles[triangle + 2] * b +
+        this.seedMesh.triangles[triangle + 4] * c;
+      const latitude =
+        this.seedMesh.triangles[triangle + 1] * a +
+        this.seedMesh.triangles[triangle + 3] * b +
+        this.seedMesh.triangles[triangle + 5] * c;
       const point = this.project(longitude, latitude);
       const viewport = this.viewport;
       if (!viewport || !point) continue;
