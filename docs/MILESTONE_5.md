@@ -24,9 +24,37 @@
 
 ## Validation
 
-The final preview URL, browser versions, Lighthouse results, frame-rate
-samples, screenshots, CI run, and exact release commit are recorded here
-after deployment.
+- Stable preview:
+  <https://agent-milestone-5-production.saudi-wind.pages.dev>
+- Audited deployment: <https://360c448b.saudi-wind.pages.dev>
+- Browser engines: Chromium 151.0.7922.34, Firefox 153.0, and WebKit 26.5.
+- 19 TypeScript unit and API tests.
+- 18 Python processing and R2 publication tests.
+- 34 UI, accessibility, compatibility, and visual checks.
+- Two serial frame-rate checks: desktop 60 FPS median and mobile 60 FPS
+  median.
+- Lighthouse mobile simulation: Performance 91, Accessibility 100, Best
+  Practices 100; FCP 1.8 s, LCP 2.9 s, TBT 190 ms, CLS 0.002.
+- Lighthouse desktop: Performance 100, Accessibility 100, Best Practices 100;
+  FCP 0.5 s, LCP 0.7 s, TBT 0 ms, CLS 0.003.
+- Public edge verified `no-cache` HTML, immutable hashed assets, CSP, HSTS,
+  permissions policy, referrer policy, and MIME sniffing protection.
+- Production health check passed with the live manifest and exact grid
+  checksum.
+
+The preview's SEO score is intentionally excluded because Cloudflare adds
+`X-Robots-Tag: noindex` to preview deployments. Production includes a valid
+`robots.txt` and is not assigned that preview-only header.
+
+## Review images
+
+### Desktop
+
+![Milestone 5 desktop preview](screenshots/milestone-5-desktop.png)
+
+### Mobile
+
+![Milestone 5 mobile preview](screenshots/milestone-5-mobile.png)
 
 ## Browser interpretation
 

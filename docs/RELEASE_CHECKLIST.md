@@ -30,7 +30,8 @@
 - [x] Coordinates use isolated bidirectional text.
 - [x] Desktop animation meets the near-60 FPS test threshold.
 - [x] Mobile animation meets the 30 FPS test threshold.
-- [ ] Final Cloudflare preview and production deployment are visually checked.
+- [x] Final Cloudflare preview is visually checked on desktop and mobile.
+- [ ] Final production deployment is visually checked.
 
 ## Documentation and release
 
