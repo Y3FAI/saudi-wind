@@ -119,7 +119,9 @@ test("inspects an inside point and ignores an outside point", async ({
   const readout = page.locator(".location-readout");
   const selectedText = await readout.textContent();
 
-  await map.click({ position: { x: 10, y: 10 } });
+  await map.click({
+    position: { x: bounds.width * 0.5, y: bounds.height - 8 },
+  });
   await expect(readout).toHaveText(selectedText ?? "");
 });
 
