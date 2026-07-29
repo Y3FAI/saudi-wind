@@ -2,10 +2,8 @@
 
 # Saudi Wind · رياح السعودية
 
-**An Arabic-first visualization of current modelled wind across Saudi Arabia.**
-
-Explore NOAA GFS surface wind through a responsive, monochrome WebGL map
-designed for Arabic readers.
+A beautiful, interactive visualization of wind across the Kingdom of Saudi
+Arabia, with details about wind speed and direction.
 
 [**Open the live experience**](https://saudi-wind.pages.dev) ·
 [View the v1.0.0 release](https://github.com/Y3FAI/saudi-wind/releases/tag/v1.0.0) ·
@@ -21,9 +19,10 @@ designed for Arabic readers.
 
 ## What it does
 
-Saudi Wind turns numerical weather-model data into an interactive view of wind
-moving across the Kingdom. The experience is Arabic-only and purpose-built for
-Saudi Arabia rather than adapted from a global map.
+Saudi Wind turns numerical weather-model data into an immediate, interactive
+view of wind moving across the Kingdom. It is focused on one place, allowing
+the map, controls, statistics, and city labels to be designed specifically for
+Saudi Arabia.
 
 - Animates thousands of continuous wind trails clipped precisely to the Saudi
   boundary.
@@ -32,6 +31,8 @@ Saudi Arabia rather than adapted from a global map.
 - Shows the model timestamp in Arabia Standard Time, the national
   latitude-weighted average, and the highest model-grid speed.
 - Supports touch, mouse, and keyboard interaction across desktop and mobile.
+- Presents the complete experience in Arabic with a carefully designed RTL
+  interface.
 - Provides a static wind view for reduced-motion users and an explanatory
   fallback when WebGL2 is unavailable.
 - Keeps the last verified grid available during upstream failures and clearly
