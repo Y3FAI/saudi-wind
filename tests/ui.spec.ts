@@ -170,12 +170,16 @@ test("marks the last valid grid stale after twelve hours", async ({ page }) => {
 
   // The freshness pill was removed; the panel's own stale warning is the
   // surviving signal, and no badge may reintroduce the old chrome.
+  //
+  // The panel only renders once a grid has loaded, so wait for the map first
+  // rather than racing the first fetch (this spec failed intermittently under
+  // CI load when it asserted straight after goto).
+  await expect(page.getByRole("application")).toBeVisible({ timeout: 20_000 });
   await expect(
     page.getByText("آخر بيانات صالحة أقدم من 12 ساعة"),
   ).toBeVisible();
   await expect(page.locator(".sample-badge")).toHaveCount(0);
   await expect(page.getByText("NOAA GFS · بيانات حديثة")).toHaveCount(0);
-  await expect(page.getByRole("application")).toBeVisible();
 });
 
 test("explains when no valid dataset has ever loaded", async ({ page }) => {

@@ -28,10 +28,11 @@ test("supports reduced motion without WebGL animation", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
 
-  await expect(page.getByRole("application")).toHaveAttribute(
-    "data-reduced-motion",
-    "true",
-  );
+  // The map only mounts once a grid has loaded, so wait for the container rather
+  // than racing the first fetch (this spec failed intermittently on CI load).
+  const map = page.getByRole("application");
+  await expect(map).toBeVisible({ timeout: 20_000 });
+  await expect(map).toHaveAttribute("data-reduced-motion", "true");
   await expect(
     page.getByText("تم إيقاف الحركة حسب إعدادات الجهاز"),
   ).toBeVisible();
