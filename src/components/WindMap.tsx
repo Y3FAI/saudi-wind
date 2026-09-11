@@ -9,9 +9,16 @@ import {
 } from "react";
 
 import {
+  CITIES,
+  distanceKm,
+  pointSpeedKmh,
+  type MapSelection,
+} from "../lib/inspection";
+import {
   applyViewTransform,
   clampViewTransform,
   createMercatorProjector,
+  invertViewTransform,
   rectanglesOverlap,
   zoomViewAt,
   type ScreenBounds,
@@ -26,6 +33,9 @@ import type { WindDataset } from "../types/wind";
 interface WindMapProps {
   boundary: SaudiBoundary;
   dataset: WindDataset;
+  /** The inspected point, or `null` when the panel shows the country average. */
+  selection: MapSelection | null;
+  onSelectionChange: (selection: MapSelection | null) => void;
 }
 
 interface Size {
@@ -34,18 +44,20 @@ interface Size {
   ratio: number;
 }
 
+interface PointerSample {
+  x: number;
+  y: number;
+  startX: number;
+  startY: number;
+  moved: boolean;
+}
+
 const INITIAL_VIEW: ViewTransform = { scale: 1, x: 0, y: 0 };
 
-const CITIES = [
-  { name: "الرياض", coordinates: [46.6753, 24.7136], priority: 1 },
-  { name: "جدة", coordinates: [39.1979, 21.4858], priority: 1 },
-  { name: "مكة المكرمة", coordinates: [39.8579, 21.3891], priority: 1 },
-  { name: "المدينة المنورة", coordinates: [39.5692, 24.5247], priority: 1 },
-  { name: "الدمام", coordinates: [50.1033, 26.4207], priority: 1 },
-  { name: "تبوك", coordinates: [36.5715, 28.3835], priority: 2 },
-  { name: "أبها", coordinates: [42.5053, 18.2164], priority: 2 },
-  { name: "بريدة", coordinates: [43.975, 26.3592], priority: 2 },
-] as const;
+/** Pointer travel above which a press is a drag (pan), not a click (inspect). */
+const CLICK_MOVEMENT_TOLERANCE_PX = 6;
+/** Two inspected points closer than this are the same point, so a click toggles the selection off. */
+const SAME_POINT_KM = 5;
 
 function seededRandom(seed: number) {
   let state = seed >>> 0;
@@ -120,6 +132,7 @@ function drawBaseMap(
   size: Size,
   view: ViewTransform,
   reducedMotion: boolean,
+  selection: MapSelection | null,
 ) {
   canvas.width = Math.round(size.width * size.ratio);
   canvas.height = Math.round(size.height * size.ratio);
@@ -188,19 +201,37 @@ function drawBaseMap(
     context.fillStyle = "rgba(235, 237, 235, 0.56)";
     context.fillText(city.name, point[0], point[1] - 14);
   });
+
+  if (selection) {
+    const projected = projection([selection.longitude, selection.latitude]);
+    if (projected) {
+      const point = applyViewTransform(projected, view);
+      context.beginPath();
+      context.strokeStyle = "rgba(235, 237, 235, 0.9)";
+      context.lineWidth = 1.2;
+      context.arc(point[0], point[1], 3, 0, Math.PI * 2);
+      context.stroke();
+    }
+  }
 }
 
-export function WindMap({ boundary, dataset }: WindMapProps) {
+export function WindMap({
+  boundary,
+  dataset,
+  selection,
+  onSelectionChange,
+}: WindMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const baseCanvasRef = useRef<HTMLCanvasElement>(null);
   const windCanvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<WebglWindRenderer | null>(null);
   const rendererSceneRef = useRef("");
+  const projectionRef = useRef<GeoProjection | null>(null);
   const boundaryBoundsRef = useRef<ScreenBounds>([
     [0, 0],
     [1, 1],
   ]);
-  const pointersRef = useRef(new Map<number, { x: number; y: number }>());
+  const pointersRef = useRef(new Map<number, PointerSample>());
   const [size, setSize] = useState<Size>({ width: 0, height: 0, ratio: 1 });
   const [view, setView] = useState<ViewTransform>(INITIAL_VIEW);
   const [reducedMotion, setReducedMotion] = useState(
@@ -267,6 +298,7 @@ export function WindMap({ boundary, dataset }: WindMapProps) {
   useEffect(() => {
     if (!size.width || !size.height) return;
     const projection = createProjection(boundary, size.width, size.height);
+    projectionRef.current = projection;
     boundaryBoundsRef.current = geoPath(projection).bounds(
       boundary,
     ) as ScreenBounds;
@@ -293,6 +325,7 @@ export function WindMap({ boundary, dataset }: WindMapProps) {
         size,
         view,
         reducedMotion,
+        selection,
       );
     }
     const renderer = rendererRef.current;
@@ -319,7 +352,7 @@ export function WindMap({ boundary, dataset }: WindMapProps) {
       }
       renderer.start();
     }
-  }, [boundary, dataset, reducedMotion, size, view]);
+  }, [boundary, dataset, reducedMotion, selection, size, view]);
 
   const zoomAt = useCallback(
     (factor: number, anchor: readonly [number, number]) => {
@@ -358,10 +391,54 @@ export function WindMap({ boundary, dataset }: WindMapProps) {
     return { x: event.clientX - bounds.left, y: event.clientY - bounds.top };
   };
 
+  /**
+   * Turns one click into an inspected point: screen position back through the
+   * view transform and the Mercator projection, then kept only when the point
+   * is inside Saudi Arabia and inside the decoded grid. Clicking the already
+   * inspected point again clears the selection.
+   */
+  const inspectAt = (point: readonly [number, number]) => {
+    const projection = projectionRef.current;
+    if (!projection || !projection.invert || !size.width || !size.height)
+      return;
+    const inverted = projection.invert(invertViewTransform(point, view));
+    if (!inverted) return;
+    const [longitude, latitude] = inverted;
+    if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) return;
+    if (!geoContains(boundary, [longitude, latitude])) return;
+    if (
+      pointSpeedKmh(
+        dataset.vectors,
+        dataset.manifest.grid,
+        longitude,
+        latitude,
+      ) === null
+    ) {
+      return;
+    }
+    if (
+      selection &&
+      distanceKm(
+        [selection.longitude, selection.latitude],
+        [longitude, latitude],
+      ) < SAME_POINT_KM
+    ) {
+      onSelectionChange(null);
+      return;
+    }
+    onSelectionChange({ longitude, latitude });
+  };
+
   const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     const point = pointerPosition(event);
     event.currentTarget.setPointerCapture(event.pointerId);
-    pointersRef.current.set(event.pointerId, point);
+    pointersRef.current.set(event.pointerId, {
+      x: point.x,
+      y: point.y,
+      startX: point.x,
+      startY: point.y,
+      moved: false,
+    });
   };
 
   const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -369,7 +446,21 @@ export function WindMap({ boundary, dataset }: WindMapProps) {
     if (!previous || !size.width || !size.height) return;
     const point = pointerPosition(event);
     const previousPointers = [...pointersRef.current.values()];
-    pointersRef.current.set(event.pointerId, point);
+    if (
+      Math.hypot(point.x - previous.startX, point.y - previous.startY) >
+      CLICK_MOVEMENT_TOLERANCE_PX
+    ) {
+      previous.moved = true;
+    }
+    pointersRef.current.set(event.pointerId, {
+      ...previous,
+      x: point.x,
+      y: point.y,
+    });
+    // A two-finger gesture is a pinch, never an inspection.
+    if (pointersRef.current.size > 1) {
+      for (const sample of pointersRef.current.values()) sample.moved = true;
+    }
     const currentPointers = [...pointersRef.current.values()];
 
     if (currentPointers.length === 1) {
@@ -420,11 +511,27 @@ export function WindMap({ boundary, dataset }: WindMapProps) {
   };
 
   const handlePointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const sample = pointersRef.current.get(event.pointerId);
+    const isOnlyPointer = pointersRef.current.size === 1;
     pointersRef.current.delete(event.pointerId);
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
+    if (sample && isOnlyPointer && !sample.moved) {
+      inspectAt([sample.x, sample.y]);
+    }
   };
+
+  // Escape clears the inspection from anywhere on the page, not just while the
+  // map has focus.
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      onSelectionChange(null);
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [onSelectionChange]);
 
   const resetView = () => setView(INITIAL_VIEW);
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
@@ -475,7 +582,7 @@ export function WindMap({ boundary, dataset }: WindMapProps) {
       role="application"
       aria-label="خريطة تفاعلية لحركة الرياح فوق السعودية"
       aria-describedby="wind-map-keyboard-help"
-      aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight + - Home"
+      aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight + - Home Escape"
       tabIndex={0}
       data-zoom={view.scale.toFixed(2)}
       data-reduced-motion={reducedMotion ? "true" : "false"}
@@ -492,7 +599,8 @@ export function WindMap({ boundary, dataset }: WindMapProps) {
     >
       <p id="wind-map-keyboard-help" className="visually-hidden">
         استخدم أسهم لوحة المفاتيح للتنقل، وزري زائد وناقص للتكبير والتصغير،
-        ومفتاح البداية لإعادة العرض.
+        ومفتاح البداية لإعادة العرض. انقر على أي موقع لقراءة سرعة الرياح فيه،
+        ومفتاح Escape لإلغاء التحديد.
       </p>
       <canvas
         ref={baseCanvasRef}
@@ -515,36 +623,6 @@ export function WindMap({ boundary, dataset }: WindMapProps) {
       {reducedMotion && (
         <div className="motion-note">تم إيقاف الحركة حسب إعدادات الجهاز</div>
       )}
-
-      <div
-        className="map-controls"
-        role="group"
-        aria-label="أدوات تكبير الخريطة"
-        onPointerDown={(event) => event.stopPropagation()}
-      >
-        <button
-          type="button"
-          aria-label="تكبير"
-          onClick={() => zoomAt(1.35, [size.width / 2, size.height / 2])}
-        >
-          +
-        </button>
-        <button
-          type="button"
-          aria-label="تصغير"
-          onClick={() => zoomAt(1 / 1.35, [size.width / 2, size.height / 2])}
-        >
-          −
-        </button>
-        <button
-          type="button"
-          className="reset-control"
-          onClick={resetView}
-          disabled={view.scale === 1}
-        >
-          إعادة
-        </button>
-      </div>
 
       <p className="interaction-hint">اسحب للتنقل · انقر مرتين للتكبير</p>
     </div>

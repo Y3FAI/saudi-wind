@@ -78,10 +78,15 @@ async function usedHeapMb(page: Page): Promise<number | null> {
   });
 }
 
-/** One zoom, drag and reset cycle: the churn a user generates while exploring. */
+/**
+ * One zoom, drag and reset cycle: the churn a user generates while exploring.
+ * The on-screen controls are gone, so the cycle uses the surviving interactions
+ * — keyboard zoom, drag to pan, keyboard reset.
+ */
 async function churnOnce(page: Page): Promise<void> {
   const map = page.getByRole("application");
-  await page.getByRole("button", { name: "تكبير" }).click();
+  await map.focus();
+  await page.keyboard.press("+");
   const box = await map.boundingBox();
   if (box) {
     const startX = box.x + box.width * 0.6;
@@ -91,7 +96,7 @@ async function churnOnce(page: Page): Promise<void> {
     await page.mouse.move(startX + 40, startY + 24, { steps: 5 });
     await page.mouse.up();
   }
-  await page.getByRole("button", { name: "إعادة" }).click();
+  await page.keyboard.press("Home");
 }
 
 test("sustains the animation frame-rate target @performance", async ({

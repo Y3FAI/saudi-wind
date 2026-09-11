@@ -3,6 +3,13 @@ import { useEffect, useMemo, useState } from "react";
 import { WindMap } from "./components/WindMap";
 import { formatKmh, formatSaudiDate } from "./lib/format";
 import {
+  fastestCity,
+  nearestCity,
+  pointSpeedKmh,
+  slowestCity,
+  type MapSelection,
+} from "./lib/inspection";
+import {
   availableGridKeys,
   frameForTime,
   frameGridIndex,
@@ -40,6 +47,7 @@ export function App() {
   const [frameIndex, setFrameIndex] = useState(0);
   const [dataset, setDataset] = useState<WindDataset | null>(null);
   const [gridError, setGridError] = useState<string | null>(null);
+  const [selection, setSelection] = useState<MapSelection | null>(null);
   const [cache] = useState(() => new WindGridCache());
 
   useEffect(() => {
@@ -156,35 +164,63 @@ export function App() {
   const stale = displayedTime
     ? Date.now() - Date.parse(displayedTime) > STALE_AFTER_MS
     : false;
-  const badge = state?.manifest.sample
-    ? "NOAA GFS · عينة معالجة"
-    : stale
-      ? "NOAA GFS · آخر بيانات متاحة"
-      : "NOAA GFS · بيانات حديثة";
   const statistics =
     dataset?.frame.statistics[activeGridKey ?? "wind-10m"] ??
     state?.manifest.statistics ??
     null;
 
+  // A new run can publish a different grid, so an inspection from the previous
+  // one would no longer describe the map; drop it.
+  useEffect(() => {
+    setSelection(null);
+  }, [state?.manifest.runId]);
+
+  const cityStats = useMemo(() => {
+    if (!dataset) return null;
+    return {
+      fastest: fastestCity(dataset.vectors, dataset.manifest.grid),
+      slowest: slowestCity(dataset.vectors, dataset.manifest.grid),
+    };
+  }, [dataset]);
+
+  // Derived from the current frame rather than stored, so a new forecast step
+  // updates the inspected speed the same way it updates the average.
+  const inspectedKmh =
+    dataset && selection
+      ? pointSpeedKmh(
+          dataset.vectors,
+          dataset.manifest.grid,
+          selection.longitude,
+          selection.latitude,
+        )
+      : null;
+  const inspecting = selection !== null && inspectedKmh !== null;
+  const inspectedCity = selection
+    ? nearestCity([selection.longitude, selection.latitude])
+    : null;
+  const headlineLabel = inspecting
+    ? (inspectedCity?.name ?? "الموقع المحدد")
+    : "متوسط السرعة";
+  const headlineKmh = inspecting
+    ? inspectedKmh
+    : (statistics?.areaWeightedMeanKmh ?? null);
+
   return (
     <main className="app-shell">
       <section className="map-stage" aria-busy={!state && !error}>
         {state && dataset ? (
-          <WindMap boundary={state.boundary} dataset={dataset} />
+          <WindMap
+            boundary={state.boundary}
+            dataset={dataset}
+            selection={selection}
+            onSelectionChange={setSelection}
+          />
         ) : (
           <div className="loading-state" role={error ? "alert" : "status"}>
             <span className="loading-mark" aria-hidden="true" />
             {error ?? "جارٍ إعداد خريطة الرياح…"}
           </div>
         )}
-
-        <div
-          className={
-            stale ? "sample-badge sample-badge--stale" : "sample-badge"
-          }
-        >
-          {badge}
-        </div>
 
         {gridError && (
           <p className="freshness-warning" role="alert">
@@ -195,11 +231,9 @@ export function App() {
         {state && (
           <aside className="information-panel" aria-label="معلومات الرياح">
             <header>
-              <p className="eyebrow">المملكة العربية السعودية</p>
               <h1>رياح السعودية</h1>
               <p className="timestamp">
                 {displayedTime ? formatSaudiDate(displayedTime) : ""}
-                <span>بتوقيت المملكة</span>
               </p>
               {stale && (
                 <p className="freshness-warning" role="status">
@@ -209,23 +243,38 @@ export function App() {
             </header>
 
             <dl className="statistics">
-              <div>
-                <dt>متوسط السرعة</dt>
+              <div data-selected={inspecting ? "true" : "false"}>
+                <dt>{headlineLabel}</dt>
                 <dd>
                   <bdi>
-                    {statistics
-                      ? formatKmh(statistics.areaWeightedMeanKmh)
+                    {headlineKmh !== null ? formatKmh(headlineKmh) : "—"}
+                  </bdi>
+                  <span>كم/س</span>
+                </dd>
+              </div>
+              <div>
+                <dt>أسرع مدينة</dt>
+                <dd>
+                  <bdi className="statistics-city">
+                    {cityStats?.fastest ? cityStats.fastest.city.name : "—"}
+                  </bdi>
+                  <bdi>
+                    {cityStats?.fastest
+                      ? formatKmh(cityStats.fastest.speedKmh)
                       : "—"}
                   </bdi>
                   <span>كم/س</span>
                 </dd>
               </div>
               <div>
-                <dt>أعلى خلية في النموذج</dt>
+                <dt>أبطأ مدينة</dt>
                 <dd>
+                  <bdi className="statistics-city">
+                    {cityStats?.slowest ? cityStats.slowest.city.name : "—"}
+                  </bdi>
                   <bdi>
-                    {statistics
-                      ? formatKmh(statistics.maximumGridCellKmh)
+                    {cityStats?.slowest
+                      ? formatKmh(cityStats.slowest.speedKmh)
                       : "—"}
                   </bdi>
                   <span>كم/س</span>

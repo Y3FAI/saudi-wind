@@ -67,7 +67,7 @@ test("keeps trails populated through a tap and zoom", async ({ page }) => {
   const before = await countVisibleTrailPixels(canvas);
   expect(before).toBeGreaterThan(200);
 
-  // A tap on the map is inert now: it must not blank the moving trails.
+  // A tap is an inspection now, not a zoom: it must not blank the moving trails.
   await map.click({
     position: { x: bounds.width * 0.63, y: bounds.height * 0.51 },
   });
@@ -75,7 +75,10 @@ test("keeps trails populated through a tap and zoom", async ({ page }) => {
   const afterTap = await countVisibleTrailPixels(canvas);
   expect(afterTap).toBeGreaterThan(before * 0.35);
 
-  await page.getByRole("button", { name: "تكبير" }).click();
+  // The on-screen zoom buttons were removed; the keyboard is the surviving
+  // control surface.
+  await map.focus();
+  await page.keyboard.press("+");
   await page.waitForTimeout(80);
   const afterZoom = await countVisibleTrailPixels(canvas);
   expect(afterZoom).toBeGreaterThan(before * 0.15);
@@ -85,9 +88,10 @@ test("zooms and returns to the approved initial framing", async ({ page }) => {
   await page.goto("/");
   const map = page.getByRole("application");
 
-  await page.getByRole("button", { name: "تكبير" }).click();
+  await map.focus();
+  await page.keyboard.press("+");
   await expect(map).not.toHaveAttribute("data-zoom", "1.00");
-  await page.getByRole("button", { name: "إعادة" }).click();
+  await page.keyboard.press("Home");
   await expect(map).toHaveAttribute("data-zoom", "1.00");
 });
 
@@ -164,10 +168,13 @@ test("marks the last valid grid stale after twelve hours", async ({ page }) => {
   );
   await page.goto("/");
 
-  await expect(page.getByText("NOAA GFS · آخر بيانات متاحة")).toBeVisible();
+  // The freshness pill was removed; the panel's own stale warning is the
+  // surviving signal, and no badge may reintroduce the old chrome.
   await expect(
     page.getByText("آخر بيانات صالحة أقدم من 12 ساعة"),
   ).toBeVisible();
+  await expect(page.locator(".sample-badge")).toHaveCount(0);
+  await expect(page.getByText("NOAA GFS · بيانات حديثة")).toHaveCount(0);
   await expect(page.getByRole("application")).toBeVisible();
 });
 

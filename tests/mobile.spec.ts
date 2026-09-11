@@ -1,4 +1,4 @@
-import { expect, test, type Locator, type Page } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 /**
  * Mobile layout and touch ergonomics, pinned to a 360x640 viewport regardless of
@@ -12,12 +12,6 @@ test.use({
   isMobile: true,
   deviceScaleFactor: 2,
 });
-
-const MIN_TAP_TARGET_PX = 44;
-
-function tapTargets(page: Page): Locator {
-  return page.locator(".map-controls button");
-}
 
 test("fits the map on a 360x640 phone without horizontal page scroll", async ({
   page,
@@ -51,30 +45,37 @@ test("fits the map on a 360x640 phone without horizontal page scroll", async ({
   ).toBeLessThanOrEqual(viewport.width + 1);
 });
 
-test("keeps every map control a reachable tap target", async ({ page }) => {
+test("keeps zoom, pan and inspection reachable without on-screen buttons", async ({
+  page,
+}) => {
   await page.goto("/");
+  const map = page.getByRole("application");
   await expect(page.locator(".map-canvas--wind")).toBeVisible();
 
-  const targets = tapTargets(page);
-  const count = await targets.count();
-  expect(count, "controls must render on a phone").toBeGreaterThanOrEqual(3);
+  // The zoom/reset buttons and the freshness pill were removed: the map itself
+  // is the control surface, so no button may render on a phone.
+  await expect(page.locator(".map-controls, .sample-badge")).toHaveCount(0);
+  await expect(page.locator(".wind-map button, .map-stage button")).toHaveCount(
+    0,
+  );
 
-  for (let index = 0; index < count; index += 1) {
-    const target = targets.nth(index);
-    const label =
-      (await target.getAttribute("aria-label")) ??
-      (await target.textContent()) ??
-      `control ${index}`;
-    const box = await target.boundingBox();
-    expect(box, `control "${label}" must be laid out`).not.toBeNull();
-    if (!box) continue;
-    expect(
-      Math.round(box.height),
-      `budget "touch target": control "${label}" must be >= ${MIN_TAP_TARGET_PX}px tall`,
-    ).toBeGreaterThanOrEqual(MIN_TAP_TARGET_PX);
-    expect(
-      Math.round(box.width),
-      `budget "touch target": control "${label}" must be >= ${MIN_TAP_TARGET_PX}px wide`,
-    ).toBeGreaterThanOrEqual(MIN_TAP_TARGET_PX);
-  }
+  // All three stats render, the first one carrying the selection hook.
+  await expect(page.locator(".statistics > div")).toHaveCount(3);
+  await expect(
+    page.locator(".statistics > div[data-selected]"),
+  ).toHaveAttribute("data-selected", "false");
+
+  // Zoom and reset survive the chrome removal, by double-tap and by keyboard.
+  const box = await map.boundingBox();
+  expect(box, "the map must have a layout box").not.toBeNull();
+  if (!box) return;
+  await page.mouse.dblclick(box.x + box.width / 2, box.y + box.height / 2);
+  await expect(map).not.toHaveAttribute("data-zoom", "1.00");
+
+  await map.focus();
+  await page.keyboard.press("Home");
+  await expect(map).toHaveAttribute("data-zoom", "1.00");
+
+  await page.keyboard.press("+");
+  await expect(map).not.toHaveAttribute("data-zoom", "1.00");
 });
