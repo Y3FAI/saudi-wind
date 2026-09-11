@@ -20,6 +20,9 @@ from botocore.exceptions import ClientError
 from .core import ENCODING, PipelineError
 
 BUCKET_NAME = "saudi-wind-data"
+
+#: Where the ingest writes artifacts by default; keep both commands aligned.
+DEFAULT_OUTPUT = Path("public/data/processed")
 MANIFEST_KEY = "latest.json"
 GRID_PREFIX = "grids/"
 GRID_URL_PREFIX = "/api/wind/grids/"
@@ -505,7 +508,10 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path(os.environ.get("WIND_OUTPUT_DIRECTORY", ".wind-artifacts")),
+        # Same default as the ingest CLI (``public/data/processed``) so the documented
+        # "process then publish" sequence works with no path juggling; CI pins its own
+        # directory with WIND_OUTPUT_DIRECTORY.
+        default=Path(os.environ.get("WIND_OUTPUT_DIRECTORY", DEFAULT_OUTPUT)),
     )
     parser.add_argument(
         "--prune",

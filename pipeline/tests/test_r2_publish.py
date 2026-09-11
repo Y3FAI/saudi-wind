@@ -183,3 +183,11 @@ def test_rejects_an_immutable_grid_collision(tmp_path: Path) -> None:
         publish_directory(tmp_path, client)
 
     assert ("put", "latest.json") not in client.operations
+
+
+def test_publish_and_ingest_agree_on_the_default_output_directory() -> None:
+    """`latest` then `r2_publish` must work with no path juggling (the mismatch
+    that produced a FileNotFoundError when publishing by hand)."""
+    from saudi_wind_pipeline import cli, r2_publish
+
+    assert r2_publish.DEFAULT_OUTPUT == cli.DEFAULT_OUTPUT
