@@ -1,6 +1,5 @@
 import { WIND_GRID_KEYS } from "../types/wind";
 import type {
-  WindDataset,
   WindFrame,
   WindGridKey,
   WindGridMetadata,
@@ -448,17 +447,9 @@ export function availableGridKeys(frames: readonly WindFrame[]): WindGridKey[] {
   );
 }
 
-/** Levels published anywhere in the run, ascending. */
-export function availableLevels(frames: readonly WindFrame[]): number[] {
-  const levels = new Set<number>();
-  for (const key of availableGridKeys(frames))
-    levels.add(levelFromGridKey(key));
-  return [...levels].sort((a, b) => a - b);
-}
-
 /**
  * Nearest frame that actually carries `key`, searching backwards first so a run
- * with a missing level degrades to the most recent frame that has it instead of
+ * with a missing grid degrades to the most recent frame that has it instead of
  * rendering nothing. Returns -1 when no frame carries the key.
  */
 export function frameGridIndex(
@@ -599,22 +590,4 @@ export async function loadWindManifest(
     throw new Error("تعذر تحميل وصف بيانات الرياح.");
   }
   return parseWindManifest(await manifestResponse.json());
-}
-
-/**
- * Convenience loader for the first usable grid of a run. The map itself uses
- * `WindGridCache` so it can swap frames without refetching decoded binaries.
- */
-export async function loadWindDataset(
-  manifestUrl = "/api/wind/latest",
-  fetcher: typeof fetch = fetch,
-): Promise<WindDataset> {
-  const manifest = await loadWindManifest(manifestUrl, fetcher);
-  const frame = frameForTime(manifest.frames, Date.now());
-  const key = availableGridKeys(manifest.frames)[0];
-  const reference = frame.grids[key];
-  if (!reference) {
-    throw new Error("تعذر تحميل شبكة الرياح.");
-  }
-  return { manifest, frame, vectors: await fetchWindGrid(reference, fetcher) };
 }

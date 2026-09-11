@@ -30,8 +30,7 @@ body {
     #1d1f1e;
 }
 
-button,
-input {
+button {
   font: inherit;
 }
 

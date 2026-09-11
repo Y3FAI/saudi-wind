@@ -7,6 +7,11 @@ Run with:
 
 This intentionally creates only the committed design fixture. The resilient live
 ingestion pipeline belongs to Milestone 3.
+
+The `public/data/sample/` pair it writes is **not committed**: it is a local,
+dev-only artifact that the build strips and `scripts/check-dist-manifest.mjs`
+keeps out of `dist/`. Run it only when reproducing the Milestone 1 review
+artifacts.
 """
 
 from __future__ import annotations

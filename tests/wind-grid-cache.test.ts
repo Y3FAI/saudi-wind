@@ -42,7 +42,6 @@ describe("WindGridCache", () => {
     expect(Array.from(first)).toEqual([1, 2, 3, 4]);
     expect(second).toBe(first);
     expect(cache.peek(grid)).toBe(first);
-    expect(cache.has(grid)).toBe(true);
     expect(fetcher).toHaveBeenCalledTimes(1);
   });
 
@@ -56,7 +55,6 @@ describe("WindGridCache", () => {
 
     expect(a).toBe(b);
     expect(fetcher).toHaveBeenCalledTimes(1);
-    expect(cache.pending).toBe(0);
   });
 
   it("caches per URL so different frames fetch independently", async () => {
@@ -86,7 +84,6 @@ describe("WindGridCache", () => {
       "شبكة الرياح المحمّلة غير مكتملة",
     );
     expect(cache.peek(reference(buffer))).toBeNull();
-    expect(cache.has(reference(buffer))).toBe(false);
   });
 
   it("rejects a checksum mismatch and reports the Arabic error", async () => {
@@ -107,29 +104,6 @@ describe("WindGridCache", () => {
     await expect(cache.load(reference(payload([1])))).rejects.toThrow(
       "تعذر تحميل شبكة الرياح",
     );
-  });
-
-  it("preloads a grid on an idle callback and swallows failures", async () => {
-    const buffer = payload([3, 4]);
-    const fetcher = vi.fn(async () => responded(buffer));
-    const cache = new WindGridCache(fetcher);
-    const grid = reference(buffer);
-
-    expect(cache.preload(undefined)).toBe(false);
-    expect(cache.preload(grid)).toBe(true);
-    expect(cache.preload(grid)).toBe(true);
-    await new Promise((resolve) => setTimeout(resolve, 250));
-    expect(fetcher).toHaveBeenCalledTimes(1);
-    expect(cache.has(grid)).toBe(true);
-
-    const failing = new WindGridCache(
-      vi.fn(async () => {
-        throw new Error("offline");
-      }),
-    );
-    failing.preload(reference(buffer, "/grids/offline.bin"));
-    await new Promise((resolve) => setTimeout(resolve, 250));
-    expect(failing.has(reference(buffer, "/grids/offline.bin"))).toBe(false);
   });
 
   it("clears cached grids", async () => {

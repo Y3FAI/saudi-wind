@@ -13,9 +13,9 @@ export const MAX_ZOOM = 4.5;
 /**
  * Writes the raw Mercator screen position (before the pan/zoom view transform)
  * into `output` without allocating. This is the single source of the projection
- * maths shared by `createMercatorProjector` and the renderer hot loop.
+ * maths behind `createMercatorProjector`, which `WindMap` hands to the renderer.
  */
-export function projectMercatorInto(
+function projectMercatorInto(
   scale: number,
   translate: ScreenPoint,
   longitude: number,

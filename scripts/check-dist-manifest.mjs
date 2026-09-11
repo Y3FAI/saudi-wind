@@ -12,8 +12,11 @@
  * runs after `vite build` in `bun run build` and fails loudly if any of them —
  * or any legacy/empty manifest — is present anyway.
  *
- * Dev and test keep working: the fixtures still live in `public/` for
- * `bun run dev`, `tests/support/preview-server.mjs` and `tests/ui.spec.ts`.
+ * Dev and test keep working: `public/data/processed` still lives in `public/`
+ * for `bun run dev`, `tests/support/preview-server.mjs` and `tests/ui.spec.ts`.
+ * `data/sample` is the regenerable NOAA sample pair
+ * (`scripts/build_frozen_fixture.py`); it is no longer committed, and the guard
+ * keeps it out of the bundle if it is rebuilt locally.
  */
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";

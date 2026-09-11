@@ -6,8 +6,10 @@ import type { Plugin } from "vite";
 import { defineConfig } from "vitest/config";
 
 /**
- * `public/data/processed` and `public/data/sample` hold dev-only wind fixtures:
- * the frozen single-frame manifest plus its grid, and the sample pair.
+ * `public/data/processed` holds the dev-only wind fixture: the frozen
+ * single-frame manifest plus its grid. `data/sample` is the same kind of tree —
+ * a regenerable NOAA sample pair that is no longer committed — and is listed
+ * here so it can never ship if it is rebuilt locally.
  *
  * They are read by `bun run dev` (the app's DEV manifest URL), by
  * `tests/support/preview-server.mjs` and by `tests/ui.spec.ts`. They are **not**

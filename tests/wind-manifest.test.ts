@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import {
   availableGridKeys,
-  availableLevels,
   frameForTime,
   frameGridIndex,
   parseWindManifest,
@@ -203,7 +202,6 @@ describe("parseWindManifest version two", () => {
       "gust-10m",
     ]);
     expect(parsed.frames[1].grids["wind-100m"]).toBeUndefined();
-    expect(availableLevels(parsed.frames)).toEqual([10, 100]);
   });
 
   it("rejects a manifest with no frames", () => {
@@ -427,14 +425,12 @@ describe("frame selection helpers", () => {
     frames: [buildFrame(0), withoutHundred],
   }).frames;
 
-  it("reports the grid keys and levels published by a run", () => {
+  it("reports the grid keys published by a run", () => {
     expect(availableGridKeys(parsed.frames)).toEqual([
       "wind-10m",
       "wind-100m",
       "gust-10m",
     ]);
-    expect(availableLevels(parsed.frames)).toEqual([10, 100]);
-    expect(availableLevels([sparse[0]])).toEqual([10, 100]);
   });
 
   it("falls back to the nearest frame that carries a grid key", () => {
@@ -468,6 +464,5 @@ describe("frame selection helpers", () => {
       return copy as WindFrame;
     });
     expect(frameGridIndex(withoutHundredAtAll, 0, "wind-100m")).toBe(-1);
-    expect(availableLevels(withoutHundredAtAll)).toEqual([10]);
   });
 });

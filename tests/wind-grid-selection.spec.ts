@@ -4,7 +4,7 @@ import type { WindGridKey } from "../src/types/wind";
 import { gridName, openWithFixture } from "./helpers/windFixture";
 
 /**
- * Grid resolution for the single-field map.
+ * Grid selection for the single-field map.
  *
  * The map renders one field — the 10 m wind — so a run that publishes only that
  * grid renders it and requests it exactly once, and a run that does not publish
