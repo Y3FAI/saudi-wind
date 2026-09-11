@@ -37,7 +37,9 @@ WIND_FIELDS: tuple[str, ...] = ("wind-10m",)
 #: Height above ground of the published wind, in metres.
 WIND_LEVEL_METERS = 10
 
-#: Published levels and variable families advertised in the manifest.
+#: Published levels and variable families advertised in the manifest. The
+#: product is deliberately one field, so these are frozen for every run rather
+#: than derived from the frames.
 PUBLISHED_LEVELS: tuple[int, ...] = (WIND_LEVEL_METERS,)
 PUBLISHED_VARIABLES: tuple[str, ...] = ("wind",)
 
@@ -639,37 +641,6 @@ def build_frame(
     }
 
 
-def _published_grid_keys(frames: Sequence[Mapping[str, Any]]) -> set[str]:
-    """Every grid key the manifest actually publishes across its frames."""
-    keys: set[str] = set()
-    for frame in frames:
-        grids = frame.get("grids")
-        if isinstance(grids, Mapping):
-            keys.update(str(key) for key in grids)
-    return keys
-
-
-def _levels_for(frames: Sequence[Mapping[str, Any]]) -> list[int]:
-    """Levels actually published, ascending — never advertise an absent level.
-
-    The set is derived from the frames, so a run that publishes only some of
-    the configured levels must not claim the others, or the client offers a
-    height it cannot render.
-    """
-    keys = _published_grid_keys(frames)
-    return [level for level in PUBLISHED_LEVELS if f"wind-{level}m" in keys]
-
-
-def _variables_for(frames: Sequence[Mapping[str, Any]]) -> list[str]:
-    """Variables actually published, in the frozen manifest order."""
-    keys = _published_grid_keys(frames)
-    return [
-        variable
-        for variable in PUBLISHED_VARIABLES
-        if any(key.startswith(f"{variable}-") for key in keys)
-    ]
-
-
 def assemble_manifest(
     *,
     run: RunSpec,
@@ -678,7 +649,12 @@ def assemble_manifest(
     grid: Mapping[str, Any],
     fixture: bool = False,
 ) -> dict[str, Any]:
-    """Assemble the frozen v2 manifest with its v1-compatible top-level mirror."""
+    """Assemble the frozen v2 manifest with its v1-compatible top-level mirror.
+
+    A run publishes exactly one field (:data:`WIND_FIELDS`), so ``levels`` and
+    ``variables`` are the frozen constants: there is nothing to derive, and
+    :func:`build_artifacts` already refuses a frame that does not carry the grid.
+    """
     ordered = sorted(frames, key=lambda frame: int(frame["step"]))
     if not ordered:
         raise GridValidationError("A manifest requires at least one frame.")
@@ -706,8 +682,8 @@ def assemble_manifest(
             "dy": float(grid["dy"]),
             "scan": "north-to-south-west-to-east",
         },
-        "levels": _levels_for(ordered),
-        "variables": _variables_for(ordered),
+        "levels": list(PUBLISHED_LEVELS),
+        "variables": list(PUBLISHED_VARIABLES),
         "frames": [
             {
                 "step": frame["step"],

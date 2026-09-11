@@ -114,16 +114,16 @@ def test_published_vectors_match_decoded_source_cells() -> None:
         assert published[row, column, 1] == source.v[row, column]
 
 
-def test_derived_levels_and_variables_follow_the_published_grids() -> None:
-    """The manifest advertises exactly the grids its frames carry."""
-    from saudi_wind_pipeline.core import _levels_for, _variables_for
+def test_manifest_advertises_the_frozen_single_field() -> None:
+    """levels/variables are the published contract, not a per-run derivation."""
+    from saudi_wind_pipeline.core import PUBLISHED_LEVELS, PUBLISHED_VARIABLES
 
-    ten_metres = [{"grids": {"wind-10m": {}}}]
+    artifacts = _build()
+    manifest = artifacts.manifest
 
-    assert _levels_for(ten_metres) == [10]
-    assert _variables_for(ten_metres) == ["wind"]
-    # A grid the run does not publish is not advertised.
-    assert _levels_for([{"grids": {"wind-100m": {}}}]) == []
-    assert _variables_for([{"grids": {"wind-100m": {}}}]) == ["wind"]
-    assert _levels_for([{"grids": {}}]) == []
-    assert _variables_for([{"grids": {}}]) == []
+    assert list(PUBLISHED_LEVELS) == [10]
+    assert list(PUBLISHED_VARIABLES) == ["wind"]
+    assert manifest["levels"] == list(PUBLISHED_LEVELS)
+    assert manifest["variables"] == list(PUBLISHED_VARIABLES)
+    for frame in manifest["frames"]:
+        assert list(frame["grids"]) == ["wind-10m"]
