@@ -149,19 +149,26 @@ test("marks the last valid grid stale after twelve hours", async ({ page }) => {
     ),
   );
   // A stale manifest has to stay internally consistent: the parser rejects any
-  // frame whose validTime is not modelRun + step hours, so age the frame too.
-  const staleRun = "2020-01-01T00:00:00Z";
+  // frame whose validTime is not modelRun + step hours, so age the run *and*
+  // shift every frame by its own step instead of flattening them all.
+  const staleRun = Date.parse("2020-01-01T00:00:00Z");
+  const agedFrame = (frame: Record<string, unknown>) => ({
+    ...frame,
+    validTime: new Date(
+      staleRun + Number(frame.step) * 3_600_000,
+    ).toISOString(),
+  });
   await page.route(`**${SAMPLE_MANIFEST_PATH}`, (route) =>
     route.fulfill({
       contentType: "application/json",
       body: JSON.stringify({
         ...original,
         sample: false,
-        modelRun: staleRun,
-        validTime: staleRun,
-        publishedAt: "2020-01-01T04:00:00Z",
+        modelRun: new Date(staleRun).toISOString(),
+        validTime: new Date(staleRun).toISOString(),
+        publishedAt: new Date(staleRun + 4 * 3_600_000).toISOString(),
         frames: (original.frames as Array<Record<string, unknown>>).map(
-          (frame) => ({ ...frame, validTime: staleRun }),
+          agedFrame,
         ),
       }),
     }),
