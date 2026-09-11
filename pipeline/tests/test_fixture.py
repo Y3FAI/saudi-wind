@@ -70,8 +70,10 @@ def test_fixture_manifest_is_v2_with_a_v1_compatible_mirror() -> None:
 
     assert manifest["schemaVersion"] == 2
     assert manifest["runId"] == "gfs-20260728-12"
-    assert manifest["levels"] == [10, 100]
-    assert manifest["variables"] == ["wind", "gust"]
+    # Only what the fixture actually publishes: levels/variables are derived from
+    # the frames, so a single-field run never advertises a grid it cannot serve.
+    assert manifest["levels"] == [10]
+    assert manifest["variables"] == ["wind"]
     assert manifest["heightMeters"] == 10
     assert manifest["validTime"] == manifest["frames"][0]["validTime"]
     assert manifest["data"] == first_grid
@@ -98,3 +100,19 @@ def test_published_vectors_match_decoded_source_cells() -> None:
     for row, column in [(0, 0), (35, 55), (74, 96)]:
         assert published[row, column, 0] == source.u[row, column]
         assert published[row, column, 1] == source.v[row, column]
+
+
+def test_derived_levels_and_variables_follow_the_published_grids() -> None:
+    """The manifest advertises exactly the grids its frames carry."""
+    from saudi_wind_pipeline.core import _levels_for, _variables_for
+
+    full = [{"grids": {"wind-10m": {}, "wind-100m": {}, "gust-10m": {}}}]
+    wind_only = [{"grids": {"wind-10m": {}}}]
+    ten_and_gust = [{"grids": {"wind-10m": {}, "gust-10m": {}}}]
+
+    assert _levels_for(full) == [10, 100]
+    assert _variables_for(full) == ["wind", "gust"]
+    assert _levels_for(wind_only) == [10]
+    assert _variables_for(wind_only) == ["wind"]
+    assert _levels_for(ten_and_gust) == [10]
+    assert _variables_for(ten_and_gust) == ["wind", "gust"]

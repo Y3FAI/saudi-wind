@@ -669,6 +669,37 @@ def build_frame(
     }
 
 
+def _published_grid_keys(frames: Sequence[Mapping[str, Any]]) -> set[str]:
+    """Every grid key the manifest actually publishes across its frames."""
+    keys: set[str] = set()
+    for frame in frames:
+        grids = frame.get("grids")
+        if isinstance(grids, Mapping):
+            keys.update(str(key) for key in grids)
+    return keys
+
+
+def _levels_for(frames: Sequence[Mapping[str, Any]]) -> list[int]:
+    """Levels actually published, ascending — never advertise an absent level.
+
+    A single-field run (e.g. the committed fixture, or ``--fields wind-10m``)
+    must not claim 100 m, or the client offers a height it cannot render.
+    """
+    keys = _published_grid_keys(frames)
+    return [level for level in PUBLISHED_LEVELS if f"wind-{level}m" in keys]
+
+
+def _variables_for(frames: Sequence[Mapping[str, Any]]) -> list[str]:
+    """Variables actually published, in the frozen order wind then gust."""
+    keys = _published_grid_keys(frames)
+    variables = []
+    if any(key.startswith("wind-") for key in keys):
+        variables.append("wind")
+    if "gust-10m" in keys:
+        variables.append("gust")
+    return variables
+
+
 def assemble_manifest(
     *,
     run: RunSpec,
@@ -705,8 +736,8 @@ def assemble_manifest(
             "dy": float(grid["dy"]),
             "scan": "north-to-south-west-to-east",
         },
-        "levels": list(PUBLISHED_LEVELS),
-        "variables": list(PUBLISHED_VARIABLES),
+        "levels": _levels_for(ordered),
+        "variables": _variables_for(ordered),
         "frames": [
             {
                 "step": frame["step"],

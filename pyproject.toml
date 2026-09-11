@@ -1,6 +1,6 @@
 [project]
 name = "saudi-wind-pipeline"
-version = "0.3.0"
+version = "0.4.0"
 description = "Reproducible NOAA GFS wind processor for Saudi Wind"
 requires-python = ">=3.12,<3.13"
 dependencies = [
