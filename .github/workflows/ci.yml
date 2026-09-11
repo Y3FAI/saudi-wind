@@ -47,9 +47,13 @@ jobs:
       - name: Playwright performance budgets
         run: bun run test:performance
         env:
-          # GitHub-hosted runners do not provide representative GPU timing.
-          # Keep a regression floor here; release evidence is measured locally.
-          PERFORMANCE_DESKTOP_FPS_MINIMUM: 50
+          # GitHub-hosted runners share a CPU and render in software, so their
+          # frame-rate ceiling sits near 48 FPS (run 34555430406 measured
+          # desktop 47/48/48.2, median 48). Both floors are the ~30 FPS
+          # shared-runner target the spec documents (tests/performance.spec.ts,
+          # docs/TESTING.md) and still catch a real regression. The 55 FPS
+          # desktop / 30 FPS mobile device targets stay in-spec defaults.
+          PERFORMANCE_DESKTOP_FPS_MINIMUM: 30
           PERFORMANCE_MOBILE_FPS_MINIMUM: 30
 
   freshness:

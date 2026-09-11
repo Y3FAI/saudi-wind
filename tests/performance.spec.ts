@@ -9,6 +9,13 @@ import { expect, test, type Page } from "@playwright/test";
  * are confirmed on real hardware. Every assertion names the budget it broke, and
  * `PERFORMANCE_SKIP_BUDGETS=1` skips the budget suite on a known-slow runner
  * while still running the frame-rate floor below.
+ *
+ * The frame-rate floor is an env override because CI's ceiling is below the
+ * device target: a shared, software-rendered runner sustains roughly 48 FPS
+ * (CI run 34555430406: desktop 47/48/48.2, median 48). CI therefore sets
+ * `PERFORMANCE_DESKTOP_FPS_MINIMUM=30` — the same ~30 FPS shared-runner target
+ * the `frameIntervalMedianMs` budget encodes — while the in-spec desktop
+ * default stays 55 FPS for local and device runs. See `docs/PERFORMANCE.md`.
  */
 
 const BUDGETS = {
@@ -122,6 +129,9 @@ test("sustains the animation frame-rate target @performance", async ({
     `${isMobile ? "mobile" : "desktop"} animation FPS: ${samples.join(", ")} (median ${median})`,
   );
 
+  // CI overrides the 55 FPS desktop device target via
+  // PERFORMANCE_DESKTOP_FPS_MINIMUM (30) because a shared, GPU-less runner tops
+  // out near 48 FPS. With no override the desktop floor stays 55.
   expect(
     median,
     `budget "animation fps": ${isMobile ? "mobile" : "desktop"} FPS samples: ${samples.join(", ")}`,

@@ -116,10 +116,12 @@ the device targets and their rationale live in `src/lib/deviceProfile.ts` and
 | heap growth per 3 zoom/pan cycles    | ≤ 32 MB   | catches per-frame leaks without GC instrumentation         |
 
 The animation frame-rate floor (`data-fps`) is separate: it honours
-`PERFORMANCE_DESKTOP_FPS_MINIMUM` / `PERFORMANCE_MOBILE_FPS_MINIMUM` (CI sets 50
-and 30). Set `PERFORMANCE_SKIP_BUDGETS=1` to skip the budget suite on a
-known-slow runner while keeping the frame-rate floor. Every failure message names
-the broken budget and the measured value.
+`PERFORMANCE_DESKTOP_FPS_MINIMUM` / `PERFORMANCE_MOBILE_FPS_MINIMUM` (CI sets 30
+and 30, matching the ~30 fps shared-runner target above; the runner's ceiling is
+near 48 fps — desktop 47/48/48.2, median 48 in run 34555430406). Set
+`PERFORMANCE_SKIP_BUDGETS=1` to skip the budget suite on a known-slow runner
+while keeping the frame-rate floor. Every failure message names the broken budget
+and the measured value.
 
 ## Resilience coverage
 
