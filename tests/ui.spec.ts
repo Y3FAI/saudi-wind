@@ -108,6 +108,9 @@ test("shows a static frame when reduced motion is requested", async ({
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
 
+  // The map mounts only once a grid has loaded, so wait for it before probing
+  // the attribute rather than racing the first fetch.
+  await expect(page.getByRole("application")).toBeVisible({ timeout: 15_000 });
   await expect(page.getByRole("application")).toHaveAttribute(
     "data-reduced-motion",
     "true",
@@ -141,15 +144,21 @@ test("marks the last valid grid stale after twelve hours", async ({ page }) => {
       "utf8",
     ),
   );
+  // A stale manifest has to stay internally consistent: the parser rejects any
+  // frame whose validTime is not modelRun + step hours, so age the frame too.
+  const staleRun = "2020-01-01T00:00:00Z";
   await page.route(`**${SAMPLE_MANIFEST_PATH}`, (route) =>
     route.fulfill({
       contentType: "application/json",
       body: JSON.stringify({
         ...original,
         sample: false,
-        modelRun: "2020-01-01T00:00:00Z",
-        validTime: "2020-01-01T00:00:00Z",
+        modelRun: staleRun,
+        validTime: staleRun,
         publishedAt: "2020-01-01T04:00:00Z",
+        frames: (original.frames as Array<Record<string, unknown>>).map(
+          (frame) => ({ ...frame, validTime: staleRun }),
+        ),
       }),
     }),
   );
