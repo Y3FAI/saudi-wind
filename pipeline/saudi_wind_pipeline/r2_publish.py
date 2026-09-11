@@ -103,7 +103,9 @@ def _grid_reference(metadata: Any, label: str) -> GridReference:
         or not isinstance(byte_length, int)
         or byte_length <= 0
     ):
-        raise PipelineError(f"Manifest grid metadata for {label} is unsafe or incomplete.")
+        raise PipelineError(
+            f"Manifest grid metadata for {label} is unsafe or incomplete."
+        )
     return GridReference(key=key, sha256=sha256, byteLength=byte_length)
 
 
@@ -393,9 +395,7 @@ class ApiTokenR2Client:
         body = kwargs["Body"]
         payload = body if isinstance(body, bytes) else bytes(body)
         headers = {
-            "Content-Type": str(
-                kwargs.get("ContentType", "application/octet-stream")
-            ),
+            "Content-Type": str(kwargs.get("ContentType", "application/octet-stream")),
             "Cache-Control": str(kwargs.get("CacheControl", "")),
         }
         response = self._request(
@@ -418,8 +418,7 @@ class ApiTokenR2Client:
             raise PipelineError(
                 "R2 list objects failed: "
                 + "; ".join(
-                    str(item.get("message", item))
-                    for item in data.get("errors", [])
+                    str(item.get("message", item)) for item in data.get("errors", [])
                 )
             )
         result = data.get("result") or []
@@ -513,9 +512,7 @@ def _parser() -> argparse.ArgumentParser:
         action="store_true",
         help=f"Delete grids from runs older than {MAX_RUN_AGE_HOURS} h.",
     )
-    parser.add_argument(
-        "--max-run-age-hours", type=int, default=MAX_RUN_AGE_HOURS
-    )
+    parser.add_argument("--max-run-age-hours", type=int, default=MAX_RUN_AGE_HOURS)
     return parser
 
 

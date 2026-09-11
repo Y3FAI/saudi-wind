@@ -57,9 +57,7 @@ def _frame(step: int, fields: tuple[str, ...] = WIND_FIELDS) -> dict:
 
 
 def _payloads(frame: dict) -> dict[str, bytes]:
-    return {
-        field: metadata.pop("_bytes") for field, metadata in frame["grids"].items()
-    }
+    return {field: metadata.pop("_bytes") for field, metadata in frame["grids"].items()}
 
 
 def test_multi_frame_manifest_reference_order_and_hashes() -> None:
@@ -71,8 +69,16 @@ def test_multi_frame_manifest_reference_order_and_hashes() -> None:
         run=RUN,
         frames=frames,
         published_at=datetime(2026, 7, 28, 13, tzinfo=UTC),
-        grid={"west": 33.0, "east": 57.0, "south": 15.0, "north": 33.5,
-              "width": 97, "height": 75, "dx": 0.25, "dy": 0.25},
+        grid={
+            "west": 33.0,
+            "east": 57.0,
+            "south": 15.0,
+            "north": 33.5,
+            "width": 97,
+            "height": 75,
+            "dx": 0.25,
+            "dy": 0.25,
+        },
     )
 
     assert manifest["schemaVersion"] == 2
@@ -108,8 +114,16 @@ def test_grid_hashes_match_the_serialized_vectors() -> None:
         run=RUN,
         frames=[frame],
         published_at=RUN.model_run,
-        grid={"west": 33.0, "east": 57.0, "south": 15.0, "north": 33.5,
-              "width": 97, "height": 75, "dx": 0.25, "dy": 0.25},
+        grid={
+            "west": 33.0,
+            "east": 57.0,
+            "south": 15.0,
+            "north": 33.5,
+            "width": 97,
+            "height": 75,
+            "dx": 0.25,
+            "dy": 0.25,
+        },
     )
 
     for field, payload in payloads.items():
@@ -126,8 +140,16 @@ def test_single_step_manifest_keeps_the_v1_compatible_mirror() -> None:
         run=RUN,
         frames=[frame],
         published_at=RUN.model_run,
-        grid={"west": 33.0, "east": 57.0, "south": 15.0, "north": 33.5,
-              "width": 97, "height": 75, "dx": 0.25, "dy": 0.25},
+        grid={
+            "west": 33.0,
+            "east": 57.0,
+            "south": 15.0,
+            "north": 33.5,
+            "width": 97,
+            "height": 75,
+            "dx": 0.25,
+            "dy": 0.25,
+        },
     )
 
     assert len(manifest["frames"]) == 1

@@ -3,21 +3,15 @@ from __future__ import annotations
 import hashlib
 import io
 import json
-import urllib.error
-import urllib.parse
-from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 import pytest
 from botocore.exceptions import ClientError
-from saudi_wind_pipeline.core import ENCODING, PipelineError
+from saudi_wind_pipeline.core import PipelineError
 from saudi_wind_pipeline.r2_publish import (
     BUCKET_NAME,
-    ApiTokenR2Client,
-    prune_old_runs,
     publish_directory,
-    resolve_credentials,
 )
 
 FIELDS = ("wind-10m", "wind-100m", "gust-10m")

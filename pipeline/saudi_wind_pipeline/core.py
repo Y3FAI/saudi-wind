@@ -757,7 +757,9 @@ def build_artifacts(
         step = source.step
         ranges = select_wind_ranges(parse_index(source.index_text), step, fields)
         decoded = decode_grib(source.payload)
-        components: dict[str, tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]] = {}
+        components: dict[
+            str, tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+        ] = {}
         for field in fields:
             if field == "gust-10m":
                 decoded.require("wind-10m-u", "wind-10m-v", "gust-10m-speed")
@@ -830,16 +832,20 @@ def build_artifacts(
         if step == 0:
             published_wind = np.frombuffer(
                 grids[run.grid_filename(0, "wind-10m")], dtype="<f4"
-            ).reshape(frame_grids["wind-10m"].u.shape[0], frame_grids["wind-10m"].u.shape[1], 2)
-            comparison_points = _comparison_points(frame_grids["wind-10m"], published_wind)
+            ).reshape(
+                frame_grids["wind-10m"].u.shape[0],
+                frame_grids["wind-10m"].u.shape[1],
+                2,
+            )
+            comparison_points = _comparison_points(
+                frame_grids["wind-10m"], published_wind
+            )
 
     if reference_grid is None:
         raise GridValidationError("No frames were provided to build artifacts.")
     if "wind-10m" not in {field for frame in frames for field in frame["grids"]}:
         raise GridValidationError("The wind-10m frame grid is required.")
-    if not all(
-        point["serializedMatch"] for point in comparison_points
-    ):
+    if not all(point["serializedMatch"] for point in comparison_points):
         raise GridValidationError(
             "Serialized comparison points differ from decoded source values."
         )
@@ -899,7 +905,9 @@ def _comparison_points(
     ):
         column = round((longitude - float(grid.longitudes[0, 0])) / grid.dx)
         row = round((float(grid.latitudes[0, 0]) - latitude) / grid.dy)
-        source_vector = np.array([grid.u[row, column], grid.v[row, column]], dtype="<f4")
+        source_vector = np.array(
+            [grid.u[row, column], grid.v[row, column]], dtype="<f4"
+        )
         serialized_vector = published_vectors[row, column]
         points.append(
             {
@@ -909,7 +917,9 @@ def _comparison_points(
                 "uMs": round(float(source_vector[0]), 4),
                 "vMs": round(float(source_vector[1]), 4),
                 "speedKmh": round(float(np.hypot(*source_vector) * 3.6), 1),
-                "serializedMatch": bool(np.array_equal(source_vector, serialized_vector)),
+                "serializedMatch": bool(
+                    np.array_equal(source_vector, serialized_vector)
+                ),
             }
         )
     return points
@@ -1016,7 +1026,9 @@ def capture_fixture(
     step = run.forecast_hour
     index_text = fetcher(f"{run.base_url_for(step)}.idx", None).decode("utf-8")
     ranges = select_wind_ranges(parse_index(index_text), step, fields)
-    payload = download_wind_records(run, ranges, step=step, fields=fields, fetcher=fetcher)
+    payload = download_wind_records(
+        run, ranges, step=step, fields=fields, fetcher=fetcher
+    )
     fixture_directory.mkdir(parents=True, exist_ok=True)
     (fixture_directory / "source.idx").write_text(index_text, encoding="utf-8")
     (fixture_directory / "wind-records.grib2").write_bytes(payload)

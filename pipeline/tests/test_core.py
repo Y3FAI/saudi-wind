@@ -291,9 +291,7 @@ def test_statistics_include_only_inside_centres_with_latitude_weighting() -> Non
     assert count == 2
 
 
-def _artifacts(
-    run_id: str, payload: bytes, *, step: int = 0
-) -> PipelineArtifacts:
+def _artifacts(run_id: str, payload: bytes, *, step: int = 0) -> PipelineArtifacts:
     checksum = hashlib.sha256(payload).hexdigest()
     filename = f"{run_id}-f{step:03d}-wind-10m.bin"
     grid = {

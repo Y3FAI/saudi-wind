@@ -6,7 +6,6 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from .core import (
-    FORECAST_STEPS,
     WIND_FIELDS,
     FrameSource,
     PipelineArtifacts,
@@ -54,9 +53,7 @@ def _parser() -> argparse.ArgumentParser:
     fixture.add_argument("--fixture-dir", type=Path, default=DEFAULT_FIXTURE)
     fixture.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     fixture.add_argument("--boundary", type=Path, default=DEFAULT_BOUNDARY)
-    fixture.add_argument(
-        "--fields", type=_fields, default=("wind-10m",)
-    )
+    fixture.add_argument("--fields", type=_fields, default=("wind-10m",))
 
     process = subparsers.add_parser(
         "process", help="Download and process a specified GFS cycle."
@@ -98,7 +95,9 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _summary(artifacts: PipelineArtifacts, paths: tuple[Path, ...]) -> dict[str, object]:
+def _summary(
+    artifacts: PipelineArtifacts, paths: tuple[Path, ...]
+) -> dict[str, object]:
     return {
         "runId": artifacts.run_id,
         "schemaVersion": artifacts.manifest["schemaVersion"],

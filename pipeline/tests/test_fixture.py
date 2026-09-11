@@ -27,7 +27,9 @@ def _build():
     run, index_text, payload = read_fixture(FIXTURE)
     return build_artifacts(
         run=run,
-        sources=[FrameSource(step=run.forecast_hour, index_text=index_text, payload=payload)],
+        sources=[
+            FrameSource(step=run.forecast_hour, index_text=index_text, payload=payload)
+        ],
         boundary_path=BOUNDARY,
         fixture=True,
         fields=FIXTURE_FIELDS,
@@ -75,13 +77,11 @@ def test_fixture_manifest_is_v2_with_a_v1_compatible_mirror() -> None:
     assert manifest["data"] == first_grid
     assert manifest["statistics"] == manifest["frames"][0]["statistics"]["wind-10m"]
     assert first_grid["sha256"] == EXPECTED_GRID_SHA256
-    assert first_grid["url"] == (
-        "/api/wind/grids/gfs-20260728-12-f000-wind-10m.bin"
-    )
+    assert first_grid["url"] == ("/api/wind/grids/gfs-20260728-12-f000-wind-10m.bin")
 
 
 def test_published_vectors_match_decoded_source_cells() -> None:
-    run, index_text, payload = read_fixture(FIXTURE)
+    _run, _index_text, payload = read_fixture(FIXTURE)
     decoded = decode_grib(payload)
     latitudes, longitudes = decoded.coordinates(["wind-10m-u", "wind-10m-v"])
     source = normalize_and_crop(
