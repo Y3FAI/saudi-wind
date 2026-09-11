@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 from saudi_wind_pipeline.core import (
+    FrameSource,
     build_artifacts,
     decode_grib,
     normalize_and_crop,
@@ -17,19 +18,28 @@ BOUNDARY = ROOT / "public/data/saudi-boundary.geo.json"
 EXPECTED_GRID_SHA256 = (
     "7f333b2bf2749fbd16a28a184e140e0035ebc451ccc88838f5e6838a62e6cc78"
 )
+# The committed f000 fixture carries only the 10 m wind records, so the
+# offline rebuild pins the field set the same way the analysis-only v1 did.
+FIXTURE_FIELDS = ("wind-10m",)
+
+
+def _build():
+    run, index_text, payload = read_fixture(FIXTURE)
+    return build_artifacts(
+        run=run,
+        sources=[FrameSource(step=run.forecast_hour, index_text=index_text, payload=payload)],
+        boundary_path=BOUNDARY,
+        fixture=True,
+        fields=FIXTURE_FIELDS,
+    )
 
 
 def test_committed_fixture_rebuilds_the_reviewed_grid_exactly() -> None:
-    run, index_text, payload = read_fixture(FIXTURE)
-    artifacts = build_artifacts(
-        run=run,
-        index_text=index_text,
-        source_payload=payload,
-        boundary_path=BOUNDARY,
-        fixture=True,
-    )
+    artifacts = _build()
+    grid_bytes = artifacts.grids["gfs-20260728-12-f000-wind-10m.bin"]
 
-    assert hashlib.sha256(artifacts.grid_bytes).hexdigest() == EXPECTED_GRID_SHA256
+    assert hashlib.sha256(grid_bytes).hexdigest() == EXPECTED_GRID_SHA256
+    assert len(grid_bytes) == 58200
     assert artifacts.manifest["grid"] == {
         "west": 33.0,
         "east": 57.0,
@@ -51,20 +61,39 @@ def test_committed_fixture_rebuilds_the_reviewed_grid_exactly() -> None:
     )
 
 
+def test_fixture_manifest_is_v2_with_a_v1_compatible_mirror() -> None:
+    artifacts = _build()
+    manifest = artifacts.manifest
+    first_grid = manifest["frames"][0]["grids"]["wind-10m"]
+
+    assert manifest["schemaVersion"] == 2
+    assert manifest["runId"] == "gfs-20260728-12"
+    assert manifest["levels"] == [10, 100]
+    assert manifest["variables"] == ["wind", "gust"]
+    assert manifest["heightMeters"] == 10
+    assert manifest["validTime"] == manifest["frames"][0]["validTime"]
+    assert manifest["data"] == first_grid
+    assert manifest["statistics"] == manifest["frames"][0]["statistics"]["wind-10m"]
+    assert first_grid["sha256"] == EXPECTED_GRID_SHA256
+    assert first_grid["url"] == (
+        "/api/wind/grids/gfs-20260728-12-f000-wind-10m.bin"
+    )
+
+
 def test_published_vectors_match_decoded_source_cells() -> None:
     run, index_text, payload = read_fixture(FIXTURE)
-    u, v, latitudes, longitudes = decode_grib(payload)
-    source = normalize_and_crop(u, v, latitudes, longitudes)
-    artifacts = build_artifacts(
-        run=run,
-        index_text=index_text,
-        source_payload=payload,
-        boundary_path=BOUNDARY,
-        fixture=True,
+    decoded = decode_grib(payload)
+    latitudes, longitudes = decoded.coordinates(["wind-10m-u", "wind-10m-v"])
+    source = normalize_and_crop(
+        decoded.fields["wind-10m-u"].values,
+        decoded.fields["wind-10m-v"].values,
+        latitudes,
+        longitudes,
     )
-    published = np.frombuffer(artifacts.grid_bytes, dtype="<f4").reshape(
-        source.u.shape[0], source.u.shape[1], 2
-    )
+    artifacts = _build()
+    published = np.frombuffer(
+        artifacts.grids["gfs-20260728-12-f000-wind-10m.bin"], dtype="<f4"
+    ).reshape(source.u.shape[0], source.u.shape[1], 2)
 
     for row, column in [(0, 0), (35, 55), (74, 96)]:
         assert published[row, column, 0] == source.u[row, column]

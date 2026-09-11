@@ -10,16 +10,39 @@ export type ScreenBounds = readonly [ScreenPoint, ScreenPoint];
 export const MIN_ZOOM = 1;
 export const MAX_ZOOM = 4.5;
 
-export function createMercatorProjector(scale: number, translate: ScreenPoint) {
-  const radians = Math.PI / 180;
-  return ([longitude, latitude]: ScreenPoint): [number, number] => {
-    const latitudeRadians = latitude * radians;
-    return [
-      translate[0] + scale * longitude * radians,
-      translate[1] -
-        scale * Math.log(Math.tan((Math.PI / 2 + latitudeRadians) / 2)),
-    ];
-  };
+/**
+ * Writes the raw Mercator screen position (before the pan/zoom view transform)
+ * into `output` without allocating. This is the single source of the projection
+ * maths shared by `createMercatorProjector` and the renderer hot loop.
+ */
+export function projectMercatorInto(
+  scale: number,
+  translate: ScreenPoint,
+  longitude: number,
+  latitude: number,
+  output: [number, number],
+): [number, number] {
+  const latitudeRadians = latitude * (Math.PI / 180);
+  output[0] = translate[0] + scale * longitude * (Math.PI / 180);
+  output[1] =
+    translate[1] -
+    scale * Math.log(Math.tan((Math.PI / 2 + latitudeRadians) / 2));
+  return output;
+}
+
+export function createMercatorProjector(
+  scale: number,
+  translate: ScreenPoint,
+  output?: [number, number],
+) {
+  return ([longitude, latitude]: ScreenPoint): [number, number] =>
+    projectMercatorInto(
+      scale,
+      translate,
+      longitude,
+      latitude,
+      output ?? [0, 0],
+    );
 }
 
 export function applyViewTransform(

@@ -1,18 +1,18 @@
 import {
+  GRID_NAME_PATTERN,
+  gridObjectKey,
   hasBody,
   isNotModified,
   methodNotAllowed,
   notFound,
   objectHeaders,
-  RUN_ID_PATTERN,
   serviceUnavailable,
   type WindReadBucket,
 } from "../../../_shared/responses";
 
-function parseRunId(value: string | string[] | undefined): string | null {
-  if (typeof value !== "string" || !value.endsWith(".bin")) return null;
-  const runId = value.slice(0, -4);
-  return RUN_ID_PATTERN.test(runId) ? runId : null;
+function parseGridName(value: string | string[] | undefined): string | null {
+  if (typeof value !== "string") return null;
+  return GRID_NAME_PATTERN.test(value) ? value : null;
 }
 
 export async function handleGrid(
@@ -23,11 +23,11 @@ export async function handleGrid(
   if (request.method !== "GET" && request.method !== "HEAD") {
     return methodNotAllowed();
   }
-  const runId = parseRunId(parameter);
-  if (!runId) return notFound();
+  const gridName = parseGridName(parameter);
+  if (!gridName) return notFound();
 
   try {
-    const key = `grids/${runId}.bin`;
+    const key = gridObjectKey(gridName);
     const object =
       request.method === "HEAD"
         ? await bucket.head(key)

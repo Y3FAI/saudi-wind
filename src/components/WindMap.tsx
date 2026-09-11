@@ -6,13 +6,20 @@ import {
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
+  type ReactNode,
 } from "react";
 
+import {
+  detectDeviceProfile,
+  effectivePixelRatio,
+  type DeviceProfile,
+} from "../lib/deviceProfile";
 import {
   applyViewTransform,
   clampViewTransform,
   createMercatorProjector,
   invertViewTransform,
+  projectMercatorInto,
   rectanglesOverlap,
   zoomViewAt,
   type ScreenBounds,
@@ -34,6 +41,8 @@ interface WindMapProps {
   dataset: WindDataset;
   selection: WindSelection | null;
   onSelection: (selection: WindSelection) => void;
+  /** Overlay controls rendered inside the map stage (e.g. the forecast timeline). */
+  children?: ReactNode;
 }
 
 export interface WindSelection {
@@ -51,6 +60,17 @@ interface Size {
 }
 
 const INITIAL_VIEW: ViewTransform = { scale: 1, x: 0, y: 0 };
+
+/** Pointer travel (CSS px) above which a gesture counts as a pan, not a tap. */
+const TAP_SLOP = 6;
+/** Window used to estimate fling velocity on release. */
+const MOMENTUM_SAMPLE_MS = 120;
+/** Exponential fling decay per millisecond (half-life ~154 ms). */
+const MOMENTUM_DECAY_PER_MS = 0.0045;
+/** Fling speed cap in CSS px/ms. */
+const MOMENTUM_MAX_SPEED = 2.6;
+/** Fling stops below this speed (CSS px/ms). */
+const MOMENTUM_MIN_SPEED = 0.02;
 
 const CITIES = [
   { name: "الرياض", coordinates: [46.6753, 24.7136], priority: 1 },
@@ -87,6 +107,10 @@ function createProjection(
   );
 }
 
+/**
+ * Reduced-motion fallback: a single static frame of streamlines with arrowheads
+ * so wind direction is still readable without any animation.
+ */
 function drawStaticWind(
   context: CanvasRenderingContext2D,
   boundary: SaudiBoundary,
@@ -112,6 +136,10 @@ function drawStaticWind(
     const intensity = Math.min(speedKmh(firstWind) / 42, 1);
     context.strokeStyle = `rgba(229, 232, 230, ${0.06 + intensity * 0.15})`;
     context.lineWidth = width < 680 ? 0.55 : 0.7;
+    let tipX = start[0];
+    let tipY = start[1];
+    let previousX = start[0];
+    let previousY = start[1];
     for (let step = 0; step < 48; step += 1) {
       const wind = sampleWind(dataset.vectors, grid, longitude, latitude);
       if (!wind) break;
@@ -122,9 +150,36 @@ function drawStaticWind(
       if (!geoContains(boundary, [longitude, latitude])) break;
       const point = projection([longitude, latitude]);
       if (!point) break;
-      context.lineTo(point[0], point[1]);
+      previousX = tipX;
+      previousY = tipY;
+      tipX = point[0];
+      tipY = point[1];
+      context.lineTo(tipX, tipY);
     }
     context.stroke();
+
+    // Arrowhead so direction reads without motion.
+    const dx = tipX - previousX;
+    const dy = tipY - previousY;
+    const magnitude = Math.hypot(dx, dy);
+    if (magnitude < 0.6) continue;
+    const unitX = dx / magnitude;
+    const unitY = dy / magnitude;
+    const headLength = 3.4 + intensity * 2.2;
+    const headSpread = headLength * 0.5;
+    context.beginPath();
+    context.moveTo(tipX, tipY);
+    context.lineTo(
+      tipX - unitX * headLength + unitY * headSpread,
+      tipY - unitY * headLength - unitX * headSpread,
+    );
+    context.lineTo(
+      tipX - unitX * headLength - unitY * headSpread,
+      tipY - unitY * headLength + unitX * headSpread,
+    );
+    context.closePath();
+    context.fillStyle = `rgba(229, 232, 230, ${0.09 + intensity * 0.2})`;
+    context.fill();
   }
 }
 
@@ -228,6 +283,7 @@ export function WindMap({
   dataset,
   selection,
   onSelection,
+  children,
 }: WindMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const baseCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -241,6 +297,15 @@ export function WindMap({
   ]);
   const pointersRef = useRef(new Map<number, { x: number; y: number }>());
   const gestureRef = useRef({ startX: 0, startY: 0, moved: false });
+  const pinchRef = useRef<{
+    distance: number;
+    mid: { x: number; y: number };
+    view: ViewTransform;
+  } | null>(null);
+  const moveSamplesRef = useRef<Array<{ t: number; x: number; y: number }>>([]);
+  const momentumRef = useRef({ frame: 0, vx: 0, vy: 0 });
+
+  const [profile] = useState<DeviceProfile>(() => detectDeviceProfile());
   const [size, setSize] = useState<Size>({ width: 0, height: 0, ratio: 1 });
   const [view, setView] = useState<ViewTransform>(INITIAL_VIEW);
   const [reducedMotion, setReducedMotion] = useState(
@@ -262,14 +327,33 @@ export function WindMap({
     const observer = new ResizeObserver(([entry]) => {
       const width = entry.contentRect.width;
       const height = entry.contentRect.height;
-      setSize({
+      if (!width || !height) return;
+      const ratio = effectivePixelRatio(
+        window.devicePixelRatio || 1,
+        profile,
         width,
         height,
-        ratio: Math.min(window.devicePixelRatio || 1, 2),
-      });
+      );
+      setSize((current) =>
+        current.width === width &&
+        current.height === height &&
+        current.ratio === ratio
+          ? current
+          : { width, height, ratio },
+      );
     });
     observer.observe(container);
     return () => observer.disconnect();
+  }, [profile]);
+
+  useEffect(() => {
+    // Free any in-flight fling when the component unmounts.
+    return () => {
+      if (momentumRef.current.frame) {
+        cancelAnimationFrame(momentumRef.current.frame);
+        momentumRef.current.frame = 0;
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -287,6 +371,15 @@ export function WindMap({
         boundary,
         dataset,
         FLOW_WIND_STYLE,
+        {
+          profile,
+          onContextLost: () =>
+            setWebglError(
+              "انقطع اتصال الرسوم مؤقتاً بسبب ضغط على الجهاز. سنستعيد الحركة تلقائياً.",
+            ),
+          onContextRestored: () => setWebglError(null),
+          onContextRestoreFailed: (message) => setWebglError(message),
+        },
       );
       rendererRef.current = renderer;
       rendererSceneRef.current = "";
@@ -302,7 +395,7 @@ export function WindMap({
           : "تعذر تشغيل حركة الرياح في هذا المتصفح.",
       );
     }
-  }, [boundary, dataset, reducedMotion]);
+  }, [boundary, dataset, reducedMotion, profile]);
 
   useEffect(() => {
     if (!size.width || !size.height) return;
@@ -339,10 +432,23 @@ export function WindMap({
     }
     const renderer = rendererRef.current;
     if (renderer && !reducedMotion) {
-      const projectWind = createMercatorProjector(
-        projection.scale(),
-        projection.translate() as [number, number],
-      );
+      const scale = projection.scale();
+      const translate = projection.translate() as [number, number];
+      const projectWind = createMercatorProjector(scale, translate);
+      // Allocation-free projection for the particle hot loop: raw Mercator then
+      // the pan/zoom transform, all written into the renderer's own buffer.
+      const projectWindInto = (
+        longitude: number,
+        latitude: number,
+        output: [number, number],
+      ) => {
+        projectMercatorInto(scale, translate, longitude, latitude, output);
+        const x = output[0] * view.scale + view.x;
+        const y = output[1] * view.scale + view.y;
+        output[0] = x;
+        output[1] = y;
+        return true;
+      };
       const sceneKey = [
         size.width,
         size.height,
@@ -356,6 +462,7 @@ export function WindMap({
         renderer.setViewport({
           ...size,
           project: projectWind,
+          projectInto: projectWindInto,
           view,
         });
       }
@@ -423,37 +530,128 @@ export function WindMap({
     return { x: event.clientX - bounds.left, y: event.clientY - bounds.top };
   };
 
+  const cancelMomentum = () => {
+    if (momentumRef.current.frame) {
+      cancelAnimationFrame(momentumRef.current.frame);
+      momentumRef.current.frame = 0;
+    }
+  };
+
+  const recordSample = (point: { x: number; y: number }) => {
+    const now = performance.now();
+    const samples = moveSamplesRef.current;
+    samples.push({ t: now, x: point.x, y: point.y });
+    while (samples.length > 2 && now - samples[0].t > MOMENTUM_SAMPLE_MS) {
+      samples.shift();
+    }
+  };
+
+  const startMomentum = () => {
+    const samples = moveSamplesRef.current;
+    moveSamplesRef.current = [];
+    if (samples.length < 2) return;
+    const last = samples[samples.length - 1];
+    const first =
+      samples.find((sample) => last.t - sample.t <= MOMENTUM_SAMPLE_MS) ??
+      samples[0];
+    const elapsed = last.t - first.t;
+    if (elapsed <= 0) return;
+    let vx = (last.x - first.x) / elapsed;
+    let vy = (last.y - first.y) / elapsed;
+    const speed = Math.hypot(vx, vy);
+    if (speed < MOMENTUM_MIN_SPEED) return;
+    if (speed > MOMENTUM_MAX_SPEED) {
+      vx = (vx / speed) * MOMENTUM_MAX_SPEED;
+      vy = (vy / speed) * MOMENTUM_MAX_SPEED;
+    }
+    const momentum = momentumRef.current;
+    momentum.vx = vx;
+    momentum.vy = vy;
+    let previousTime = performance.now();
+    const step = (time: number) => {
+      const elapsedMs = Math.min(50, time - previousTime);
+      previousTime = time;
+      const decay = Math.exp(-MOMENTUM_DECAY_PER_MS * elapsedMs);
+      momentum.vx *= decay;
+      momentum.vy *= decay;
+      if (Math.hypot(momentum.vx, momentum.vy) < MOMENTUM_MIN_SPEED) {
+        momentum.frame = 0;
+        return;
+      }
+      setView((current) =>
+        clampViewTransform(
+          {
+            ...current,
+            x: current.x + momentum.vx * elapsedMs,
+            y: current.y + momentum.vy * elapsedMs,
+          },
+          [size.width, size.height],
+          boundaryBoundsRef.current,
+        ),
+      );
+      momentum.frame = requestAnimationFrame(step);
+    };
+    momentum.frame = requestAnimationFrame(step);
+  };
+
   const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    cancelMomentum();
     const point = pointerPosition(event);
     event.currentTarget.setPointerCapture(event.pointerId);
     pointersRef.current.set(event.pointerId, point);
+    moveSamplesRef.current = [{ t: performance.now(), x: point.x, y: point.y }];
     if (pointersRef.current.size === 1) {
       gestureRef.current = {
         startX: point.x,
         startY: point.y,
         moved: false,
       };
-    } else {
-      gestureRef.current.moved = true;
+      pinchRef.current = null;
+      return;
+    }
+    gestureRef.current.moved = true;
+    const pointers = [...pointersRef.current.values()];
+    if (pointers.length === 2) {
+      pinchRef.current = {
+        distance: Math.max(
+          1,
+          Math.hypot(
+            pointers[0].x - pointers[1].x,
+            pointers[0].y - pointers[1].y,
+          ),
+        ),
+        mid: {
+          x: (pointers[0].x + pointers[1].x) / 2,
+          y: (pointers[0].y + pointers[1].y) / 2,
+        },
+        view,
+      };
     }
   };
 
   const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
-    const previous = pointersRef.current.get(event.pointerId);
-    if (!previous || !size.width || !size.height) return;
-    const point = pointerPosition(event);
+    if (!pointersRef.current.has(event.pointerId)) return;
     const previousPointers = [...pointersRef.current.values()];
+    const point = pointerPosition(event);
     pointersRef.current.set(event.pointerId, point);
     const currentPointers = [...pointersRef.current.values()];
-    const distanceFromStart = Math.hypot(
-      point.x - gestureRef.current.startX,
-      point.y - gestureRef.current.startY,
-    );
-    if (distanceFromStart > 5) gestureRef.current.moved = true;
+    if (!size.width || !size.height) return;
+
+    const gesture = gestureRef.current;
+    if (
+      Math.hypot(point.x - gesture.startX, point.y - gesture.startY) > TAP_SLOP
+    ) {
+      gesture.moved = true;
+    }
 
     if (currentPointers.length === 1) {
+      const previous = previousPointers[0];
+      if (!previous) return;
       const dx = point.x - previous.x;
       const dy = point.y - previous.y;
+      if (!dx && !dy) return;
+      recordSample(point);
       setView((current) =>
         clampViewTransform(
           { ...current, x: current.x + dx, y: current.y + dy },
@@ -464,49 +662,80 @@ export function WindMap({
       return;
     }
 
-    if (currentPointers.length === 2 && previousPointers.length === 2) {
-      const previousDistance = Math.hypot(
-        previousPointers[0].x - previousPointers[1].x,
-        previousPointers[0].y - previousPointers[1].y,
+    if (currentPointers.length >= 2) {
+      const currentMid = {
+        x: (currentPointers[0].x + currentPointers[1].x) / 2,
+        y: (currentPointers[0].y + currentPointers[1].y) / 2,
+      };
+      const distance = Math.max(
+        1,
+        Math.hypot(
+          currentPointers[0].x - currentPointers[1].x,
+          currentPointers[0].y - currentPointers[1].y,
+        ),
       );
-      const currentDistance = Math.hypot(
-        currentPointers[0].x - currentPointers[1].x,
-        currentPointers[0].y - currentPointers[1].y,
-      );
-      const previousMiddle: [number, number] = [
-        (previousPointers[0].x + previousPointers[1].x) / 2,
-        (previousPointers[0].y + previousPointers[1].y) / 2,
-      ];
-      const currentMiddle: [number, number] = [
-        (currentPointers[0].x + currentPointers[1].x) / 2,
-        (currentPointers[0].y + currentPointers[1].y) / 2,
-      ];
-      setView((current) => {
-        const translated = {
-          ...current,
-          x: current.x + currentMiddle[0] - previousMiddle[0],
-          y: current.y + currentMiddle[1] - previousMiddle[1],
-        };
-        return zoomViewAt(
+      const pinch = pinchRef.current;
+      if (!pinch) {
+        pinchRef.current = { distance, mid: currentMid, view };
+        return;
+      }
+      // Zoom around the focal point, using the gesture baseline so the pinch
+      // does not compound frame to frame.
+      const factor = distance / pinch.distance;
+      const translated = {
+        scale: pinch.view.scale,
+        x: pinch.view.x + (currentMid.x - pinch.mid.x),
+        y: pinch.view.y + (currentMid.y - pinch.mid.y),
+      };
+      setView(
+        zoomViewAt(
           translated,
-          previousDistance ? currentDistance / previousDistance : 1,
-          currentMiddle,
+          factor,
+          [currentMid.x, currentMid.y],
           [size.width, size.height],
           boundaryBoundsRef.current,
-        );
-      });
+        ),
+      );
     }
+  };
+
+  const releasePointer = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    pointersRef.current.delete(event.pointerId);
   };
 
   const handlePointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
     const point = pointerPosition(event);
-    const inspectPoint =
-      pointersRef.current.size === 1 && !gestureRef.current.moved;
-    pointersRef.current.delete(event.pointerId);
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
+    const wasSingle = pointersRef.current.size === 1;
+    const tapped = wasSingle && !gestureRef.current.moved;
+    const panned = wasSingle && gestureRef.current.moved;
+    releasePointer(event);
+
+    if (tapped) {
+      moveSamplesRef.current = [];
+      inspect(point.x, point.y);
+      return;
     }
-    if (inspectPoint) inspect(point.x, point.y);
+
+    if (pointersRef.current.size === 0) {
+      pinchRef.current = null;
+      if (panned && !reducedMotion) startMomentum();
+      else moveSamplesRef.current = [];
+      return;
+    }
+
+    // A finger remains after a pinch: restart single-finger panning from here.
+    pinchRef.current = null;
+    gestureRef.current = { startX: point.x, startY: point.y, moved: true };
+    moveSamplesRef.current = [{ t: performance.now(), x: point.x, y: point.y }];
+  };
+
+  const handlePointerCancel = (event: ReactPointerEvent<HTMLDivElement>) => {
+    releasePointer(event);
+    if (pointersRef.current.size === 0) pinchRef.current = null;
+    moveSamplesRef.current = [];
   };
 
   const resetView = () => setView(INITIAL_VIEW);
@@ -567,10 +796,12 @@ export function WindMap({
       data-zoom={view.scale.toFixed(2)}
       data-reduced-motion={reducedMotion ? "true" : "false"}
       data-wind-style={FLOW_WIND_STYLE.id}
+      data-device-tier={profile.tier}
+      data-dpr={size.ratio.toFixed(2)}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
       onKeyDown={handleKeyDown}
       onDoubleClick={(event) => {
         const bounds = event.currentTarget.getBoundingClientRect();
@@ -635,6 +866,8 @@ export function WindMap({
       </div>
 
       <p className="interaction-hint">اسحب للتنقل · اضغط لقراءة الرياح</p>
+
+      {children}
     </div>
   );
 }

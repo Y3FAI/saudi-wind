@@ -1,5 +1,24 @@
 export const MANIFEST_KEY = "latest.json";
-export const RUN_ID_PATTERN = /^gfs-\d{8}-(?:00|06|12|18)-f000$/;
+
+/**
+ * Provider run identifier: `gfs-YYYYMMDD-HH`. A legacy version-one manifest
+ * used `gfs-YYYYMMDD-HH-f000`; both are accepted.
+ */
+export const RUN_ID_PATTERN = /^gfs-\d{8}-(?:00|06|12|18)(?:-f\d{3})?$/;
+
+/**
+ * Grid object name served by `/api/wind/grids/<name>`:
+ * `gfs-YYYYMMDD-HH-fNNN-<variable>-<level>m.bin`, for example
+ * `gfs-20260910-12-f003-wind-100m.bin`. The variable/level suffix is optional so
+ * version-one runs (`...-f000.bin`) keep resolving.
+ */
+export const GRID_NAME_PATTERN =
+  /^gfs-\d{8}-(?:00|06|12|18)-f\d{3}(?:-(?:wind|gust)-\d{1,4}m)?\.bin$/;
+
+/** R2 object key backing a validated grid name. */
+export function gridObjectKey(gridName: string): string {
+  return `grids/${gridName}`;
+}
 
 export interface WindReadBucket {
   get(key: string): Promise<R2ObjectBody | null>;

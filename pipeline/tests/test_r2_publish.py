@@ -3,13 +3,24 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import urllib.error
+import urllib.parse
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 import pytest
 from botocore.exceptions import ClientError
-from saudi_wind_pipeline.core import PipelineError
-from saudi_wind_pipeline.r2_publish import BUCKET_NAME, publish_directory
+from saudi_wind_pipeline.core import ENCODING, PipelineError
+from saudi_wind_pipeline.r2_publish import (
+    BUCKET_NAME,
+    ApiTokenR2Client,
+    prune_old_runs,
+    publish_directory,
+    resolve_credentials,
+)
+
+FIELDS = ("wind-10m", "wind-100m", "gust-10m")
 
 
 def missing(operation: str) -> ClientError:
@@ -60,6 +71,25 @@ class FakeS3:
             "Body": body if isinstance(body, bytes) else bytes(body),
         }
         return {"ETag": '"etag"'}
+
+    def list_objects_v2(self, **kwargs: Any) -> dict[str, Any]:
+        assert kwargs["Bucket"] == BUCKET_NAME
+        prefix = kwargs.get("Prefix", "")
+        self.operations.append(("list", prefix))
+        keys = sorted(key for key in self.objects if key.startswith(prefix))
+        return {
+            "Contents": [
+                {"Key": key, "Size": len(self.objects[key]["Body"])} for key in keys
+            ],
+            "IsTruncated": False,
+        }
+
+    def delete_object(self, **kwargs: Any) -> dict[str, Any]:
+        assert kwargs["Bucket"] == BUCKET_NAME
+        key = kwargs["Key"]
+        self.operations.append(("delete", key))
+        self.objects.pop(key, None)
+        return {}
 
 
 def write_output(
