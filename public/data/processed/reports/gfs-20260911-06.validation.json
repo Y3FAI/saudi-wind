@@ -1,0 +1,1571 @@
+{
+  "runId": "gfs-20260911-06",
+  "schemaVersion": 2,
+  "fields": [
+    "wind-10m"
+  ],
+  "steps": [
+    0,
+    3,
+    6,
+    9,
+    12,
+    15,
+    18,
+    21,
+    24,
+    27,
+    30,
+    33,
+    36,
+    39,
+    42,
+    45,
+    48,
+    51,
+    54,
+    57,
+    60,
+    63,
+    66,
+    69,
+    72,
+    75,
+    78,
+    81,
+    84,
+    87,
+    90,
+    93,
+    96,
+    99,
+    102,
+    105,
+    108,
+    111,
+    114,
+    117,
+    120
+  ],
+  "frames": [
+    {
+      "step": 0,
+      "validTime": "2026-09-11T06:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f000-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "f98ec390c95881e1eb7a094c1f6fcce941954e3307c21ba83d55c55044bd3371"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f000",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f000.idx",
+        "indexSha256": "3bd4bc012327e22ec2cf669290df8e749393017ddedc1cccedbc25754732f750",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 421818412,
+            "end": 422791106,
+            "byteLength": 972695
+          },
+          "wind-10m-v": {
+            "start": 422791107,
+            "end": 423741159,
+            "byteLength": 950053
+          }
+        },
+        "downloadedByteLength": 1922748,
+        "downloadedSha256": "8bacc88bbc98c06681e48d6e0040c6a69062b2776b86cd7fef546665388a9a7f"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 13.9,
+          "maximumGridCellKmh": 41.1
+        }
+      }
+    },
+    {
+      "step": 3,
+      "validTime": "2026-09-11T09:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f003-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "39ab9c3c5edbd6da93cd2109574f7214198701aad7ef676d61a07274b011f221"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f003",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f003.idx",
+        "indexSha256": "2cd585e8a2fbf43220ca73c90310451232c03d02f80e226a8430c224e657e6d0",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 427885797,
+            "end": 428861461,
+            "byteLength": 975665
+          },
+          "wind-10m-v": {
+            "start": 428861462,
+            "end": 429812262,
+            "byteLength": 950801
+          }
+        },
+        "downloadedByteLength": 1926466,
+        "downloadedSha256": "fa9570560e74bb212191d8d14b16a1da2d55b77661300846afcd5b99f9f8e2b1"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 13.8,
+          "maximumGridCellKmh": 37.7
+        }
+      }
+    },
+    {
+      "step": 6,
+      "validTime": "2026-09-11T12:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f006-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "3a3f88636f83a4fe8959a896ca4b763b213891545bda39750f9e5afa834e8c2d"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f006",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f006.idx",
+        "indexSha256": "ab055aa118661f5c0222257c630c6decd23107843f28cb1928c963b8f0a7bf84",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 424790494,
+            "end": 425769258,
+            "byteLength": 978765
+          },
+          "wind-10m-v": {
+            "start": 425769259,
+            "end": 426721690,
+            "byteLength": 952432
+          }
+        },
+        "downloadedByteLength": 1931197,
+        "downloadedSha256": "bcf4c7c80919e622b90808aa2fa41e3e7289b9388878d31213cbbd955f8e8187"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 16.3,
+          "maximumGridCellKmh": 39.4
+        }
+      }
+    },
+    {
+      "step": 9,
+      "validTime": "2026-09-11T15:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f009-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "d6719f90677a57c9f360aa65f12b40520e7d968a2dec05d47a2fb84634d8381c"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f009",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f009.idx",
+        "indexSha256": "e4ad0f5bc986ac4e3576c049a487449f603d192b192a61b06a323aadde65a5e0",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 425150478,
+            "end": 426133003,
+            "byteLength": 982526
+          },
+          "wind-10m-v": {
+            "start": 426133004,
+            "end": 427085553,
+            "byteLength": 952550
+          }
+        },
+        "downloadedByteLength": 1935076,
+        "downloadedSha256": "2650bdffbd75a928b9df8423421299571583ae6b6b59fa9b130406c4cf93b24c"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 15.2,
+          "maximumGridCellKmh": 40.2
+        }
+      }
+    },
+    {
+      "step": 12,
+      "validTime": "2026-09-11T18:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f012-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "e0d97b9eeee14eb7bf5180d000282649a4367b60174f09f8fba7309dbfb88309"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f012",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f012.idx",
+        "indexSha256": "c7a99a513fec3e24cef769c31a27b84d0d5e44513fba68f212a337fd6eb01544",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 427293198,
+            "end": 428276003,
+            "byteLength": 982806
+          },
+          "wind-10m-v": {
+            "start": 428276004,
+            "end": 429229988,
+            "byteLength": 953985
+          }
+        },
+        "downloadedByteLength": 1936791,
+        "downloadedSha256": "7dadc621a4c01f2dab420177267a8c7efe68f53ec00e553785af0201e02d94ee"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 13.0,
+          "maximumGridCellKmh": 31.9
+        }
+      }
+    },
+    {
+      "step": 15,
+      "validTime": "2026-09-11T21:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f015-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "3e238ed1572e2e40d66097119f6291bd7fb0850ce508044cb3aa0429a1d8fd7f"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f015",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f015.idx",
+        "indexSha256": "3fd32f006a936f2d4c1c398fae5c65d6fd01f5bf90bc6fc8dfe33478dfaf9fe2",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 428414776,
+            "end": 429392283,
+            "byteLength": 977508
+          },
+          "wind-10m-v": {
+            "start": 429392284,
+            "end": 430345293,
+            "byteLength": 953010
+          }
+        },
+        "downloadedByteLength": 1930518,
+        "downloadedSha256": "72b8773f7ac03fc52565a711a08f684ef729930db750c3fa6d8395bb80110901"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 11.3,
+          "maximumGridCellKmh": 25.3
+        }
+      }
+    },
+    {
+      "step": 18,
+      "validTime": "2026-09-12T00:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f018-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "3847d4d554af392b3e5e4da2e4b622cf120ffe5a0858a6069448a7770e033c3b"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f018",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f018.idx",
+        "indexSha256": "e51008d2d2e9eefac7760ddef2048dbdc7b3457cb2ab5f48389fc2a5008bacbf",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 430602613,
+            "end": 431575331,
+            "byteLength": 972719
+          },
+          "wind-10m-v": {
+            "start": 431575332,
+            "end": 432526018,
+            "byteLength": 950687
+          }
+        },
+        "downloadedByteLength": 1923406,
+        "downloadedSha256": "888317094214a1af537206bdb0b0b1969c2c8b7bafa9458989cd78861291a79e"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 10.4,
+          "maximumGridCellKmh": 34.5
+        }
+      }
+    },
+    {
+      "step": 21,
+      "validTime": "2026-09-12T03:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f021-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "12709dba6ed54379c567e7110fdf38125b82fe6528bd25cbf0809f5b0073b775"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f021",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f021.idx",
+        "indexSha256": "541dfd24be160929d93fa20ec60ab7f48e9292327e2f92006accbf4014dea9c9",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 430731741,
+            "end": 431703997,
+            "byteLength": 972257
+          },
+          "wind-10m-v": {
+            "start": 431703998,
+            "end": 432656353,
+            "byteLength": 952356
+          }
+        },
+        "downloadedByteLength": 1924613,
+        "downloadedSha256": "e7736515c06de9205cd3a2e05f30acc6c6aa5d4e2235f2304308161688f92dc7"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 9.7,
+          "maximumGridCellKmh": 40.4
+        }
+      }
+    },
+    {
+      "step": 24,
+      "validTime": "2026-09-12T06:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f024-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "1efc5b167734e4190e7392d10622db20667a94203c4d234e7664019d5a129110"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f024",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f024.idx",
+        "indexSha256": "d97db0c755d283eec0affafb57f2fd3170896fed08e76e4404352ea7605f751d",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 432384325,
+            "end": 433357024,
+            "byteLength": 972700
+          },
+          "wind-10m-v": {
+            "start": 433357025,
+            "end": 434305781,
+            "byteLength": 948757
+          }
+        },
+        "downloadedByteLength": 1921457,
+        "downloadedSha256": "484dce236126e19ddea8ad84320cff5831e86c5bfefcbe1f88347ec5fbeefc06"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 10.8,
+          "maximumGridCellKmh": 45.7
+        }
+      }
+    },
+    {
+      "step": 27,
+      "validTime": "2026-09-12T09:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f027-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "c7e9ec6c8cd8a1efe923e97a33946e8a7cc2d30beaeb96deb264e5d742745170"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f027",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f027.idx",
+        "indexSha256": "c67e854a45aed9a3f4d2bd89ca02b4df3f5c207f991baba8665ce0178437dcd0",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 433127927,
+            "end": 434104271,
+            "byteLength": 976345
+          },
+          "wind-10m-v": {
+            "start": 434104272,
+            "end": 435054940,
+            "byteLength": 950669
+          }
+        },
+        "downloadedByteLength": 1927014,
+        "downloadedSha256": "8a14de6722816523a6378894523373e9cda5002d556c843cf74e4d903311098c"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 11.1,
+          "maximumGridCellKmh": 36.7
+        }
+      }
+    },
+    {
+      "step": 30,
+      "validTime": "2026-09-12T12:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f030-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "59dfc5bde440aca74a73529bfb3c7b3cd85a07336770c4be7cb4ccb45ec6a8f4"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f030",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f030.idx",
+        "indexSha256": "c6d852932404cfaff9e8837193b9fabecdd985db3f7a77d8a43f2bad8b431c9b",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 430446828,
+            "end": 431424310,
+            "byteLength": 977483
+          },
+          "wind-10m-v": {
+            "start": 431424311,
+            "end": 432376517,
+            "byteLength": 952207
+          }
+        },
+        "downloadedByteLength": 1929690,
+        "downloadedSha256": "bcc4d758b36b289bcc98dbbc7a1a67224cef3ab9a7797755075b8a8f91885c76"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 16.9,
+          "maximumGridCellKmh": 40.2
+        }
+      }
+    },
+    {
+      "step": 33,
+      "validTime": "2026-09-12T15:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f033-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "31394ed0e738560f8b8f825f0b7f84cd1766d12516bea929f627d058eea05def"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f033",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f033.idx",
+        "indexSha256": "15b86a074e0bddb9eb7060163cf289776e46645769655cdb9320fa9a7c54ead8",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 432736843,
+            "end": 433719321,
+            "byteLength": 982479
+          },
+          "wind-10m-v": {
+            "start": 433719322,
+            "end": 434674744,
+            "byteLength": 955423
+          }
+        },
+        "downloadedByteLength": 1937902,
+        "downloadedSha256": "f007f5ed4de42b4836475a5c0a27d25144532e0f1a7466bfb3035754925c5a17"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 16.4,
+          "maximumGridCellKmh": 48.2
+        }
+      }
+    },
+    {
+      "step": 36,
+      "validTime": "2026-09-12T18:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f036-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "7f51d616e0fed7ff31ade1ae52437dfaae8b6a69a3cf6bc10c449d8da672efd2"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f036",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f036.idx",
+        "indexSha256": "1157ca85c71d4a066b48a977b2203d5e85496fe77859a4e97752a17489a94d24",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 434195721,
+            "end": 435179494,
+            "byteLength": 983774
+          },
+          "wind-10m-v": {
+            "start": 435179495,
+            "end": 436135959,
+            "byteLength": 956465
+          }
+        },
+        "downloadedByteLength": 1940239,
+        "downloadedSha256": "0db0804b0ad6224b068f8056e9d15c28752b1f7f1fe0cb4cf3ffead2cac8ca44"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 14.6,
+          "maximumGridCellKmh": 43.9
+        }
+      }
+    },
+    {
+      "step": 39,
+      "validTime": "2026-09-12T21:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f039-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "701dd5230e0cfa6598a57a0b99689e53c6cc524bb2c37032bd9ed83f750eda1c"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f039",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f039.idx",
+        "indexSha256": "39927f7f38d4522318a91c88c81e7a7ceb18b7abb0fd0bac2f600b75ec5f146b",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 433887682,
+            "end": 434870121,
+            "byteLength": 982440
+          },
+          "wind-10m-v": {
+            "start": 434870122,
+            "end": 435826113,
+            "byteLength": 955992
+          }
+        },
+        "downloadedByteLength": 1938432,
+        "downloadedSha256": "387582299fc01e65d07c37114651b5324d0038c465a779cc2112bf21b4bbbd08"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 12.8,
+          "maximumGridCellKmh": 34.5
+        }
+      }
+    },
+    {
+      "step": 42,
+      "validTime": "2026-09-13T00:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f042-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "33784731bb8f529b45af57faeb1931cd620f763724edeb448a7986713b330250"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f042",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f042.idx",
+        "indexSha256": "1f1f41ec9804ac63f5b2bb2e2fd29c6279c466035919ba583a5a78b7be9be46c",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 431748085,
+            "end": 432721686,
+            "byteLength": 973602
+          },
+          "wind-10m-v": {
+            "start": 432721687,
+            "end": 433674515,
+            "byteLength": 952829
+          }
+        },
+        "downloadedByteLength": 1926431,
+        "downloadedSha256": "e4627eaae62c19b0e8ba8fec7112d8ed066f91af7b3e37e8bf86efeb27fdcd64"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 11.3,
+          "maximumGridCellKmh": 38.3
+        }
+      }
+    },
+    {
+      "step": 45,
+      "validTime": "2026-09-13T03:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f045-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "47c75a4202d7fba0f012a054c8ef05ed3b379bece6b0664dfc1823b7f74ecb0f"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f045",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f045.idx",
+        "indexSha256": "be01768c16f0798ac3751a9d3122a7d842d84ff435fcc20f2b0bb4bf80720ba8",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 432220741,
+            "end": 433194795,
+            "byteLength": 974055
+          },
+          "wind-10m-v": {
+            "start": 433194796,
+            "end": 434146803,
+            "byteLength": 952008
+          }
+        },
+        "downloadedByteLength": 1926063,
+        "downloadedSha256": "6e29c246daf44a9bf5b9358adca843df1729d279c9eb3cd2db4b22c784b99227"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 10.8,
+          "maximumGridCellKmh": 42.7
+        }
+      }
+    },
+    {
+      "step": 48,
+      "validTime": "2026-09-13T06:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f048-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "611aa5ee90e80533007c5da3a90e0a80e6f0fb7413a8da6124892975192a73cc"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f048",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f048.idx",
+        "indexSha256": "8109bc8ca41cbe1ebff0c5aed20f59bcb764e51028d6e856b12b522788172143",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 430030344,
+            "end": 431005215,
+            "byteLength": 974872
+          },
+          "wind-10m-v": {
+            "start": 431005216,
+            "end": 431957993,
+            "byteLength": 952778
+          }
+        },
+        "downloadedByteLength": 1927650,
+        "downloadedSha256": "802a4db163d5c37bffc72f38f5496d08e70f3267854546944d4f713029afa32b"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 13.4,
+          "maximumGridCellKmh": 46.0
+        }
+      }
+    },
+    {
+      "step": 51,
+      "validTime": "2026-09-13T09:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f051-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "fe4592b7fd1b52c43c4ed34f3e1dde7f6c9626fce7b08174f9f97bbde2ca461f"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f051",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f051.idx",
+        "indexSha256": "52379748fa715539e2cc356ccb25725319dbd319fd54d041d87fe80e113dab50",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 431645011,
+            "end": 432622941,
+            "byteLength": 977931
+          },
+          "wind-10m-v": {
+            "start": 432622942,
+            "end": 433580862,
+            "byteLength": 957921
+          }
+        },
+        "downloadedByteLength": 1935852,
+        "downloadedSha256": "290f8ae47cf069cae00f95a7f8e62efc8ec61892b8ff18e0fd5bb9ba6ad26560"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 15.1,
+          "maximumGridCellKmh": 36.2
+        }
+      }
+    },
+    {
+      "step": 54,
+      "validTime": "2026-09-13T12:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f054-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "49c1d3caae3414c7e075526c47ab1fecf6531c27d55622401999a0fb67387e1d"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f054",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f054.idx",
+        "indexSha256": "3e01361f419d73edfafb18c8a3c22aba03ebc9009744f3886f8b960fa6fa4d1c",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 428539849,
+            "end": 429519629,
+            "byteLength": 979781
+          },
+          "wind-10m-v": {
+            "start": 429519630,
+            "end": 430475079,
+            "byteLength": 955450
+          }
+        },
+        "downloadedByteLength": 1935231,
+        "downloadedSha256": "398e80d8d2b39ae31db631c8a2ac63ce2c5da209b2eca58c5bc006d955c262d8"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 18.9,
+          "maximumGridCellKmh": 42.8
+        }
+      }
+    },
+    {
+      "step": 57,
+      "validTime": "2026-09-13T15:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f057-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "0a2ea25cec27047415dfe369a73dd5f25924321ebb15356bdacec8ed78128c07"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f057",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f057.idx",
+        "indexSha256": "e702723a292a2d91ef3dc2f6986f486c1795f2eaec01af18779e920639c1aa3b",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 431642721,
+            "end": 432626181,
+            "byteLength": 983461
+          },
+          "wind-10m-v": {
+            "start": 432626182,
+            "end": 433581907,
+            "byteLength": 955726
+          }
+        },
+        "downloadedByteLength": 1939187,
+        "downloadedSha256": "2bb4547bef57b0706ad646ec8eb15c55e4ba7db3dd93f7d315941d4f41239fdb"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 17.1,
+          "maximumGridCellKmh": 38.9
+        }
+      }
+    },
+    {
+      "step": 60,
+      "validTime": "2026-09-13T18:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f060-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "a670ae1a133bf5ce9e6d0f3847fbb00747dbabae5c484fd77f7a1d2c16a1bfd9"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f060",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f060.idx",
+        "indexSha256": "8b347dd45c48aace9d3e88b5314d0d6e6c368c6af37c6ad305f59ee5e18587be",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 430740455,
+            "end": 431723507,
+            "byteLength": 983053
+          },
+          "wind-10m-v": {
+            "start": 431723508,
+            "end": 432683120,
+            "byteLength": 959613
+          }
+        },
+        "downloadedByteLength": 1942666,
+        "downloadedSha256": "8a7afe2a54814edb835caef04921544956fdce7877f3cbd31e52ae594711e1ca"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 15.3,
+          "maximumGridCellKmh": 36.9
+        }
+      }
+    },
+    {
+      "step": 63,
+      "validTime": "2026-09-13T21:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f063-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "b32c4d4e02a63f11e234c6ec130a15497d7f3ed68b318ed2491215d523a34ddf"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f063",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f063.idx",
+        "indexSha256": "9b2e90cc075c8f74a522a1663dae539047bc6b65ff74a103dfc67f2368650f39",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 431822448,
+            "end": 432804783,
+            "byteLength": 982336
+          },
+          "wind-10m-v": {
+            "start": 432804784,
+            "end": 433763390,
+            "byteLength": 958607
+          }
+        },
+        "downloadedByteLength": 1940943,
+        "downloadedSha256": "1a10db41a80ad34689a304f337cf12fad64ddabbc4bddf5493f038a3770d98ab"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 13.6,
+          "maximumGridCellKmh": 31.4
+        }
+      }
+    },
+    {
+      "step": 66,
+      "validTime": "2026-09-14T00:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f066-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "5eb70d2a9d3abdc1e7866a861ef476c327bfe8682d42af3bedad4f01d057e713"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f066",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f066.idx",
+        "indexSha256": "3b4d1ae875bd1175b3cbdf2d70d4e003cb213e6910b4705c20b79a11d0768170",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 430196340,
+            "end": 431170198,
+            "byteLength": 973859
+          },
+          "wind-10m-v": {
+            "start": 431170199,
+            "end": 432121780,
+            "byteLength": 951582
+          }
+        },
+        "downloadedByteLength": 1925441,
+        "downloadedSha256": "e43ad7aa52918a9a8393c5a57705065be957ff96a9b2f98a154c367ea0db99c9"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 11.8,
+          "maximumGridCellKmh": 38.8
+        }
+      }
+    },
+    {
+      "step": 69,
+      "validTime": "2026-09-14T03:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f069-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "57bb809177f4dded405cb8878b14eba17b3f74a1cc7714a36b97fb9af1d3ee43"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f069",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f069.idx",
+        "indexSha256": "4fdf6b292faa2531c3367892847a285f9a6e466e2780fe067f0512949f355ab9",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 429877047,
+            "end": 430848674,
+            "byteLength": 971628
+          },
+          "wind-10m-v": {
+            "start": 430848675,
+            "end": 431798400,
+            "byteLength": 949726
+          }
+        },
+        "downloadedByteLength": 1921354,
+        "downloadedSha256": "183b64bbc9f30ac8bfa3755059c824a79805566290d6321c258aeffc8a6f37f6"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 10.5,
+          "maximumGridCellKmh": 42.0
+        }
+      }
+    },
+    {
+      "step": 72,
+      "validTime": "2026-09-14T06:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f072-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "258e9be9c5c8ab9e0613fe3e01be1d260799a735c19d1b3a13286e76aed06468"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f072",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f072.idx",
+        "indexSha256": "2abc23fcb0f044d3c80018cfd125f28b11a365e8a67aabb35608a88dc1fd52e0",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 431840801,
+            "end": 432816302,
+            "byteLength": 975502
+          },
+          "wind-10m-v": {
+            "start": 432816303,
+            "end": 433765888,
+            "byteLength": 949586
+          }
+        },
+        "downloadedByteLength": 1925088,
+        "downloadedSha256": "3fd675f6ae1449b8c3c409c032e146f0f74e1780802a56adeee27189e165f50a"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 13.2,
+          "maximumGridCellKmh": 41.7
+        }
+      }
+    },
+    {
+      "step": 75,
+      "validTime": "2026-09-14T09:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f075-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "cd2be2405eb8c244db84ca04181a9f6836672d155eabce06a9210e12e2863355"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f075",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f075.idx",
+        "indexSha256": "ab4e5254617cfc524dec9f4ba43907aebf51786e6ee82a90f6a754be37c9a657",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 432015388,
+            "end": 432990572,
+            "byteLength": 975185
+          },
+          "wind-10m-v": {
+            "start": 432990573,
+            "end": 433945989,
+            "byteLength": 955417
+          }
+        },
+        "downloadedByteLength": 1930602,
+        "downloadedSha256": "4790578ff16067d5fd298873ff0bd807f9565f635205be16e65cf267a4ef2539"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 15.8,
+          "maximumGridCellKmh": 39.3
+        }
+      }
+    },
+    {
+      "step": 78,
+      "validTime": "2026-09-14T12:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f078-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "64be01a5a0d6b5600706b2b19d6c9c889cd07a045acb167eda236ae1baf28b51"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f078",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f078.idx",
+        "indexSha256": "a2ec6c429a6432f6bb0acdb420ae99d1f9f7f1fcf8752b250631e0d78b395c97",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 430852310,
+            "end": 431830045,
+            "byteLength": 977736
+          },
+          "wind-10m-v": {
+            "start": 431830046,
+            "end": 432783876,
+            "byteLength": 953831
+          }
+        },
+        "downloadedByteLength": 1931567,
+        "downloadedSha256": "276efd2ac432baffdde4e1c74ec57bc700ab3a40af9189cf48f124cc86df242c"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 18.5,
+          "maximumGridCellKmh": 66.2
+        }
+      }
+    },
+    {
+      "step": 81,
+      "validTime": "2026-09-14T15:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f081-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "aa27a17168e3f46736580ac7c3947916341603466496cf22de3405720cf41118"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f081",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f081.idx",
+        "indexSha256": "3cc16221e1c7480b61ca53351259e7e1a26b819b9d577c318d1b856f96429b84",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 428609452,
+            "end": 429591109,
+            "byteLength": 981658
+          },
+          "wind-10m-v": {
+            "start": 429591110,
+            "end": 430547129,
+            "byteLength": 956020
+          }
+        },
+        "downloadedByteLength": 1937678,
+        "downloadedSha256": "55a9c6e9d146b5afbe8aad92b1299aa3ba1901a05fa7e3297ffe2c6d2123f07d"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 16.6,
+          "maximumGridCellKmh": 51.2
+        }
+      }
+    },
+    {
+      "step": 84,
+      "validTime": "2026-09-14T18:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f084-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "6a734f7d095b7fdb8e7c12f81523d719d68fffc1e9d08ed936a6a206a0b5b743"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f084",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f084.idx",
+        "indexSha256": "0bf445eaa87f06112a101c676b30f20ffb8c7690725275b76e79ee60f5579e0e",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 429286917,
+            "end": 430269867,
+            "byteLength": 982951
+          },
+          "wind-10m-v": {
+            "start": 430269868,
+            "end": 431229746,
+            "byteLength": 959879
+          }
+        },
+        "downloadedByteLength": 1942830,
+        "downloadedSha256": "baa2168ebb1c39799552f00cfc85a4a7841fb931966b02c1a48cbf38d7e0e43b"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 14.8,
+          "maximumGridCellKmh": 31.4
+        }
+      }
+    },
+    {
+      "step": 87,
+      "validTime": "2026-09-14T21:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f087-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "252e0f05a2675157fbeb050ed4a9a9743f2449bbfd933b990857f923197a3cfd"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f087",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f087.idx",
+        "indexSha256": "0c239acbd24c386876271d01e9c45a8ad1fbc31ffd683ea96314dc85f52768dd",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 428771096,
+            "end": 429749801,
+            "byteLength": 978706
+          },
+          "wind-10m-v": {
+            "start": 429749802,
+            "end": 430705427,
+            "byteLength": 955626
+          }
+        },
+        "downloadedByteLength": 1934332,
+        "downloadedSha256": "815998b8deb9ad3702c897788422106db1fe528eb455557d8a8f672fa53de2c9"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 13.3,
+          "maximumGridCellKmh": 32.6
+        }
+      }
+    },
+    {
+      "step": 90,
+      "validTime": "2026-09-15T00:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f090-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "99eb178a677415b5271aeb4cea388a7b13c476a10fdb924e17a76e630407965f"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f090",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f090.idx",
+        "indexSha256": "471001a3d784be1be80ca829bfc23cf048745bf56a5bff14e4c6fce7ad6ee5c0",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 431562341,
+            "end": 432536853,
+            "byteLength": 974513
+          },
+          "wind-10m-v": {
+            "start": 432536854,
+            "end": 433490695,
+            "byteLength": 953842
+          }
+        },
+        "downloadedByteLength": 1928355,
+        "downloadedSha256": "6dc32c6c722408a317bf5e6dc1b40209a915b4c87f7341396cff0bb096de082c"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 11.4,
+          "maximumGridCellKmh": 42.5
+        }
+      }
+    },
+    {
+      "step": 93,
+      "validTime": "2026-09-15T03:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f093-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "52a94e8a67885c618ad1cc4ac661ef171cbd357d12b6fddebd1cd24a740bf639"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f093",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f093.idx",
+        "indexSha256": "969ba840d53f70a2666baf00cc28b698047f690d9a05e52463530a4225303fa9",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 430185536,
+            "end": 431160383,
+            "byteLength": 974848
+          },
+          "wind-10m-v": {
+            "start": 431160384,
+            "end": 432113678,
+            "byteLength": 953295
+          }
+        },
+        "downloadedByteLength": 1928143,
+        "downloadedSha256": "0c975d606e3e191d4cf755187c01b5fc3131beabc928d0c36f165c80df8feba4"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 10.3,
+          "maximumGridCellKmh": 41.0
+        }
+      }
+    },
+    {
+      "step": 96,
+      "validTime": "2026-09-15T06:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f096-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "ece6e2f1a5303665af2f80b6dffc12a13c92fd907c015beb39c495e79a1973fc"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f096",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f096.idx",
+        "indexSha256": "e0df6753a27689e4786b7bc4deb6ba3650310220b0703bb75b6b344009f1f2a5",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 429076164,
+            "end": 430051647,
+            "byteLength": 975484
+          },
+          "wind-10m-v": {
+            "start": 430051648,
+            "end": 431008862,
+            "byteLength": 957215
+          }
+        },
+        "downloadedByteLength": 1932699,
+        "downloadedSha256": "a9c75b6c3ef8ab623ad3499c2be20434202bba5d180c3151692b5a350d4163d3"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 12.6,
+          "maximumGridCellKmh": 44.9
+        }
+      }
+    },
+    {
+      "step": 99,
+      "validTime": "2026-09-15T09:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f099-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "1572ea9c7348539270d9e38c3cfb1ce1b98b2976b56e6fb72d07fad629ff9610"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f099",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f099.idx",
+        "indexSha256": "4984781abeee10dca47bd293639d5a970a2ed77bdf026105abc42bb61baa9508",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 431743392,
+            "end": 432722627,
+            "byteLength": 979236
+          },
+          "wind-10m-v": {
+            "start": 432722628,
+            "end": 433681171,
+            "byteLength": 958544
+          }
+        },
+        "downloadedByteLength": 1937780,
+        "downloadedSha256": "1e8c36795f8e39974af1f87d7237139405cad6475d7f109c284a7fa0da296221"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 16.3,
+          "maximumGridCellKmh": 37.0
+        }
+      }
+    },
+    {
+      "step": 102,
+      "validTime": "2026-09-15T12:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f102-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "80f2bb97af1d3e326f222d3643f1ab637054d626fea0b7b07438d2e1a4475f2c"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f102",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f102.idx",
+        "indexSha256": "c3d6e352ca4a33d1748365bbdf160d06e837a98206eb1f0d6af9fed9566f456d",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 430418054,
+            "end": 431402149,
+            "byteLength": 984096
+          },
+          "wind-10m-v": {
+            "start": 431402150,
+            "end": 432362258,
+            "byteLength": 960109
+          }
+        },
+        "downloadedByteLength": 1944205,
+        "downloadedSha256": "9fbec3bb526cb57c8a9120859ed5ecaa6d04716ed7115f1c3521a677195c957e"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 19.2,
+          "maximumGridCellKmh": 40.3
+        }
+      }
+    },
+    {
+      "step": 105,
+      "validTime": "2026-09-15T15:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f105-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "c0f7ca178431ab6ff127f7089feb1111651cf1b83469eec02e76196f77f289bb"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f105",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f105.idx",
+        "indexSha256": "8d0b50fab4527b5db541c58d75cbcebc32e8a231532bd9442cb03870f968e24f",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 428534997,
+            "end": 429519775,
+            "byteLength": 984779
+          },
+          "wind-10m-v": {
+            "start": 429519776,
+            "end": 430476776,
+            "byteLength": 957001
+          }
+        },
+        "downloadedByteLength": 1941780,
+        "downloadedSha256": "a2e655f093078eea7d6c24c48dbf84510d2d4f40ac6de0b3d4405c390dc51b85"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 16.5,
+          "maximumGridCellKmh": 49.2
+        }
+      }
+    },
+    {
+      "step": 108,
+      "validTime": "2026-09-15T18:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f108-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "b250ab7fa974bda4e224766832850289751c80ec0ad565b1ccea6316794602c8"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f108",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f108.idx",
+        "indexSha256": "e974830d598a97b69d9a79f7d1c3b8d1cca5b4f5e24e4abcc6463f717118ff81",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 427522708,
+            "end": 428505355,
+            "byteLength": 982648
+          },
+          "wind-10m-v": {
+            "start": 428505356,
+            "end": 429465393,
+            "byteLength": 960038
+          }
+        },
+        "downloadedByteLength": 1942686,
+        "downloadedSha256": "9de542ad9251b6f41864e843511359124e987e8b94aee5c346a61e1de8566867"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 14.7,
+          "maximumGridCellKmh": 38.6
+        }
+      }
+    },
+    {
+      "step": 111,
+      "validTime": "2026-09-15T21:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f111-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "7bf06352ce3ea42ad0b7f814c1bc9ae7e4d754deb7ecfd68359e2a7d83bbf36f"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f111",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f111.idx",
+        "indexSha256": "28543e0f035b8b674a9aa75e2a0702d189b1582fc8afb1a368d7f3dcb6879404",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 423330833,
+            "end": 424311075,
+            "byteLength": 980243
+          },
+          "wind-10m-v": {
+            "start": 424311076,
+            "end": 425264041,
+            "byteLength": 952966
+          }
+        },
+        "downloadedByteLength": 1933209,
+        "downloadedSha256": "91bbdf0838b043dacd8fe802244c16706d955286abdfba1f4da796674c3826fb"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 12.8,
+          "maximumGridCellKmh": 39.0
+        }
+      }
+    },
+    {
+      "step": 114,
+      "validTime": "2026-09-16T00:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f114-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "82bc4b8d66f7f0b00b5f1a71016413944eae5f80a4d6640566445219af82aab3"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f114",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f114.idx",
+        "indexSha256": "9d57f14fc1071422d23239cd1ac8e83566d2c21257e2563db0a279c375fab62a",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 421256809,
+            "end": 422227776,
+            "byteLength": 970968
+          },
+          "wind-10m-v": {
+            "start": 422227777,
+            "end": 423177850,
+            "byteLength": 950074
+          }
+        },
+        "downloadedByteLength": 1921042,
+        "downloadedSha256": "8cb62a66f3ee2170baae3d7b9ec209d8d4276d6662c790903f666c709d0a9965"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 11.2,
+          "maximumGridCellKmh": 48.5
+        }
+      }
+    },
+    {
+      "step": 117,
+      "validTime": "2026-09-16T03:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f117-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "ed861e33e3cbe769770b065a70c45a2243ce4b9c8edfd519164022874d95a0ed"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f117",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f117.idx",
+        "indexSha256": "4581549a13fadfc79e0927794df4bf46ed011533440e04ac87a3b44854db2894",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 418866905,
+            "end": 419836308,
+            "byteLength": 969404
+          },
+          "wind-10m-v": {
+            "start": 419836309,
+            "end": 420784808,
+            "byteLength": 948500
+          }
+        },
+        "downloadedByteLength": 1917904,
+        "downloadedSha256": "252a5c4e59bc81bebd4606536f758a7e6947202a9cc334b6a0accd7941d99042"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 10.0,
+          "maximumGridCellKmh": 50.4
+        }
+      }
+    },
+    {
+      "step": 120,
+      "validTime": "2026-09-16T06:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260911-06-f120-wind-10m.bin",
+          "byteLength": 58200,
+          "sha256": "2123dd0674f548ee4a3eed83d7a05fea1f9ecb8a8bb77c5dc3d5541d663bf97e"
+        }
+      },
+      "source": {
+        "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f120",
+        "indexUrl": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260911/06/atmos/gfs.t06z.pgrb2.0p25.f120.idx",
+        "indexSha256": "1f629ecd07cdd09159a5927da27bca16bed7ad701c7c9af9d7c1c0dd9a8b9a04",
+        "recordRanges": {
+          "wind-10m-u": {
+            "start": 422812806,
+            "end": 423781083,
+            "byteLength": 968278
+          },
+          "wind-10m-v": {
+            "start": 423781084,
+            "end": 424731752,
+            "byteLength": 950669
+          }
+        },
+        "downloadedByteLength": 1918947,
+        "downloadedSha256": "32a04e1616c06b281d0c1de210a41dc758393e4d41d75a66ae9bc2641673a1d1"
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 12.0,
+          "maximumGridCellKmh": 50.1
+        }
+      }
+    }
+  ],
+  "validation": {
+    "dimensions": [
+      97,
+      75
+    ],
+    "scan": "north-to-south-west-to-east",
+    "finiteValues": true,
+    "maximumSourceSpeedMs": 13.3953,
+    "plausibleSpeedLimitMs": 150.0,
+    "comparisonPoints": [
+      {
+        "name": "Riyadh grid cell",
+        "longitude": 46.75,
+        "latitude": 24.75,
+        "uMs": 8.5898,
+        "vMs": 2.3719,
+        "speedKmh": 32.1,
+        "serializedMatch": true
+      },
+      {
+        "name": "Jeddah grid cell",
+        "longitude": 39.25,
+        "latitude": 21.5,
+        "uMs": -0.5002,
+        "vMs": 5.3519,
+        "speedKmh": 19.4,
+        "serializedMatch": true
+      },
+      {
+        "name": "Dammam grid cell",
+        "longitude": 50.0,
+        "latitude": 26.5,
+        "uMs": -1.4102,
+        "vMs": -0.7581,
+        "speedKmh": 5.8,
+        "serializedMatch": true
+      }
+    ]
+  },
+  "statistics": {
+    "areaWeightedMeanKmh": 13.9,
+    "maximumGridCellKmh": 41.1
+  }
+}
