@@ -7,6 +7,7 @@ import {
   frameForTime,
   frameGridIndex,
   loadWindManifest,
+  reuseWindDataset,
 } from "./lib/wind";
 import { WindGridCache } from "./lib/windGridCache";
 import type { SaudiBoundary } from "./types/geo";
@@ -57,7 +58,15 @@ export function App() {
         if (!active) return;
         const runChanged = currentRunId !== manifest.runId;
         if (!runChanged) {
-          setState({ boundary, manifest });
+          // Same run: keep the boundary object the map already renders. The
+          // dataset effect below then reuses the decoded grid, so WindMap's
+          // [boundary, dataset, reducedMotion] effect sees identical
+          // dependencies and never disposes and rebuilds the WebGL renderer
+          // (which would restart the particle trail).
+          setState((previous) => ({
+            boundary: previous?.boundary ?? boundary,
+            manifest,
+          }));
           setError(null);
           return;
         }
@@ -107,7 +116,13 @@ export function App() {
 
     const cached = cache.peek(reference);
     if (cached) {
-      setDataset({ manifest: state.manifest, frame, vectors: cached });
+      setDataset((previous) =>
+        reuseWindDataset(previous, {
+          manifest: state.manifest,
+          frame,
+          vectors: cached,
+        }),
+      );
       setGridError(null);
       return;
     }
@@ -117,7 +132,13 @@ export function App() {
       .load(reference)
       .then((vectors) => {
         if (cancelled) return;
-        setDataset({ manifest: state.manifest, frame, vectors });
+        setDataset((previous) =>
+          reuseWindDataset(previous, {
+            manifest: state.manifest,
+            frame,
+            vectors,
+          }),
+        );
         setGridError(null);
       })
       .catch((reason: unknown) => {

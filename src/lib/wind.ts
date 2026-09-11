@@ -1,5 +1,6 @@
 import { WIND_GRID_KEYS } from "../types/wind";
 import type {
+  WindDataset,
   WindFrame,
   WindGridKey,
   WindGridMetadata,
@@ -466,6 +467,29 @@ export function frameGridIndex(
     if (frames[candidate].grids[key]) return candidate;
   }
   return -1;
+}
+
+/**
+ * The dataset to hand the map for a freshly selected grid. When the run, the
+ * forecast step and the decoded grid are all unchanged it returns `previous`
+ * itself — the identical `Float32Array` — so an unchanged 15-minute
+ * revalidation keeps the renderer's inputs referentially equal and the WebGL
+ * renderer is neither disposed nor rebuilt (which would restart the particle
+ * trail).
+ */
+export function reuseWindDataset(
+  previous: WindDataset | null,
+  next: WindDataset,
+): WindDataset {
+  if (
+    previous !== null &&
+    previous.manifest.runId === next.manifest.runId &&
+    previous.frame.step === next.frame.step &&
+    previous.vectors === next.vectors
+  ) {
+    return previous;
+  }
+  return next;
 }
 
 /** Downloads, length-checks, and verifies one binary grid. */
