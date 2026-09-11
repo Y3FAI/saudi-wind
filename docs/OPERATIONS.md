@@ -39,7 +39,7 @@ result.
    (all required records at every three-hour step). Earlier partial cycles are
    skipped.
 2. For each step, fetch the `.idx` index and range-download only the required
-   records (10 m and 100 m `UGRD`/`VGRD`, surface `GUST`).
+   records (10 m `UGRD`/`VGRD`).
 3. Decode, crop, normalise, calculate statistics, validate, and checksum every
    frame **locally**.
 4. Compare the candidate with the R2 `latest.json`.
@@ -48,10 +48,11 @@ result.
 6. Publish `latest.json` last.
 7. Read the manifest back and verify its run ID.
 
-A full run is **41 frames × 3 grids = 123 objects** (≈ 6.8 MiB) plus the
-manifest and report. The workflow's concurrency group (`noaa-wind-ingestion`)
-permits one ingestion at a time; GitHub's manual dispatch and rerun controls
-provide manual retry.
+A full run is **41 frames × 1 grid = 41 objects** (≈ 2.3 MiB) plus the manifest
+and report; before the 11 September 2026 narrowing it was 41 × 3 = 123 objects
+(≈ 6.8 MiB). The workflow's concurrency group (`noaa-wind-ingestion`) permits one
+ingestion at a time; GitHub's manual dispatch and rerun controls provide manual
+retry.
 
 Publisher outcomes to expect in the workflow log: `published`, `unchanged`
 (same run and same grid hash), or `older-than-current` (a candidate run at or
@@ -71,6 +72,23 @@ never deletes the current run or any grid the live manifest references. Because
 it is not enabled in the workflow, expect up to 30 days of runs (roughly 120
 runs at four cycles a day) to accumulate in R2. Capacity implications are in
 [QUOTAS.md](QUOTAS.md).
+
+### Unreferenced 100 m and gust grids
+
+Once the narrowed pipeline publishes its first 10 m-only manifest, no live
+manifest refers to these objects any more:
+
+```text
+grids/gfs-YYYYMMDD-HH-fNNN-wind-100m.bin
+grids/gfs-YYYYMMDD-HH-fNNN-gust-10m.bin
+```
+
+They sit inside the 30-day `grids/` lifecycle window, so the expiry rule
+eventually removes them. `--prune` does **not** remove them sooner: it only
+deletes whole runs older than its window. Deleting them deliberately is a
+separate bucket operation, and the Pages Function's grid-name pattern still
+accepts the names so the currently-deployed manifest keeps resolving while it is
+live.
 
 ## Failure behaviour
 

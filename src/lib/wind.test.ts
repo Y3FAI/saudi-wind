@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  arabicCompass,
-  arabicCompassName,
-  normalizedDirection,
   sampleWind,
   sha256Hex,
   sha256HexFallback,
@@ -51,25 +48,6 @@ const manifest: WindManifestV1 = {
 describe("wind calculations", () => {
   it("converts metres per second to kilometres per hour", () => {
     expect(speedKmh([3, 4])).toBeCloseTo(18);
-  });
-
-  it("uses the meteorological direction the wind comes from", () => {
-    expect(normalizedDirection([0, -4])).toBeCloseTo(0);
-    expect(normalizedDirection([-4, 0])).toBeCloseTo(90);
-    expect(normalizedDirection([0, 4])).toBeCloseTo(180);
-    expect(normalizedDirection([4, 0])).toBeCloseTo(270);
-  });
-
-  it("formats Arabic compass sectors", () => {
-    expect(arabicCompass(0)).toBe("ش");
-    expect(arabicCompass(90)).toBe("ق");
-    expect(arabicCompass(225)).toBe("ج غ");
-  });
-
-  it("provides full Arabic direction names for the point readout", () => {
-    expect(arabicCompassName(0)).toBe("شمالية");
-    expect(arabicCompassName(135)).toBe("جنوبية شرقية");
-    expect(arabicCompassName(270)).toBe("غربية");
   });
 
   it("bilinearly interpolates a north-to-south grid", () => {

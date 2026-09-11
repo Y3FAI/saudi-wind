@@ -3,8 +3,8 @@
 # Saudi Wind · رياح السعودية
 
 **An Arabic-first, interactive wind map for Saudi Arabia:** animated WebGL2
-particle trails over a scrubbable five-day NOAA GFS forecast, with wind at 10 m
-and 100 m above ground and 10 m gusts.
+particle trails over the current NOAA GFS wind field, with wind at 10 m above
+ground and zoom controls.
 
 [**saudi-wind.pages.dev**](https://saudi-wind.pages.dev) ·
 [Architecture](docs/ARCHITECTURE.md) ·
@@ -19,14 +19,14 @@ and 100 m above ground and 10 m gusts.
 
 </div>
 
-<!-- TODO: asset — the screenshot above is the v1.0.0 (Milestone 5) interface. Replace it with a capture of the current timeline + 10 m/100 m/gust UI once one can be produced from a real device. No current capture exists in the repository. -->
+<!-- TODO: asset — the screenshot above is the v1.0.0 (Milestone 5) interface. It predates the removal of the timeline, the 10 m/100 m and gust toggles, and the tap-to-inspect readout, so it no longer matches the interface: the map now draws the animated 10 m field with zoom, zoom-out and reset only. Replace it with a current capture once one can be produced from a real device. No current capture exists in the repository. -->
 
 ## What it is
 
 Saudi Wind turns numerical weather-model output into an immediate, interactive
 view of wind moving across the Kingdom of Saudi Arabia. It is deliberately
-focused on one place, so the map, timeline, controls, statistics, and labels can
-be designed specifically for Saudi Arabia.
+focused on one place, so the map, controls, statistics, and labels can be
+designed specifically for Saudi Arabia.
 
 The site is public and free to use, with no accounts, trackers, or stored user
 data. It is an independent project: NOAA GFS data is public-domain model output,
@@ -36,13 +36,11 @@ not a network of Saudi weather stations.
 
 - **Animated WebGL2 trails** — thousands of continuously advected particles,
   clipped exactly to the Saudi boundary.
-- **Five-day forecast** — 41 frames in three-hour steps (`f000`–`f120`),
-  scrubbed with a timeline slider or played back automatically.
-- **Two wind heights** — wind at 10 m and 100 m above ground.
-- **10 m gusts** — a gust layer at 10 m (magnitude from the GFS `GUST` record;
-  direction derived from the 10 m wind).
-- **Point inspection** — tap or click anywhere inside the Kingdom for speed and
-  meteorological direction in Arabic.
+- **The current forecast step** — the run is five days of 41 three-hourly frames
+  (`f000`–`f120`); the map renders the step nearest now and there is no timeline.
+- **10 m wind** — the field the map draws, from the GFS 10 m `UGRD`/`VGRD`
+  records. A run that publishes no 10 m wind falls back to the grid it does
+  publish rather than blanking.
 - **National statistics** — latitude-weighted mean speed and the highest
   model-grid cell inside the boundary.
 - **Arabia Standard Time** timestamps.
@@ -74,14 +72,14 @@ flowchart LR
 | Ingestion  | Discovers the newest complete GFS cycle, range-downloads only the needed GRIB records, decodes, crops, validates, checksums, and builds the manifest | `pipeline/saudi_wind_pipeline/`   |
 | Storage    | Private R2 bucket holding immutable `grids/*.bin` objects and the mutable `latest.json` manifest                                                     | Cloudflare R2 (`saudi-wind-data`) |
 | API        | Read-only Cloudflare Pages Functions: the manifest, and grids addressed by a strict run-id/name pattern                                              | `functions/api/wind/`             |
-| Rendering  | React 19 + Vite single page with a hand-written WebGL2 particle renderer and a device-tier budget                                                    | `src/`                            |
+| Rendering  | React 19 + Vite single page with a hand-written WebGL2 particle renderer                                                                             | `src/`                            |
 | Automation | CI plus hourly ingestion and a six-hourly production integrity monitor                                                                               | `.github/workflows/`              |
 
 ### Data flow
 
 1. **Discover** the newest GFS cycle whose full five-day forecast is published.
 2. **Fetch** the `.idx` index per step and range-download only the required
-   records (10 m and 100 m `UGRD`/`VGRD`, surface `GUST`).
+   records (10 m `UGRD`/`VGRD`).
 3. **Decode** with ecCodes, crop to 33°–57° E / 15°–33.5° N, and normalise to a
    north-to-south, west-to-east 0.25° scan.
 4. **Validate** dimensions, finite values, plausible speeds, and serialization;
@@ -105,7 +103,7 @@ Environmental Prediction (NCEP).
   GRIB files.
 - Attribution **does not imply** NOAA or NCEP endorsement of this project.
 - GFS is **numerical model output**, not measured observation. The 0.25° grid,
-  the 10 m/100 m heights, and the interpolated trails should not be read as a
+  the 10 m height, and the interpolated trails should not be read as a
   measurement at any specific point.
 
 The Saudi boundary is derived from Natural Earth 1:10m Admin 0 data (public
@@ -127,7 +125,12 @@ bun run dev
 
 In development the app reads the committed manifest at
 `public/data/processed/latest.json`, so the map works without Cloudflare
-credentials or a NOAA download.
+credentials or a NOAA download. `public/data/processed/` and
+`public/data/sample/` are dev-only: `bun run build` strips both out of `dist/`
+and `scripts/check-dist-manifest.mjs` fails the build if a fixture — or any
+`schemaVersion: 1` or zero-frame manifest — is found in the bundle, so a stale
+local fixture can never be deployed. The Playwright preview server serves them
+from `public/` for the same reason.
 
 Run the same gates CI runs:
 
@@ -146,7 +149,7 @@ uv run saudi-wind-pipeline fixture
 ```
 
 Process the newest complete NOAA cycle into a separate review directory (a full
-run makes roughly 250 HTTP byte-range requests across the 41 steps):
+run makes roughly 125 HTTP byte-range requests across the 41 steps):
 
 ```sh
 uv run saudi-wind-pipeline latest --output /tmp/saudi-wind-latest
@@ -189,21 +192,20 @@ includes a real gap worth stating plainly.
 - **10 September 2026.** Ingestion credentials were configured and a fresh
   production run (the `gfs-20260910-12` cycle) was published, replacing the
   frozen July analysis.
-- **Forecast timeline.** The pipeline and frontend in this repository now build
-  and render the five-day, three-hourly forecast described above — 41 frames,
-  10 m and 100 m wind plus 10 m gusts, with timeline scrub, level toggle, gusts
-  toggle, and playback.
+- **Five-day forecast.** The pipeline builds the five-day, three-hourly forecast
+  described above — 41 frames of 10 m wind, one grid per frame. The map
+  renders the 10 m field at the step nearest now.
 
 ### What is still missing
 
 - **Rollout of the multi-frame contract.** The deployed API contract has
   historically been the single-frame `schemaVersion: 1` manifest. The schema-v2
-  manifest and the timeline UI are implemented and tested in this repository;
-  confirm which shape the deployed manifest is serving before assuming the full
-  forecast is live (`bun run monitor:production` prints the run id, schema
-  version, and frame count).
-- **No history or archive.** Only the current five-day forecast window is
-  browsable; older runs are not exposed.
+  manifest is implemented and tested in this repository; confirm which shape the
+  deployed manifest is serving before assuming the full forecast is live
+  (`bun run monitor:production` prints the run id, schema version, and frame
+  count).
+- **No history or archive.** Only the single forecast step nearest now is drawn;
+  the rest of the five-day window and older runs are not browsable.
 - **One provider.** NOAA GFS only. The manifest and grid contract are
   provider-neutral, but no Saudi NCM adapter is implemented.
 - **Arabic and km/h only.** No English interface and no unit switching.

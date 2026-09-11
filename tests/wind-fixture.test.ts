@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { frameForTime, frameLabel, parseWindManifest } from "../src/lib/wind";
+import { frameForTime, parseWindManifest } from "../src/lib/wind";
 import {
   ALL_GRID_KEYS,
   buildManifest,
@@ -89,20 +89,14 @@ describe("Playwright wind fixture", () => {
     expect(gridKeyFromName("latest.json")).toBeNull();
   });
 
-  it("keeps the timeline labels stable for a run pinned just before now", () => {
+  it("defaults a run pinned just before now to the current frame", () => {
     const now = Date.parse("2026-09-11T12:34:56Z");
     const frames = parseWindManifest(
       buildManifest({ steps: [0, 3, 6, 9], modelRun: recentModelRun(now) }),
     ).frames;
 
-    // The default frame is "now", and the scrubbed frames carry the Arabic hour
-    // offset the browser specs assert.
+    // The map shows the frame nearest now; a run pinned a quarter hour back
+    // resolves to its first step for the whole span a spec can take.
     expect(frameForTime(frames, now).step).toBe(0);
-    expect(frames.map((frame) => frameLabel(frame, now))).toEqual([
-      "الآن",
-      "+3 س",
-      "+6 س",
-      "+9 س",
-    ]);
   });
 });

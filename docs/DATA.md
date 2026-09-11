@@ -20,20 +20,14 @@ trusted. Contract-level detail is in [ARCHITECTURE.md](ARCHITECTURE.md).
 
 Each run publishes a **five-day, three-hourly forecast**: 41 frames from `f000`
 (analysis) to `f120`, at the model steps `0, 3, 6, … 120` hours after the cycle
-time. Every frame carries three fields:
+time. Every frame carries one field:
 
-| Grid key    | Quantity                          | GFS records                              |
-| ----------- | --------------------------------- | ---------------------------------------- |
-| `wind-10m`  | wind vector at 10 m above ground  | `UGRD`/`VGRD` at 10 m above ground       |
-| `wind-100m` | wind vector at 100 m above ground | `UGRD`/`VGRD` at height above ground 100 |
-| `gust-10m`  | 10 m wind gust vector             | `GUST` at surface + 10 m wind direction  |
+| Grid key   | Quantity                         | GFS records                        |
+| ---------- | -------------------------------- | ---------------------------------- |
+| `wind-10m` | wind vector at 10 m above ground | `UGRD`/`VGRD` at 10 m above ground |
 
-**Gust direction is derived, not observed.** NOAA's `GUST` record carries gust
-_speed_ only, while the on-wire grid format is interleaved U/V components.
-Saudi Wind keeps the 10 m wind direction and resamples it to the gust magnitude
-(and sets both components to zero where the 10 m wind is calm, so direction is
-undefined). The gust magnitude is GFS; the gust direction is a Saudi Wind
-derivation and should be treated as indicative.
+The 100 m wind and the 10 m gust layers were removed on 11 September 2026 so the
+service does one thing well: a single 10 m wind field per frame.
 
 ## Processing
 
@@ -101,6 +95,12 @@ The machine-readable report is committed at
 values describe that frozen fixture only; live runs have their own manifest and
 per-run report.
 
+`public/data/processed/` and `public/data/sample/` are **dev-only** trees: they
+exist so `bun run dev` and the Playwright harness can render without Cloudflare
+credentials. `bun run build` strips both from `dist/`, and
+`scripts/check-dist-manifest.mjs` fails the build if a fixture (or any
+`schemaVersion: 1` or zero-frame manifest) turns up in the bundle again.
+
 ## Live delivery
 
 Validated output is published to the private `saudi-wind-data` R2 bucket and
@@ -134,7 +134,6 @@ rather than replacing it with missing or unvalidated data.
   any specific address.
 - A 0.25° grid describes regional flow. Interpolation makes the display smooth
   but does not add local forecast detail.
-- Gust direction is derived from the 10 m wind (see above), not from GFS.
 
 ## References
 

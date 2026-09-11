@@ -12,9 +12,9 @@ import type {
  *
  * The committed `public/data/processed/latest.json` is a frozen sample and may
  * be either schema version, with or without the 100 m and gust grids. Specs that
- * assert how levels, gusts and the scrubber behave therefore serve their own
- * manifest and grids through `page.route` so they never depend on which run is
- * checked in.
+ * assert how the client resolves levels, grids and the current frame therefore
+ * serve their own manifest and grids through `page.route` so they never depend
+ * on which run is checked in.
  */
 
 export const RUN_GRID: WindGridMetadata = {
@@ -60,10 +60,9 @@ export function currentHourModelRun(now: number = Date.now()): string {
 }
 
 /**
- * A model run 15 minutes before now. `frameLabel` rounds the offset to whole
- * hours, so pinning the run a quarter hour back keeps `+3 س` / `+9 س` stable for
- * the whole span a test can realistically take, unlike a run on the hour whose
- * labels drift once the clock passes :31.
+ * A model run 15 minutes before now. Pinning the run a quarter hour back keeps
+ * "now" comfortably inside the first forecast step for the whole span a test can
+ * realistically take.
  */
 export function recentModelRun(now: number = Date.now()): string {
   return new Date(now - 15 * 60_000).toISOString();
@@ -211,7 +210,7 @@ export async function installWindGrids(page: Page): Promise<void> {
   });
 }
 
-/** Opens the app on a fresh fixture manifest and waits for the timeline. */
+/** Opens the app on a fresh fixture manifest and waits for the decoded map. */
 export async function openWithFixture(
   page: Page,
   options: FixtureOptions = {},
@@ -221,6 +220,7 @@ export async function openWithFixture(
   await installWindManifest(page, manifest);
   await installWindGrids(page);
   await page.goto("/");
-  await page.locator(".wind-timeline").waitFor({ state: "visible" });
+  // The wind canvas mounts only once the first grid is decoded and on the map.
+  await page.locator(".map-canvas--wind").waitFor({ state: "visible" });
   return { runId: manifest.runId, steps };
 }

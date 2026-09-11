@@ -17,64 +17,8 @@ const SUPPORTED_SCHEMA_VERSIONS = [1, 2] as const;
 const KNOWN_VARIABLES = ["wind", "gust"] as const;
 const HOUR_MS = 3_600_000;
 
-const ARABIC_DIRECTIONS = [
-  "ش",
-  "ش ش ق",
-  "ش ق",
-  "ق ش ق",
-  "ق",
-  "ق ج ق",
-  "ج ق",
-  "ج ج ق",
-  "ج",
-  "ج ج غ",
-  "ج غ",
-  "غ ج غ",
-  "غ",
-  "غ ش غ",
-  "ش غ",
-  "ش ش غ",
-] as const;
-
-const ARABIC_DIRECTION_NAMES = [
-  "شمالية",
-  "شمالية شمالية شرقية",
-  "شمالية شرقية",
-  "شرقية شمالية شرقية",
-  "شرقية",
-  "شرقية جنوبية شرقية",
-  "جنوبية شرقية",
-  "جنوبية جنوبية شرقية",
-  "جنوبية",
-  "جنوبية جنوبية غربية",
-  "جنوبية غربية",
-  "غربية جنوبية غربية",
-  "غربية",
-  "غربية شمالية غربية",
-  "شمالية غربية",
-  "شمالية شمالية غربية",
-] as const;
-
 export function speedKmh([u, v]: WindVector): number {
   return Math.hypot(u, v) * 3.6;
-}
-
-export function meteorologicalDirection([u, v]: WindVector): number {
-  return (Math.atan2(-u, -v) * 180) / Math.PI + 360;
-}
-
-export function normalizedDirection(vector: WindVector): number {
-  return meteorologicalDirection(vector) % 360;
-}
-
-export function arabicCompass(degrees: number): string {
-  const normalized = ((degrees % 360) + 360) % 360;
-  return ARABIC_DIRECTIONS[Math.round(normalized / 22.5) % 16];
-}
-
-export function arabicCompassName(degrees: number): string {
-  const normalized = ((degrees % 360) + 360) % 360;
-  return ARABIC_DIRECTION_NAMES[Math.round(normalized / 22.5) % 16];
 }
 
 export function sampleWind(
@@ -495,27 +439,6 @@ export function frameForTime(
     }
   }
   return candidate;
-}
-
-/** Short Arabic label for a frame: "الآن" for the current frame, otherwise "+6 س". */
-export function frameLabel(
-  frame: WindFrame,
-  now: Date | number = Date.now(),
-): string {
-  const time = typeof now === "number" ? now : now.getTime();
-  const deltaHours = (Date.parse(frame.validTime) - time) / HOUR_MS;
-  if (frame.step === 0 || deltaHours <= 0.5) return "الآن";
-  const hours = Math.round(deltaHours);
-  if (hours < 24) return `+${hours} س`;
-  const days = Math.floor(hours / 24);
-  const remainder = hours % 24;
-  return remainder === 0 ? `+${days} يوم` : `+${days} يوم ${remainder} س`;
-}
-
-/** The grid key that backs a level and the gusts toggle. */
-export function gridKeyForLevel(level: number, gusts: boolean): WindGridKey {
-  if (gusts) return "gust-10m";
-  return level === 100 ? "wind-100m" : "wind-10m";
 }
 
 /** Grid keys published anywhere in the run, in the canonical order. */

@@ -5,8 +5,6 @@ import {
   availableLevels,
   frameForTime,
   frameGridIndex,
-  frameLabel,
-  gridKeyForLevel,
   parseWindManifest,
   validateManifest,
 } from "../src/lib/wind";
@@ -419,37 +417,6 @@ describe("frameForTime", () => {
   });
 });
 
-describe("frameLabel", () => {
-  const frames = parseWindManifest(v2Manifest).frames;
-  const [now, later, last] = frames;
-
-  it("labels the current and step-zero frames with الآن", () => {
-    expect(frameLabel(now, Date.parse(validTimeForStep(0)))).toBe("الآن");
-    expect(frameLabel(now, Date.parse(validTimeForStep(6)))).toBe("الآن");
-    expect(frameLabel(later, Date.parse(validTimeForStep(6)))).toBe("الآن");
-  });
-
-  it("labels future frames with the Arabic offset", () => {
-    expect(frameLabel(later, Date.parse(validTimeForStep(0)))).toBe("+3 س");
-    expect(frameLabel(last, Date.parse(validTimeForStep(0)))).toBe("+6 س");
-  });
-
-  it("rolls offsets over into days", () => {
-    const [dayOne] = parseWindManifest({
-      ...v2Manifest,
-      frames: [buildFrame(24)],
-    }).frames;
-    const [dayAndChange] = parseWindManifest({
-      ...v2Manifest,
-      frames: [buildFrame(27)],
-    }).frames;
-    expect(frameLabel(dayOne, Date.parse(validTimeForStep(0)))).toBe("+1 يوم");
-    expect(frameLabel(dayAndChange, Date.parse(validTimeForStep(0)))).toBe(
-      "+1 يوم 3 س",
-    );
-  });
-});
-
 describe("frame selection helpers", () => {
   const parsed = parseWindManifest(v2Manifest);
   const withoutHundred = buildFrame(3);
@@ -459,12 +426,6 @@ describe("frame selection helpers", () => {
     ...v2Manifest,
     frames: [buildFrame(0), withoutHundred],
   }).frames;
-
-  it("maps levels and gusts to grid keys", () => {
-    expect(gridKeyForLevel(10, false)).toBe("wind-10m");
-    expect(gridKeyForLevel(100, false)).toBe("wind-100m");
-    expect(gridKeyForLevel(10, true)).toBe("gust-10m");
-  });
 
   it("reports the grid keys and levels published by a run", () => {
     expect(availableGridKeys(parsed.frames)).toEqual([

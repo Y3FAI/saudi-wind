@@ -35,7 +35,7 @@ flowchart TB
         FETCH["manifest + grid loader<br/>length + SHA-256 verification"]
         CACHE["WindGridCache<br/>decoded frame cache + preload"]
         RENDER["WebGL2 particle renderer"]
-        TIMELINE["timeline · level · gusts UI"]
+        TIMELINE["UI"]
     end
 
     subgraph Ops["Automation (GitHub Actions)"]
@@ -82,19 +82,27 @@ Key behaviours:
   the previous manifest current. Immutable grids are never overwritten — a hash
   collision is an error, not a silent replace.
 
-A single run produces **41 frames × 3 grid fields = 123 grid objects**
-(58,200 bytes each ≈ 6.8 MiB per run) plus one manifest and one validation
-report.
+A single run produces **41 frames × 1 grid field = 41 grid objects**
+(58,200 bytes each ≈ 2.3 MiB per run) plus one manifest and one validation
+report. Before the 11 September 2026 narrowing it was 41 × 3 = 123 objects
+(≈ 6.8 MiB), because every frame also carried a 100 m wind and a 10 m gust
+grid.
 
 ### 2. Storage — Cloudflare R2
 
 Private bucket `saudi-wind-data`, bound to the Pages project as `WIND_DATA`
 (`wrangler.jsonc`). Keys:
 
-| Key                                | Mutability | Content                                     |
-| ---------------------------------- | ---------- | ------------------------------------------- |
-| `grids/gfs-YYYYMMDD-HH-fNNN-*.bin` | immutable  | one frame's field, Float32 LE `[u,v]` pairs |
-| `latest.json`                      | mutable    | the current manifest                        |
+| Key                                       | Mutability | Content                                   |
+| ----------------------------------------- | ---------- | ----------------------------------------- |
+| `grids/gfs-YYYYMMDD-HH-fNNN-wind-10m.bin` | immutable  | one frame's 10 m wind, Float32 LE `[u,v]` |
+| `latest.json`                             | mutable    | the current manifest                      |
+
+Grids written by the pre-11-September-2026 pipeline also exist under
+`grids/gfs-YYYYMMDD-HH-fNNN-wind-100m.bin` and
+`grids/gfs-YYYYMMDD-HH-fNNN-gust-10m.bin`. Nothing refers to them any more once
+the pipeline narrows — removing them is a separate, deliberate R2 operation (see
+[OPERATIONS.md](OPERATIONS.md#retention)).
 
 `r2.dev` is not enabled; all public traffic passes through the Pages Function.
 Lifecycle and retention are in [OPERATIONS.md](OPERATIONS.md).
@@ -126,14 +134,13 @@ hand-written.
 
 | File                                                          | Responsibility                                                                                                         |
 | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `src/App.tsx`                                                 | Loads the boundary + manifest, owns frame/level/gust state and the 15-minute revalidation loop                         |
+| `src/App.tsx`                                                 | Loads the boundary + manifest, owns frame state and the 15-minute revalidation loop                                    |
 | `src/lib/wind.ts`                                             | Manifest parser (`schemaVersion` 1 and 2), frame selection, grid download + SHA-256 verification, speed/direction math |
 | `src/lib/windGridCache.ts`                                    | Caches decoded `Float32Array` frames and preloads the next frame                                                       |
 | `src/lib/deviceProfile.ts`                                    | Classifies the device (cores, memory, DPR, screen area) into a render budget                                           |
 | `src/lib/webglWindRenderer.ts`                                | WebGL2 advection, fading trails, stencil clipping to the Saudi polygon                                                 |
 | `src/lib/map.ts`, `src/lib/format.ts`, `src/lib/windStyle.ts` | Map projection, formatting, and the visual style presets                                                               |
 | `src/components/WindMap.tsx`                                  | Canvas host plus pointer/keyboard interaction and point inspection                                                     |
-| `src/components/WindTimeline.tsx`                             | Timeline scrubber, playback, 10 m/100 m level toggle, and gusts toggle                                                 |
 
 The renderer only reads `vectors` and `manifest.grid`, so swapping frames never
 involves the renderer. A missing level or variable in a frame degrades to the
@@ -171,8 +178,8 @@ list of frames.
   "grid": { "west": 33, "east": 57, "south": 15, "north": 33.5,
             "width": 97, "height": 75, "dx": 0.25, "dy": 0.25,
             "scan": "north-to-south-west-to-east" },
-  "levels": [10, 100],
-  "variables": ["wind", "gust"],
+  "levels": [10],
+  "variables": ["wind"],
   "frames": [
     {
       "step": 0,
@@ -180,12 +187,10 @@ list of frames.
       "grids": {
         "wind-10m":  { "url": "/api/wind/grids/gfs-…-f000-wind-10m.bin",
                        "encoding": "float32-le-uv-interleaved",
-                       "byteLength": 58200, "sha256": "…" },
-        "wind-100m": { … }, "gust-10m": { … }
+                       "byteLength": 58200, "sha256": "…" }
       },
       "statistics": {
-        "wind-10m": { "areaWeightedMeanKmh": 0, "maximumGridCellKmh": 0 },
-        "wind-100m": { … }, "gust-10m": { … }
+        "wind-10m": { "areaWeightedMeanKmh": 0, "maximumGridCellKmh": 0 }
       }
     }
     // … one frame per 3-hour step, f000 … f120
@@ -199,6 +204,10 @@ list of frames.
 and top-level `data`/`statistics`. The client wraps it into one frame at step 0.
 The `data`, `statistics`, and `validTime` mirrors exist so a v1-era client can
 still read a v2 manifest's first frame.
+
+`levels` and `variables` are **derived from the grids the frames actually
+publish**, never hard-coded: the narrowed pipeline emits exactly `[10]` and
+`["wind"]`, and a run that omits a field does not advertise it.
 
 Rejection rules the parser enforces: unsupported schema/provider/units/scan
 order, non-ISO timestamps, non-increasing frame steps, `validTime` not equal to
@@ -218,7 +227,7 @@ Consumers verify byte length and SHA-256 before use. See [DATA.md](DATA.md).
   encoding is not GFS-specific, so a future Saudi NCM adapter can emit the same
   shape without touching the renderer. Only `NOAA_GFS` is implemented today.
 - **No renderer changes for new data.** Everything the renderer needs is
-  `vectors` + `grid`; frames, levels, and gusts are a client-side concern.
+  `vectors` + `grid`; frames are a client-side concern.
 - **Data is immutable, pointers are mutable.** Grids are content-addressed by
   run/step/field and never rewritten; only `latest.json` moves.
 - **Fail safe, not fresh.** A failed run or unreachable bucket keeps the last

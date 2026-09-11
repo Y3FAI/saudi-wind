@@ -1,14 +1,14 @@
 {
-  "schemaVersion": 1,
-  "runId": "gfs-20260728-12-f000",
+  "schemaVersion": 2,
+  "runId": "gfs-20260910-18",
   "provider": "NOAA_GFS",
-  "modelRun": "2026-07-28T12:00:00Z",
-  "validTime": "2026-07-28T12:00:00Z",
-  "publishedAt": "2026-07-28T12:00:00Z",
+  "modelRun": "2026-09-10T18:00:00Z",
+  "validTime": "2026-09-10T18:00:00Z",
+  "publishedAt": "2026-09-11T04:06:18.294756Z",
   "heightMeters": 10,
   "sourceUnits": "m/s",
   "displayUnits": "km/h",
-  "sample": true,
+  "sample": false,
   "grid": {
     "west": 33.0,
     "east": 57.0,
@@ -20,14 +20,1582 @@
     "dy": 0.25,
     "scan": "north-to-south-west-to-east"
   },
+  "levels": [
+    10,
+    100
+  ],
+  "variables": [
+    "wind",
+    "gust"
+  ],
+  "frames": [
+    {
+      "step": 0,
+      "validTime": "2026-09-10T18:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f000-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "f12c20e1c9b6a1512e03f65186771c7ea6220991ec4703df38eaab800f39a1ac"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f000-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "abc0e15ebfdfa06606b495809f52b7b69693d7e0130e1fe3b0b0afafcf94169e"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f000-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "6d2be148c55b3499a3a4da4a390e733eb45ed22fb6b7cb2aaa912df8892f8d93"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 13.0,
+          "maximumGridCellKmh": 31.9
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 21.1,
+          "maximumGridCellKmh": 49.1
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 16.5,
+          "maximumGridCellKmh": 53.4
+        }
+      }
+    },
+    {
+      "step": 3,
+      "validTime": "2026-09-10T21:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f003-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "25c44174f0ec775d3c3b8ed7c213eb6249e6404d10e3fb087ee90c629d02d793"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f003-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "a8aa90c90a4b4de76c615f2acc040689b150b8770cacd07dbeb59d9a3268afe4"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f003-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "a89851caa8a3f335dd650f4694f81b8f4e95c03f50803bdfe15ea379a50de78c"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 11.8,
+          "maximumGridCellKmh": 26.4
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 19.2,
+          "maximumGridCellKmh": 42.1
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 14.0,
+          "maximumGridCellKmh": 50.9
+        }
+      }
+    },
+    {
+      "step": 6,
+      "validTime": "2026-09-11T00:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f006-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "465887a840bd8fb35f506bd2c2ad81cff9a905b7f2956e596d45d195083c7e42"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f006-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "703f1cf5d2cd9db39c749cdf46b50fc15b8b78e45ec669fc5837d695a17241eb"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f006-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "69da7c79c4e8bbc5bac7762a441bf8f7cafbaafc72fa67080b7bfaf3150691d7"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 11.3,
+          "maximumGridCellKmh": 39.3
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 17.8,
+          "maximumGridCellKmh": 53.5
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 12.9,
+          "maximumGridCellKmh": 52.6
+        }
+      }
+    },
+    {
+      "step": 9,
+      "validTime": "2026-09-11T03:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f009-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "c8e150a9a7ddff0fccbb956dbd2ef80f1a29b93f68e20a2092c22d73c52f0f1d"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f009-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "fad6bd49917fb66bd24050a8f8540a10abe118710941eae64adb67eed6d3bf44"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f009-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "91d368d178713ab4e99f73e2d6b39ac4a30ca5dd332a516886832ae906ed9c70"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 10.9,
+          "maximumGridCellKmh": 40.8
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 16.5,
+          "maximumGridCellKmh": 54.7
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 12.5,
+          "maximumGridCellKmh": 55.5
+        }
+      }
+    },
+    {
+      "step": 12,
+      "validTime": "2026-09-11T06:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f012-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "ff117a376112544d4a8983ce090dabe5208962985fe85e6d09db82df68b83504"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f012-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "3f1a22f8d2cabe334de3e2e47cd7b22ff18abb1b4846530e16bbb9899d1c93f4"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f012-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "d588961141ee948baa2e5543d17e04d26460c27c30ea50339220fdaa5604f917"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 13.7,
+          "maximumGridCellKmh": 40.2
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 15.6,
+          "maximumGridCellKmh": 50.2
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 16.6,
+          "maximumGridCellKmh": 52.3
+        }
+      }
+    },
+    {
+      "step": 15,
+      "validTime": "2026-09-11T09:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f015-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "baa356ca1a9d2996dcd78dea1327f284e8b592dc882389929cc0ae0ee0f75f3e"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f015-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "764135879f093d2e2f4c9a78edc6943ef6390469f8025d95377c3b54ee98a057"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f015-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "d2b54e0754e3cfc6da24576fc5ea78648571c205a9f6336ab4aa104eb0639cd2"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 13.7,
+          "maximumGridCellKmh": 36.3
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 14.9,
+          "maximumGridCellKmh": 41.7
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 17.3,
+          "maximumGridCellKmh": 47.6
+        }
+      }
+    },
+    {
+      "step": 18,
+      "validTime": "2026-09-11T12:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f018-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "273450b46761bdd39a87625dfc6473c53aaddc338e1cce0de7e9618f1a344cc7"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f018-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "002b082e9e4b50179286feaf11b9b1b2c6a2f82d5cdc4620c4472e0248726d13"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f018-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "3bb149ef914f12462be0dce0f278daa51ad6edd0faeb6b7a0cbff03907462355"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 16.2,
+          "maximumGridCellKmh": 39.1
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 17.7,
+          "maximumGridCellKmh": 45.4
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 18.9,
+          "maximumGridCellKmh": 42.2
+        }
+      }
+    },
+    {
+      "step": 21,
+      "validTime": "2026-09-11T15:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f021-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "3a2ba14316bfbdfc4ed8b960215464dccf66bb287cafd23dfa4e5dd96cc4573d"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f021-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "e9552805e56ded512ea3aa6c2815280d122731c69f868a8b35c839f15e5441a1"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f021-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "29a46f11dcc3423739069099b855332e4cd497fd87b45ce2899cc9d00bbb91cd"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 15.2,
+          "maximumGridCellKmh": 41.3
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 21.2,
+          "maximumGridCellKmh": 52.2
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 17.8,
+          "maximumGridCellKmh": 45.4
+        }
+      }
+    },
+    {
+      "step": 24,
+      "validTime": "2026-09-11T18:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f024-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "5b72b4621aff67aeac44347499d8f8d594a5c3010084d6f70dcda4731aaf52b0"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f024-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "b5d52c1eeb247ec162f556aa64015a6805d293c944a801228945ed501791956f"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f024-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "55834cb274a1f90b9f357b7dccb35baa388e5140417fa6cee74e85a0e735946c"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 13.1,
+          "maximumGridCellKmh": 42.2
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 21.3,
+          "maximumGridCellKmh": 58.2
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 16.2,
+          "maximumGridCellKmh": 55.2
+        }
+      }
+    },
+    {
+      "step": 27,
+      "validTime": "2026-09-11T21:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f027-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "6ca9c3d50a5326e4cc849419a1b3e1553dbbaf9758b59638a1e1d5e4b9cf9b97"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f027-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "7388cbadf7fb941d6c6449af525b0a021fe1f8bf0de08fede44ed1cb5117ae70"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f027-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "d572be57a984fe2ce779249d0137ce3f5c227cab3b206c0ed6323224af43fcc1"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 11.5,
+          "maximumGridCellKmh": 27.3
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 18.7,
+          "maximumGridCellKmh": 43.3
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 13.4,
+          "maximumGridCellKmh": 49.0
+        }
+      }
+    },
+    {
+      "step": 30,
+      "validTime": "2026-09-12T00:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f030-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "6f8da37b3b4763b475d4bdf52ea7d61aa24445344186ec622db275903b6c1c7d"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f030-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "3b5a7451eee685f3e223e60919a97b917f9d379495c0bc4cee740f72cc95b4ab"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f030-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "85243e415070245acd0c12ed224afaa199fef7aa4f9c8c7088a33a576e49c8f8"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 10.7,
+          "maximumGridCellKmh": 36.0
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 16.5,
+          "maximumGridCellKmh": 50.3
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 12.0,
+          "maximumGridCellKmh": 50.1
+        }
+      }
+    },
+    {
+      "step": 33,
+      "validTime": "2026-09-12T03:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f033-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "2df6f8fded96766e13a9b03f1f79b717357cd29f9c1aeceae3375be0d1c2bf1d"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f033-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "b9ccf9c5e927ce2fa03aab36a98e5c360fad63aa16b80f6e99655a0c1250f156"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f033-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "fd7f04d8df759b6f4f99de37f1c2e5240eded6a7caede40d67ae9698e1b1da40"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 10.0,
+          "maximumGridCellKmh": 41.5
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 14.8,
+          "maximumGridCellKmh": 55.5
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 11.5,
+          "maximumGridCellKmh": 53.7
+        }
+      }
+    },
+    {
+      "step": 36,
+      "validTime": "2026-09-12T06:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f036-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "8fc9209c748d7cfa68e1f4679b802963bb14d639bc112325ab2aa68b8e9bcb09"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f036-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "c1c80fae14cc6641eb46ba8bba1e32a8bc5e6bef4a08288f899b62a24d16dd61"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f036-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "f2182b33eb91ae174b3e3be691de69ba3cba022dcf00857cb1cb2aab3cfa53b4"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 11.2,
+          "maximumGridCellKmh": 45.5
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 12.6,
+          "maximumGridCellKmh": 56.9
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 13.3,
+          "maximumGridCellKmh": 52.8
+        }
+      }
+    },
+    {
+      "step": 39,
+      "validTime": "2026-09-12T09:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f039-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "e19799191fe1e63410ead6307e0aadae135ade56041f4be397ae8e56898d8a3c"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f039-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "c9781adf12d9d2a78754259aefa3422d95332bdcd222cc062616a2ed4ff56b32"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f039-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "26ab4a09a43874528df34d63dfb3af9f902e0f149a605a98016b77fb007b737f"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 10.8,
+          "maximumGridCellKmh": 36.5
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 11.5,
+          "maximumGridCellKmh": 42.8
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 14.9,
+          "maximumGridCellKmh": 43.9
+        }
+      }
+    },
+    {
+      "step": 42,
+      "validTime": "2026-09-12T12:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f042-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "4eb538f160ef8e2b57db9270b98bf21af7d52c005917b37c6926e7b14a133cff"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f042-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "d437c20a697a20148dc1f3cac0819ebf5b736695555cb9965760be2bbea4a343"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f042-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "0cb82ea9aaef861e6d0f26356d54ed5c09d9aef724ea0cb61cbf30bff9e08f9e"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 15.7,
+          "maximumGridCellKmh": 39.8
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 17.3,
+          "maximumGridCellKmh": 47.5
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 18.2,
+          "maximumGridCellKmh": 49.0
+        }
+      }
+    },
+    {
+      "step": 45,
+      "validTime": "2026-09-12T15:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f045-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "fa707393bb874a88c101e98b007ca8a9cf4708dadd46a74d593317f35fb802bb"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f045-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "7421fc74230bcc948f7978dcaff8944eff02d35673f1fba3132f27f19455cf95"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f045-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "f7322f4796c086ed1a36c96fc3f98b28f0d38ff8b9ba7c6084a7005bb56c2a26"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 15.7,
+          "maximumGridCellKmh": 43.0
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 22.3,
+          "maximumGridCellKmh": 55.7
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 18.8,
+          "maximumGridCellKmh": 49.7
+        }
+      }
+    },
+    {
+      "step": 48,
+      "validTime": "2026-09-12T18:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f048-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "811866c08f9191b052673d81868e2c7c1b1c30c02990db45524ff4c3d0e8d8ea"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f048-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "24f25023980edda052ecc2a6bf501ff39e37a2f6300d9c23d45d7ba0a993618d"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f048-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "864017a648d26bee462bd6ebafd9187076529e521f377718b4277f3ffec67e58"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 14.4,
+          "maximumGridCellKmh": 42.0
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 23.8,
+          "maximumGridCellKmh": 56.9
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 18.8,
+          "maximumGridCellKmh": 55.8
+        }
+      }
+    },
+    {
+      "step": 51,
+      "validTime": "2026-09-12T21:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f051-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "6fa6a7145d7f399aef83c6f893d718c4176f6e8502d8c38329b2ee9ee0694ba3"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f051-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "9e925f0fa08e3dd0e74cb2ad6ce389c4d2de2817d32bd3bc16993c837bfae76d"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f051-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "f7b75ffd8294b19025d74e3bc529a71c60a3d9192c93f5fafd9d09bfb259a1fc"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 12.5,
+          "maximumGridCellKmh": 37.4
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 21.0,
+          "maximumGridCellKmh": 53.6
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 16.1,
+          "maximumGridCellKmh": 63.0
+        }
+      }
+    },
+    {
+      "step": 54,
+      "validTime": "2026-09-13T00:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f054-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "5e866f130709fc984e786de43e946fa4896ac4a748e3d6956afea4011c753b8c"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f054-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "cee53634f0a857b8601f1bf656761a78195d54e59c89bc9d994f88360cdb227f"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f054-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "b663fc5b082c71395f8a2a8edb19738eab1f24a002c32a531851c19d0eb88bdf"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 11.3,
+          "maximumGridCellKmh": 36.9
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 18.1,
+          "maximumGridCellKmh": 54.2
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 13.8,
+          "maximumGridCellKmh": 59.8
+        }
+      }
+    },
+    {
+      "step": 57,
+      "validTime": "2026-09-13T03:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f057-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "6d5d405f73a9b763f137355ac197bfa2bc87e6491109919e80953c6b323df5ae"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f057-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "d95090ec896d61707d5427017429b8d5c58bcb546c7177cc6c45a18592418417"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f057-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "22451844ea66d19919fb9743c8b22191d5e21510b204525d14b9863c1dd1b31b"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 10.5,
+          "maximumGridCellKmh": 41.3
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 16.0,
+          "maximumGridCellKmh": 55.4
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 12.8,
+          "maximumGridCellKmh": 63.0
+        }
+      }
+    },
+    {
+      "step": 60,
+      "validTime": "2026-09-13T06:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f060-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "36c448f064cc3f6eb342755fc8c0c0d9df1a58f3eda39dd60658fb18c4131d96"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f060-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "bc860cef2d1b7606c90d1ec77079f7bf16bfd1a05d84663bcdae9d9304930e85"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f060-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "7694931783d4670ea458a6fdaf965e92fc6f62f5552a03e4150f7971e48d3332"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 13.0,
+          "maximumGridCellKmh": 43.8
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 14.8,
+          "maximumGridCellKmh": 54.9
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 15.7,
+          "maximumGridCellKmh": 48.7
+        }
+      }
+    },
+    {
+      "step": 63,
+      "validTime": "2026-09-13T09:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f063-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "35330599e82e17c486f15355304a687d6b4a102b8b5e8e8d3c47f94e15f5d937"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f063-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "3b5e981eaef49a97685a8117fc2fc5db24bb1247a13dc30161895dfae610b082"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f063-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "d2ac7569a7622d4826e6eb9fdbb8b4358945a3ddc44523b6f60f050e228c2b56"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 14.7,
+          "maximumGridCellKmh": 31.6
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 15.9,
+          "maximumGridCellKmh": 35.9
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 18.1,
+          "maximumGridCellKmh": 54.7
+        }
+      }
+    },
+    {
+      "step": 66,
+      "validTime": "2026-09-13T12:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f066-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "70066be341eba7b539e945874dcc0595302d0d493a54787a1e276c20b49cad5c"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f066-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "47ab0257bc287eef9a24fdfdcb204122525a1e0f4beecf0221848e3e31e05f81"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f066-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "5facef06e93e2c45978274e62be09e0b8b05c9fe191e87cb3201a70849df2538"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 18.4,
+          "maximumGridCellKmh": 44.7
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 20.5,
+          "maximumGridCellKmh": 50.5
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 20.5,
+          "maximumGridCellKmh": 56.2
+        }
+      }
+    },
+    {
+      "step": 69,
+      "validTime": "2026-09-13T15:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f069-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "734a4b13e29b8e7fe8f6d600134bfb6502c74bee65bb7e157086c9f6ab38fba7"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f069-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "254be29ed809a03ecc8076dbabf2089afafd4d1306cc93e6a1da5d6e8ef11948"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f069-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "8266bdc863657b9c81e0e7139b664f1e917b1601565a01c5dcb0f0784334bfb2"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 17.1,
+          "maximumGridCellKmh": 40.0
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 25.1,
+          "maximumGridCellKmh": 55.2
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 21.6,
+          "maximumGridCellKmh": 57.0
+        }
+      }
+    },
+    {
+      "step": 72,
+      "validTime": "2026-09-13T18:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f072-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "5c42b3e52441dd3b9d944a3b61e8bd59e7d04075b06b0bc0456b5e3786ecb752"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f072-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "287eb0afd613fa49122df86dae0e4d96b1d065fb22e848f1dfcc60999f559597"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f072-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "28e496784f97c1b7a0cc2ded5e1a2eb859d082a055f8f25c83affc3e6dcb50df"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 15.7,
+          "maximumGridCellKmh": 44.8
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 27.1,
+          "maximumGridCellKmh": 57.3
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 21.9,
+          "maximumGridCellKmh": 55.2
+        }
+      }
+    },
+    {
+      "step": 75,
+      "validTime": "2026-09-13T21:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f075-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "c29b93f35d4f55ad38788d99ff7fcde707e53f355f83eacb4433e0cf7ee39f52"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f075-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "397b7553fe075c88a95253db0247b745869e6f8670d54bf45da8ac30adae0b81"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f075-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "d65de8460a777b154e19f353021b0019d30ef7e725c66a3914acff7a54f49e2b"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 14.1,
+          "maximumGridCellKmh": 38.2
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 24.4,
+          "maximumGridCellKmh": 54.8
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 19.7,
+          "maximumGridCellKmh": 57.7
+        }
+      }
+    },
+    {
+      "step": 78,
+      "validTime": "2026-09-14T00:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f078-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "a2c049486c576fe096e016d1c7f87d01ee837852238e4a4472c977cf6000b73d"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f078-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "b05d3346721b4622697670c0f38e51a268649085890f0d64eb1d7364cd547181"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f078-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "82fb5ac1243188b63d165125e33f47230466d966f5816ce0e9e16277a8d28ec7"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 12.2,
+          "maximumGridCellKmh": 37.0
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 20.3,
+          "maximumGridCellKmh": 55.1
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 15.4,
+          "maximumGridCellKmh": 60.6
+        }
+      }
+    },
+    {
+      "step": 81,
+      "validTime": "2026-09-14T03:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f081-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "f6cf3b331bc86413d975f576b85ee3c30557600ff8438fd97a060859790ea0ff"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f081-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "744086ca00cdcda196f3236dda505fbfb8118cb7b1bef06266dde3fdedff5cea"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f081-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "22f13b00c9d237fad9595a8b779e5e59d188282e7dad6bf97ebe2201c1ab00f1"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 10.9,
+          "maximumGridCellKmh": 40.0
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 16.8,
+          "maximumGridCellKmh": 54.8
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 13.2,
+          "maximumGridCellKmh": 56.2
+        }
+      }
+    },
+    {
+      "step": 84,
+      "validTime": "2026-09-14T06:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f084-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "ba060746990a94ffd2575d0c0ab47b583b5148acda3e791f51c46afe1685bc5a"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f084-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "8b62c4781413a0fcada889bbebad109b7ea45b1209d893572443075bcabacf33"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f084-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "d02a9701c496b4c49dc5b1a07aa5a37cf5abdc8519ba00d38206a44c6bb04ed8"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 14.0,
+          "maximumGridCellKmh": 41.4
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 16.2,
+          "maximumGridCellKmh": 52.4
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 18.2,
+          "maximumGridCellKmh": 48.7
+        }
+      }
+    },
+    {
+      "step": 87,
+      "validTime": "2026-09-14T09:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f087-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "1c13b91b30bc3c19ce83b4be6f35fc349b6daa1f8557e2654e69aae2c8c9b23b"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f087-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "3a47ba61c42f35f5a269b1020e2b33c6368096bd2ecd10d5f26963a05b39a7f2"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f087-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "839d7fefa3ba4459cdc0981167302ffff7959bfe1b0f41fb0112f97a97d43bab"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 16.4,
+          "maximumGridCellKmh": 43.8
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 18.1,
+          "maximumGridCellKmh": 51.2
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 20.0,
+          "maximumGridCellKmh": 53.7
+        }
+      }
+    },
+    {
+      "step": 90,
+      "validTime": "2026-09-14T12:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f090-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "f4aa0ca1f5fcdd9c544b2eafb9c371f31a8a3fb8731690842ff7afe5faad74e2"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f090-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "f2e375dbc0c7e9211c447034ace115c08de1f44ec7daf3267edc3a3222cffe63"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f090-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "e0062e805b7c58fb1bc3f381412dfe8766d9a7e1b71a235d694a63c1903af1ef"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 19.0,
+          "maximumGridCellKmh": 46.5
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 21.3,
+          "maximumGridCellKmh": 55.9
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 21.6,
+          "maximumGridCellKmh": 47.2
+        }
+      }
+    },
+    {
+      "step": 93,
+      "validTime": "2026-09-14T15:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f093-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "579909efc9ac2b730aa07c0f8719371b70846f414fec901a3ef9bb0e95e6df83"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f093-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "89d7c5e063d4d358408c2318c63bb51ecba94951fce64b44d5638999559763b5"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f093-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "7b196be5ab34b54b6ba36055682599d5ba4858eb523bdb63031af3bea90a9f2a"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 16.6,
+          "maximumGridCellKmh": 42.4
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 24.6,
+          "maximumGridCellKmh": 59.8
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 21.2,
+          "maximumGridCellKmh": 64.6
+        }
+      }
+    },
+    {
+      "step": 96,
+      "validTime": "2026-09-14T18:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f096-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "aa3554ee182efaac0c1b963f40fa56afc7dbd977b032a0a8ac858e08e91792d9"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f096-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "526cfb29337019ccab6a8150da4d0c2a457551e198759fbe1bb438d8350d07a0"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f096-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "d0f7ec8dbf153364739542e18ab1d3b20e763513be9a19f84f98a55910d4f39f"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 14.7,
+          "maximumGridCellKmh": 37.4
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 25.4,
+          "maximumGridCellKmh": 52.6
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 20.1,
+          "maximumGridCellKmh": 55.1
+        }
+      }
+    },
+    {
+      "step": 99,
+      "validTime": "2026-09-14T21:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f099-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "d5669053b68dfb11738054aed419ecce3f63b2a330cf6dfc1191aa4a4fa1ed5c"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f099-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "5a46caf6a1c78edc94a2d963b38171a03dfc7cae5ede9017df30c5484ff142a7"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f099-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "92176804426171207a1bb0a375df6a50c674b662b2b7feb0e18c8aa35bd0b6df"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 13.1,
+          "maximumGridCellKmh": 30.1
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 22.6,
+          "maximumGridCellKmh": 48.6
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 16.7,
+          "maximumGridCellKmh": 54.4
+        }
+      }
+    },
+    {
+      "step": 102,
+      "validTime": "2026-09-15T00:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f102-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "1272966ebdacff2fcd1e748164a1e438b7fdfe8c6973a3480c492b4aad085937"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f102-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "269dc7ea025f35bf2be3a44f002daf15858b13de8b3756e8c8b1c21ed8a8420e"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f102-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "f15cf8ed3d2e7d7ccd721f76979929c72f93be01bd4e16f2fec608f57ceef540"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 11.5,
+          "maximumGridCellKmh": 41.9
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 18.6,
+          "maximumGridCellKmh": 57.0
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 13.3,
+          "maximumGridCellKmh": 59.8
+        }
+      }
+    },
+    {
+      "step": 105,
+      "validTime": "2026-09-15T03:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f105-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "a82bb8f5d8718664c501a6c6ec60ec97532e7059c774060aeab8a3431a3f8c24"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f105-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "74dc2cf3613efbaca57b08516e12513c16987ae874a0a088ffc6c6b4480d0980"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f105-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "0f952ec3957a604f0291cd912a38186e362f898c23438cd00431d92b828c4ec8"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 10.3,
+          "maximumGridCellKmh": 45.9
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 15.6,
+          "maximumGridCellKmh": 61.0
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 11.7,
+          "maximumGridCellKmh": 61.6
+        }
+      }
+    },
+    {
+      "step": 108,
+      "validTime": "2026-09-15T06:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f108-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "fa17b9d55e54e4087746d12aa7b58d393e2889833dda9d52d9864f9b64eaacf7"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f108-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "093c4c7aa03d240fe0639d3b1fc9903befb0d2a10e1a50d4ea537b50bf91291b"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f108-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "221df1169a5867689d475add33dded51f1dd0a0512515e09e18837842875566b"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 12.5,
+          "maximumGridCellKmh": 49.2
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 14.4,
+          "maximumGridCellKmh": 62.1
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 16.2,
+          "maximumGridCellKmh": 56.2
+        }
+      }
+    },
+    {
+      "step": 111,
+      "validTime": "2026-09-15T09:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f111-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "fa2b0cb137d8f279bd5e8018d4bae45be5a14a220ac0214a0994662ef822581d"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f111-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "7d4c08cc6f06dea27c5b79b33e61f77ed089adfa06607a96d3608c1a36fc7f87"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f111-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "d3fb19957135eaef24d2b76dbc0a127626e477235006bd2b04ee8954e4c1c540"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 15.8,
+          "maximumGridCellKmh": 35.6
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 17.5,
+          "maximumGridCellKmh": 43.7
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 19.7,
+          "maximumGridCellKmh": 40.8
+        }
+      }
+    },
+    {
+      "step": 114,
+      "validTime": "2026-09-15T12:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f114-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "4e87fc0cf2d8f5d3ac6c7d88333832d47d68d07ba19fd737264b85be2320255b"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f114-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "e673e2f36130bcbf7f5bb210508b559857d782485c3f03eef6aab7e98f831908"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f114-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "9867b978414efc27056b2210000a29c0d21ae381fee14938b4c904fd6357b497"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 19.4,
+          "maximumGridCellKmh": 38.7
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 21.7,
+          "maximumGridCellKmh": 42.9
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 22.0,
+          "maximumGridCellKmh": 43.2
+        }
+      }
+    },
+    {
+      "step": 117,
+      "validTime": "2026-09-15T15:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f117-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "5054fdc1161bfae2e933967b23231df76e5bb4e4fe8ce31300ea603a0f86b1f2"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f117-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "462db9fdfc99b4fa8b79586c00025deac1dfeaa819f246c39b996f01d35edda8"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f117-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "52d0ef13732761387dd221e31c6ff0f1b1075e382199c110dae9ca9a0b1b6462"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 16.8,
+          "maximumGridCellKmh": 36.4
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 25.0,
+          "maximumGridCellKmh": 47.3
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 20.9,
+          "maximumGridCellKmh": 51.5
+        }
+      }
+    },
+    {
+      "step": 120,
+      "validTime": "2026-09-15T18:00:00Z",
+      "grids": {
+        "wind-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f120-wind-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "55b3c537864227ec02f6159805cf4150bf2445ef95cbef22c8e6074122df42c4"
+        },
+        "wind-100m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f120-wind-100m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "92dc7635a49cd48f234e4580f5252cb2bded546b5a14c1a999de82bea7470187"
+        },
+        "gust-10m": {
+          "url": "/api/wind/grids/gfs-20260910-18-f120-gust-10m.bin",
+          "encoding": "float32-le-uv-interleaved",
+          "byteLength": 58200,
+          "sha256": "fc4ecc28ce1d12c5830e3e5253480ebac1bd589a5d0a3aef01150702e9a7bfb5"
+        }
+      },
+      "statistics": {
+        "wind-10m": {
+          "areaWeightedMeanKmh": 14.6,
+          "maximumGridCellKmh": 34.2
+        },
+        "wind-100m": {
+          "areaWeightedMeanKmh": 25.6,
+          "maximumGridCellKmh": 48.8
+        },
+        "gust-10m": {
+          "areaWeightedMeanKmh": 19.8,
+          "maximumGridCellKmh": 51.2
+        }
+      }
+    }
+  ],
   "data": {
-    "url": "/data/processed/grids/gfs-20260728-12-f000.bin",
+    "url": "/api/wind/grids/gfs-20260910-18-f000-wind-10m.bin",
     "encoding": "float32-le-uv-interleaved",
     "byteLength": 58200,
-    "sha256": "7f333b2bf2749fbd16a28a184e140e0035ebc451ccc88838f5e6838a62e6cc78"
+    "sha256": "f12c20e1c9b6a1512e03f65186771c7ea6220991ec4703df38eaab800f39a1ac"
   },
   "statistics": {
-    "areaWeightedMeanKmh": 21.6,
-    "maximumGridCellKmh": 44.2
+    "areaWeightedMeanKmh": 13.0,
+    "maximumGridCellKmh": 31.9
   }
 }

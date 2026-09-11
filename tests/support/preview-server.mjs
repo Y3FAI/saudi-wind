@@ -6,10 +6,13 @@
  * with a 200. `fetchWindGrid` then rejects on the length check and the map never
  * loads a dataset, which breaks every spec that needs the real fixture.
  *
- * This server serves `dist/` and maps the two production API paths onto the
- * committed fixture:
- *   /api/wind/latest                -> dist/data/processed/latest.json
- *   /api/wind/grids/<grid-name>.bin -> dist/data/processed/grids/<grid-name>.bin
+ * `dist/` deliberately excludes the dev-only wind fixtures (`vite.config.ts`
+ * strips them; `scripts/check-dist-manifest.mjs` fails the build if they come
+ * back), so the built site is served from `dist/` while the fixture is served
+ * from `public/`:
+ *   /api/wind/latest                -> public/data/processed/latest.json
+ *   /api/wind/grids/<grid-name>.bin -> public/data/processed/grids/<grid-name>.bin
+ *   /data/processed/*, /data/sample/* -> public/data/* (dev-only paths)
  *
  * It deliberately mirrors `vite preview`: unknown paths fall back to
  * `index.html`, known directories 404. No secrets, no network access.
@@ -20,6 +23,8 @@ import { extname, join, normalize, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const DIST = fileURLToPath(new URL("../../dist", import.meta.url));
+/** `public/` is where the dev-only wind fixtures live. */
+const PUBLIC = fileURLToPath(new URL("../../public", import.meta.url));
 const HOST = process.env.PREVIEW_HOST ?? "127.0.0.1";
 const PORT = Number(process.env.PREVIEW_PORT ?? "4173");
 
@@ -49,20 +54,29 @@ function contentType(path) {
   );
 }
 
-/** Maps a request path onto a file inside `dist/`, or null when it must 404. */
-function resolveFile(pathname) {
+/**
+ * Candidate files for a request path, best root first: the built site in
+ * `dist/`, then the dev-only fixture tree in `public/`. Returns an empty list
+ * when the path must 404.
+ */
+function resolveCandidates(pathname) {
   const decoded = decodeURIComponent(pathname);
   const gridMatch = /^\/api\/wind\/grids\/(.+)$/.exec(decoded);
   if (gridMatch) {
-    if (!GRID_NAME.test(gridMatch[1])) return null;
-    return join(DIST, "data", "processed", "grids", gridMatch[1]);
+    if (!GRID_NAME.test(gridMatch[1])) return [];
+    return [join(PUBLIC, "data", "processed", "grids", gridMatch[1])];
   }
   if (decoded === "/api/wind/latest") {
-    return join(DIST, "data", "processed", "latest.json");
+    return [join(PUBLIC, "data", "processed", "latest.json")];
   }
-  const candidate = join(DIST, normalize(decoded));
-  if (!candidate.startsWith(DIST + sep) && candidate !== DIST) return null;
-  return candidate;
+  const candidates = [];
+  for (const root of [DIST, PUBLIC]) {
+    const candidate = join(root, normalize(decoded));
+    if (candidate === root || candidate.startsWith(root + sep)) {
+      candidates.push(candidate);
+    }
+  }
+  return candidates;
 }
 
 function send(response, status, file, method) {
@@ -93,9 +107,11 @@ const server = createServer((request, response) => {
   }
 
   const pathname = new URL(request.url ?? "/", `http://${HOST}`).pathname;
-  const file = resolveFile(pathname);
+  const file = resolveCandidates(pathname).find(
+    (candidate) => existsSync(candidate) && statSync(candidate).isFile(),
+  );
 
-  if (file && existsSync(file) && statSync(file).isFile()) {
+  if (file) {
     send(response, 200, file, method);
     return;
   }

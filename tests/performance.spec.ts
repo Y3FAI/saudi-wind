@@ -5,8 +5,8 @@ import { expect, test, type Page } from "@playwright/test";
  *
  * These are regression floors, not device targets. GitHub-hosted runners share a
  * CPU and have no GPU, so the thresholds are deliberately generous; the device
- * targets the renderer actually aims at live in `src/lib/deviceProfile.ts` and
- * are confirmed on real hardware. Every assertion names the budget it broke, and
+ * targets the renderer actually aims at live in `src/lib/windStyle.ts` and are
+ * confirmed on real hardware. Every assertion names the budget it broke, and
  * `PERFORMANCE_SKIP_BUDGETS=1` skips the budget suite on a known-slow runner
  * while still running the frame-rate floor below.
  *
@@ -172,9 +172,11 @@ test("reaches an interactive map inside the budget @performance", async ({
   test.skip(skipBudgets, "PERFORMANCE_SKIP_BUDGETS=1");
 
   await page.goto("/");
-  // The timeline mounts only once the first forecast grid is decoded and on the
-  // map, so its appearance is the user-visible "map is ready" signal.
-  await expect(page.locator(".wind-timeline")).toBeVisible({ timeout: 15_000 });
+  // The wind canvas mounts only once the first forecast grid is decoded and on
+  // the map, so its appearance is the user-visible "map is ready" signal.
+  await expect(page.locator(".map-canvas--wind")).toBeVisible({
+    timeout: 15_000,
+  });
   const interactive = await page.evaluate(() => performance.now());
 
   expect(
@@ -189,7 +191,9 @@ test("holds steady frame time over the animation sample @performance", async ({
   test.skip(skipBudgets, "PERFORMANCE_SKIP_BUDGETS=1");
 
   await page.goto("/");
-  await expect(page.locator(".wind-timeline")).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator(".map-canvas--wind")).toBeVisible({
+    timeout: 15_000,
+  });
   await page.waitForTimeout(500);
 
   const stats = await frameStats(page, FRAME_SAMPLES);
@@ -219,7 +223,9 @@ test("holds the JS heap after thirty seconds of animation @performance", async (
   test.skip(skipBudgets, "PERFORMANCE_SKIP_BUDGETS=1");
 
   await page.goto("/");
-  await expect(page.locator(".wind-timeline")).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator(".map-canvas--wind")).toBeVisible({
+    timeout: 15_000,
+  });
   await page.waitForTimeout(30_000);
 
   const heap = await usedHeapMb(page);
@@ -239,7 +245,9 @@ test("does not grow the JS heap across three zoom and pan cycles @performance", 
   test.skip(skipBudgets, "PERFORMANCE_SKIP_BUDGETS=1");
 
   await page.goto("/");
-  await expect(page.locator(".wind-timeline")).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator(".map-canvas--wind")).toBeVisible({
+    timeout: 15_000,
+  });
 
   // Warm up so first-cycle allocations (render targets, buffers) are not
   // mistaken for a leak.

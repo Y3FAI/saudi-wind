@@ -14,7 +14,6 @@ from saudi_wind_pipeline.core import (
     assemble_manifest,
     build_frame,
     field_grids,
-    gust_vector,
 )
 
 RUN = RunSpec("20260728", "12")
@@ -47,9 +46,9 @@ def _grid(height: int = 2, width: int = 3, offset: float = 0.0) -> NormalizedGri
     )
 
 
-def _frame(step: int, fields: tuple[str, ...] = WIND_FIELDS) -> dict:
+def _frame(step: int) -> dict:
     return build_frame(
-        grids={field: _grid(offset=step * 0.5) for field in fields},
+        grids={field: _grid(offset=step * 0.5) for field in WIND_FIELDS},
         geometry=GEOMETRY,
         run=RUN,
         step=step,
@@ -89,8 +88,9 @@ def test_multi_frame_manifest_reference_order_and_hashes() -> None:
     assert manifest["sourceUnits"] == "m/s"
     assert manifest["displayUnits"] == "km/h"
     assert manifest["sample"] is False
-    assert manifest["levels"] == [10, 100]
-    assert manifest["variables"] == ["wind", "gust"]
+    # Honest advertisement: only the grids the frames actually carry.
+    assert manifest["levels"] == [10]
+    assert manifest["variables"] == ["wind"]
     assert [frame["step"] for frame in manifest["frames"]] == [0, 3, 6]
     assert [frame["validTime"] for frame in manifest["frames"]] == [
         "2026-07-28T12:00:00Z",
@@ -98,7 +98,7 @@ def test_multi_frame_manifest_reference_order_and_hashes() -> None:
         "2026-07-28T18:00:00Z",
     ]
     for frame in manifest["frames"]:
-        assert list(frame["grids"]) == list(WIND_FIELDS)
+        assert list(frame["grids"]) == ["wind-10m"]
         for metadata in frame["grids"].values():
             assert metadata["encoding"] == ENCODING
             assert metadata["byteLength"] == 2 * 3 * 8
@@ -171,39 +171,16 @@ def test_assemble_manifest_rejects_an_empty_frame_list() -> None:
         )
 
 
-def test_gust_vector_preserves_direction_at_gust_magnitude() -> None:
-    gust_u, gust_v = gust_vector(
-        np.array([[10.0]], dtype=np.float32),
-        np.array([[3.0]], dtype=np.float32),
-        np.array([[4.0]], dtype=np.float32),
-    )
-
-    assert gust_u[0, 0] == pytest.approx(6.0)
-    assert gust_v[0, 0] == pytest.approx(8.0)
-    assert float(np.hypot(gust_u[0, 0], gust_v[0, 0])) == pytest.approx(10.0)
-
-
-def test_gust_vector_is_zero_when_the_wind_is_calm() -> None:
-    gust_u, gust_v = gust_vector(
-        np.array([[10.0]], dtype=np.float32),
-        np.array([[0.0]], dtype=np.float32),
-        np.array([[0.0]], dtype=np.float32),
-    )
-
-    assert gust_u[0, 0] == 0.0
-    assert gust_v[0, 0] == 0.0
-
-
-def test_field_grids_requires_every_requested_field() -> None:
+def test_field_grids_requires_the_published_field() -> None:
     with pytest.raises(GridValidationError):
-        field_grids(
-            WIND_FIELDS,
-            {
-                "wind-10m": (
-                    _grid().u,
-                    _grid().v,
-                    _grid().latitudes,
-                    _grid().longitudes,
-                )
-            },
-        )
+        field_grids({})
+
+
+def test_field_grids_publishes_only_wind_10m() -> None:
+    components = {
+        "wind-10m": (_grid().u, _grid().v, _grid().latitudes, _grid().longitudes)
+    }
+
+    grids = field_grids(components)
+
+    assert list(grids) == ["wind-10m"]

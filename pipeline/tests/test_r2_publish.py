@@ -14,8 +14,6 @@ from saudi_wind_pipeline.r2_publish import (
     publish_directory,
 )
 
-FIELDS = ("wind-10m", "wind-100m", "gust-10m")
-
 
 def missing(operation: str) -> ClientError:
     return ClientError(

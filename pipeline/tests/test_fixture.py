@@ -18,9 +18,6 @@ BOUNDARY = ROOT / "public/data/saudi-boundary.geo.json"
 EXPECTED_GRID_SHA256 = (
     "7f333b2bf2749fbd16a28a184e140e0035ebc451ccc88838f5e6838a62e6cc78"
 )
-# The committed f000 fixture carries only the 10 m wind records, so the
-# offline rebuild pins the field set the same way the analysis-only v1 did.
-FIXTURE_FIELDS = ("wind-10m",)
 
 
 def _build():
@@ -32,7 +29,6 @@ def _build():
         ],
         boundary_path=BOUNDARY,
         fixture=True,
-        fields=FIXTURE_FIELDS,
     )
 
 
@@ -61,6 +57,7 @@ def test_committed_fixture_rebuilds_the_reviewed_grid_exactly() -> None:
         point["serializedMatch"]
         for point in artifacts.report["validation"]["comparisonPoints"]
     )
+    assert "gustDirection" not in artifacts.report["validation"]
 
 
 def test_fixture_manifest_is_v2_with_a_v1_compatible_mirror() -> None:
@@ -70,8 +67,8 @@ def test_fixture_manifest_is_v2_with_a_v1_compatible_mirror() -> None:
 
     assert manifest["schemaVersion"] == 2
     assert manifest["runId"] == "gfs-20260728-12"
-    # Only what the fixture actually publishes: levels/variables are derived from
-    # the frames, so a single-field run never advertises a grid it cannot serve.
+    # Only what the run actually publishes: levels/variables are derived from the
+    # frames, so the single 10 m field never advertises a grid it cannot serve.
     assert manifest["levels"] == [10]
     assert manifest["variables"] == ["wind"]
     assert manifest["heightMeters"] == 10
@@ -80,6 +77,21 @@ def test_fixture_manifest_is_v2_with_a_v1_compatible_mirror() -> None:
     assert manifest["statistics"] == manifest["frames"][0]["statistics"]["wind-10m"]
     assert first_grid["sha256"] == EXPECTED_GRID_SHA256
     assert first_grid["url"] == ("/api/wind/grids/gfs-20260728-12-f000-wind-10m.bin")
+
+
+def test_every_frame_grid_reference_resolves_to_published_bytes() -> None:
+    """No frame may point at a grid the run did not publish."""
+    artifacts = _build()
+    published = set(artifacts.grids)
+
+    for frame in artifacts.manifest["frames"]:
+        assert list(frame["grids"]) == ["wind-10m"]
+        for field, metadata in frame["grids"].items():
+            filename = metadata["url"].rsplit("/", 1)[-1]
+            assert filename in published, f"{frame['step']} {field} is unresolvable"
+            payload = artifacts.grids[filename]
+            assert metadata["byteLength"] == len(payload)
+            assert metadata["sha256"] == hashlib.sha256(payload).hexdigest()
 
 
 def test_published_vectors_match_decoded_source_cells() -> None:
@@ -106,13 +118,12 @@ def test_derived_levels_and_variables_follow_the_published_grids() -> None:
     """The manifest advertises exactly the grids its frames carry."""
     from saudi_wind_pipeline.core import _levels_for, _variables_for
 
-    full = [{"grids": {"wind-10m": {}, "wind-100m": {}, "gust-10m": {}}}]
-    wind_only = [{"grids": {"wind-10m": {}}}]
-    ten_and_gust = [{"grids": {"wind-10m": {}, "gust-10m": {}}}]
+    ten_metres = [{"grids": {"wind-10m": {}}}]
 
-    assert _levels_for(full) == [10, 100]
-    assert _variables_for(full) == ["wind", "gust"]
-    assert _levels_for(wind_only) == [10]
-    assert _variables_for(wind_only) == ["wind"]
-    assert _levels_for(ten_and_gust) == [10]
-    assert _variables_for(ten_and_gust) == ["wind", "gust"]
+    assert _levels_for(ten_metres) == [10]
+    assert _variables_for(ten_metres) == ["wind"]
+    # A grid the run does not publish is not advertised.
+    assert _levels_for([{"grids": {"wind-100m": {}}}]) == []
+    assert _variables_for([{"grids": {"wind-100m": {}}}]) == ["wind"]
+    assert _levels_for([{"grids": {}}]) == []
+    assert _variables_for([{"grids": {}}]) == []

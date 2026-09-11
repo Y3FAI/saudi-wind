@@ -6,12 +6,17 @@ being relied on for planning.
 
 ## Per-run footprint
 
-A publishable run is 41 frames × 3 grids = **123 grid objects**, each
+A publishable run is 41 frames × 1 grid = **41 grid objects**, each
 **58,200 bytes**, plus one manifest and one validation report:
 
 ```text
-123 × 58,200 bytes ≈ 7,158,600 bytes ≈ 6.8 MiB per run
+41 × 58,200 bytes ≈ 2,386,200 bytes ≈ 2.3 MiB per run
 ```
+
+Before the 11 September 2026 narrowing every frame also carried a 100 m wind and
+a 10 m gust grid — 41 × 3 = 123 objects, ≈ 7,158,600 bytes ≈ 6.8 MiB per run.
+Dropping the two extra fields cut a run to **one third** of both its object
+count and its stored bytes (−66.7%).
 
 ## R2
 
@@ -22,19 +27,20 @@ With the 30-day lifecycle on `grids/` and publication at most once per six-hour
 cycle, roughly **120 runs** can be retained:
 
 ```text
-120 runs × 7,158,600 bytes ≈ 0.86 GB ≈ 0.80 GiB
+120 runs × 2,386,200 bytes ≈ 0.29 GB ≈ 0.27 GiB
 ```
 
-That is around **8% of the 10 GB-month storage allowance** at the ceiling (the
+That is under **3% of the 10 GB-month storage allowance** at the ceiling (the
 monthly average while the window fills is lower). Note that the publisher's
 optional `--prune` flag is **not** enabled in the workflow; if it were enabled
 at its 48-hour default, retained volume would drop to roughly eight runs
-(≈ 55 MiB).
+(≈ 19 MB).
 
-Class A operations per publish are on the order of a few hundred (a `HEAD` per
+Class A operations per publish are on the order of a hundred (a `HEAD` per
 grid, a `PUT` per new grid, the manifest `PUT`, and a read-back). At roughly 120
-publishes a month that is tens of thousands of operations — well under the one
-million allowance. Class B reads come from the Pages Function; see below.
+publishes a month that is on the order of ten thousand operations — well under
+the one million allowance. Class B reads come from the Pages Function; see
+below.
 
 Source: [R2 pricing](https://developers.cloudflare.com/r2/pricing/).
 
@@ -48,10 +54,10 @@ Pages Function requests count against the Workers Free plan: **100,000 requests
 per day** with 10 ms of CPU per invocation. Static assets do not consume the
 request allowance. Per visit, the Function serves the manifest once and each
 grid that the user actually views; the client caches decoded frames and preloads
-the next frame, but scrubbing the full timeline across all three fields can
-request many grids. A new uncached visit is two requests (manifest + one grid);
-a full 41-frame playback across three fields approaches 123. Keep an eye on the
-daily request count if traffic or per-session scrubbing grows.
+the next frame, but scrubbing the full timeline can request many grids. A new
+uncached visit is two requests (manifest + one grid); a full 41-frame playback
+approaches 41. Keep an eye on the daily request count if traffic or per-session
+scrubbing grows.
 
 Sources:
 
@@ -66,8 +72,8 @@ provides free of charge for public repositories. CI runs for pull requests and
 `main`; ingestion checks hourly; the production monitor checks every six hours.
 
 The full forecast makes ingestion materially heavier than the original
-single-step run: each job now fetches one `.idx` per step plus five byte-range
-requests per step (about 246 HTTP requests, sequentially) and decodes 41 frames.
+single-step run: each job now fetches one `.idx` per step plus two byte-range
+requests per step (about 123 HTTP requests, sequentially) and decodes 41 frames.
 The ingest job has a 15-minute timeout. If the job starts timing out after
 checkout/network changes, that timeout — not the quota — is the first thing to
 raise. NOAA egress through the AWS Open Data programme is free.

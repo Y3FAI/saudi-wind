@@ -31,12 +31,15 @@ MANIFEST_SCHEMA_VERSION = 2
 ENCODING = "float32-le-uv-interleaved"
 DEFAULT_DATA_URL_PREFIX = "/api/wind/grids"
 
-#: The frozen multi-level field set: two wind levels plus 10 m wind gusts.
-WIND_FIELDS: tuple[str, ...] = ("wind-10m", "wind-100m", "gust-10m")
+#: The published field set. The product is deliberately one field: 10 m wind.
+WIND_FIELDS: tuple[str, ...] = ("wind-10m",)
+
+#: Height above ground of the published wind, in metres.
+WIND_LEVEL_METERS = 10
 
 #: Published levels and variable families advertised in the manifest.
-PUBLISHED_LEVELS: tuple[int, ...] = (10, 100)
-PUBLISHED_VARIABLES: tuple[str, ...] = ("wind", "gust")
+PUBLISHED_LEVELS: tuple[int, ...] = (WIND_LEVEL_METERS,)
+PUBLISHED_VARIABLES: tuple[str, ...] = ("wind",)
 
 #: 3-hourly forecast steps, f000 through f120 inclusive (41 frames).
 FORECAST_STEPS: tuple[int, ...] = tuple(range(0, 121, 3))
@@ -45,11 +48,8 @@ STEP_INTERVAL_HOURS = 3
 
 #: GRIB index selectors: (field, component, index variable, index level).
 RECORD_SELECTORS: tuple[tuple[str, str, str, str], ...] = (
-    ("wind-10m", "u", "UGRD", "10 m above ground"),
-    ("wind-10m", "v", "VGRD", "10 m above ground"),
-    ("wind-100m", "u", "UGRD", "100 m above ground"),
-    ("wind-100m", "v", "VGRD", "100 m above ground"),
-    ("gust-10m", "speed", "GUST", "surface"),
+    ("wind-10m", "u", "UGRD", f"{WIND_LEVEL_METERS} m above ground"),
+    ("wind-10m", "v", "VGRD", f"{WIND_LEVEL_METERS} m above ground"),
 )
 
 
@@ -296,18 +296,16 @@ def forecast_labels(step: int) -> frozenset[str]:
 def select_wind_ranges(
     records: Sequence[IndexRecord],
     step: int = 0,
-    fields: Sequence[str] = WIND_FIELDS,
 ) -> dict[str, ByteRange]:
     """Select the byte range of every required record for one forecast step.
 
-    Returns a mapping keyed by :func:`record_key` (e.g. ``wind-100m-u``,
-    ``gust-10m-speed``) so the downloader and decoder agree on identity.
+    Returns a mapping keyed by :func:`record_key` (``wind-10m-u``,
+    ``wind-10m-v``) so the downloader and decoder agree on identity.
     """
     labels = forecast_labels(step)
     selectable = {
         (variable, level): record_key(field, component)
         for field, component, variable, level in RECORD_SELECTORS
-        if field in fields
     }
     selected: dict[str, ByteRange] = {}
     for index, record in enumerate(records[:-1]):
@@ -329,11 +327,9 @@ def select_wind_ranges(
     return selected
 
 
-def ordered_record_keys(fields: Sequence[str] = WIND_FIELDS) -> tuple[str, ...]:
+def ordered_record_keys() -> tuple[str, ...]:
     return tuple(
-        record_key(field, component)
-        for field, component, _, _ in RECORD_SELECTORS
-        if field in fields
+        record_key(field, component) for field, component, _, _ in RECORD_SELECTORS
     )
 
 
@@ -342,7 +338,6 @@ def discover_latest_complete(
     now: datetime | None = None,
     lookback_cycles: int = 12,
     steps: Sequence[int] = FORECAST_STEPS,
-    fields: Sequence[str] = WIND_FIELDS,
     fetcher: FetchBytes = fetch_bytes,
 ) -> ForecastPlan:
     """Find the newest GFS cycle whose full 5-day forecast is published."""
@@ -360,7 +355,7 @@ def discover_latest_complete(
                 index_text = fetcher(f"{run.base_url_for(step)}.idx", None).decode(
                     "utf-8"
                 )
-                select_wind_ranges(parse_index(index_text), step, fields)
+                select_wind_ranges(parse_index(index_text), step)
                 indexes[step] = index_text
             return ForecastPlan(run=run, steps=tuple(steps), indexes=indexes)
         except (PipelineError, UnicodeDecodeError) as error:
@@ -376,13 +371,12 @@ def download_wind_records(
     ranges: Mapping[str, ByteRange],
     *,
     step: int | None = None,
-    fields: Sequence[str] = WIND_FIELDS,
     fetcher: FetchBytes = fetch_bytes,
 ) -> bytes:
     """Fetch every selected record with S3 byte-range GETs (concatenated)."""
     forecast_step = run.forecast_hour if step is None else step
     url = run.base_url_for(forecast_step)
-    order = [key for key in ordered_record_keys(fields) if key in ranges]
+    order = [key for key in ordered_record_keys() if key in ranges]
     if set(order) != set(ranges):
         raise IncompleteCycleError("Requested byte ranges do not match the record set.")
     payloads = []
@@ -395,29 +389,23 @@ def download_wind_records(
 def _canonical_record_key(
     short_name: str, type_of_level: str, level: int
 ) -> str | None:
-    """Map a decoded GRIB message onto a canonical record key.
+    """Map a decoded GRIB message onto the published 10 m wind record key.
 
-    NOAA publishes 10 m wind as ``10u``/``10v`` but the 100 m wind as the
-    generic ``u``/``v`` at ``heightAboveGround`` level 100, so the short name
-    alone is not enough to disambiguate the level.
+    NOAA publishes the 10 m wind as ``10u``/``10v`` at ``heightAboveGround``
+    level 10; every other record in the payload is not part of the single
+    published field.
     """
-    if short_name == "gust" and type_of_level == "surface":
-        return "gust-10m-speed"
-    if type_of_level != "heightAboveGround":
+    if type_of_level != "heightAboveGround" or level != WIND_LEVEL_METERS:
         return None
     if short_name in {"u", "10u"}:
-        component = "u"
-    elif short_name in {"v", "10v"}:
-        component = "v"
-    else:
-        return None
-    if level not in PUBLISHED_LEVELS:
-        return None
-    return f"wind-{level}m-{component}"
+        return "wind-10m-u"
+    if short_name in {"v", "10v"}:
+        return "wind-10m-v"
+    return None
 
 
 def decode_grib(payload: bytes) -> DecodedGrib:
-    """Decode wind/gust records, tolerating any level mix in the payload."""
+    """Decode the 10 m wind records of one range-downloaded payload."""
     decoded: dict[str, GribField] = {}
     with tempfile.NamedTemporaryFile(suffix=".grib2") as temporary:
         temporary.write(payload)
@@ -461,23 +449,6 @@ def decode_grib(payload: bytes) -> DecodedGrib:
     if not decoded:
         raise GridValidationError("GRIB payload contains no decodable records.")
     return DecodedGrib(fields=decoded)
-
-
-def gust_vector(
-    gust_speed: np.ndarray, u: np.ndarray, v: np.ndarray
-) -> tuple[np.ndarray, np.ndarray]:
-    """Derive a gust UV vector from the gust speed and 10 m wind direction.
-
-    NOAA's ``GUST`` record carries speed only, while the on-wire grid format is
-    UV-interleaved. We keep the 10 m wind direction and resample it to the gust
-    magnitude (zeros where the 10 m wind is calm, so direction is undefined).
-    """
-    magnitude = np.hypot(u, v)
-    calm = magnitude <= 0.0
-    safe = np.where(calm, 1.0, magnitude)
-    gust_u = np.where(calm, 0.0, gust_speed * u / safe)
-    gust_v = np.where(calm, 0.0, gust_speed * v / safe)
-    return gust_u.astype(np.float32), gust_v.astype(np.float32)
 
 
 def normalize_and_crop(
@@ -617,15 +588,14 @@ def _serialize_uv(vector: NormalizedGrid) -> bytes:
 
 
 def field_grids(
-    fields: Sequence[str],
     components: Mapping[str, tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]],
 ) -> dict[str, NormalizedGrid]:
-    """Normalize + crop every requested field for one frame.
+    """Normalize + crop every published field for one frame.
 
     ``components`` maps a field name onto ``(u, v, latitudes, longitudes)``.
     """
     grids: dict[str, NormalizedGrid] = {}
-    for field in fields:
+    for field in WIND_FIELDS:
         if field not in components:
             raise GridValidationError(f"Frame is missing the {field} field.")
         u, v, latitudes, longitudes = components[field]
@@ -682,22 +652,22 @@ def _published_grid_keys(frames: Sequence[Mapping[str, Any]]) -> set[str]:
 def _levels_for(frames: Sequence[Mapping[str, Any]]) -> list[int]:
     """Levels actually published, ascending — never advertise an absent level.
 
-    A single-field run (e.g. the committed fixture, or ``--fields wind-10m``)
-    must not claim 100 m, or the client offers a height it cannot render.
+    The set is derived from the frames, so a run that publishes only some of
+    the configured levels must not claim the others, or the client offers a
+    height it cannot render.
     """
     keys = _published_grid_keys(frames)
     return [level for level in PUBLISHED_LEVELS if f"wind-{level}m" in keys]
 
 
 def _variables_for(frames: Sequence[Mapping[str, Any]]) -> list[str]:
-    """Variables actually published, in the frozen order wind then gust."""
+    """Variables actually published, in the frozen manifest order."""
     keys = _published_grid_keys(frames)
-    variables = []
-    if any(key.startswith("wind-") for key in keys):
-        variables.append("wind")
-    if "gust-10m" in keys:
-        variables.append("gust")
-    return variables
+    return [
+        variable
+        for variable in PUBLISHED_VARIABLES
+        if any(key.startswith(f"{variable}-") for key in keys)
+    ]
 
 
 def assemble_manifest(
@@ -774,7 +744,6 @@ def build_artifacts(
     data_url_prefix: str = DEFAULT_DATA_URL_PREFIX,
     published_at: datetime | None = None,
     fixture: bool = False,
-    fields: Sequence[str] = WIND_FIELDS,
 ) -> PipelineArtifacts:
     """Build every forecast frame plus the v2 manifest and a report."""
     geometry = _geometry_from_path(boundary_path)
@@ -786,36 +755,20 @@ def build_artifacts(
 
     for source in sorted(sources, key=lambda item: item.step):
         step = source.step
-        ranges = select_wind_ranges(parse_index(source.index_text), step, fields)
+        ranges = select_wind_ranges(parse_index(source.index_text), step)
         decoded = decode_grib(source.payload)
-        components: dict[
-            str, tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
-        ] = {}
-        for field in fields:
-            if field == "gust-10m":
-                decoded.require("wind-10m-u", "wind-10m-v", "gust-10m-speed")
-                latitudes, longitudes = decoded.coordinates(
-                    ["wind-10m-u", "gust-10m-speed"]
-                )
-                gust_u, gust_v = gust_vector(
-                    decoded.fields["gust-10m-speed"].values,
-                    decoded.fields["wind-10m-u"].values,
-                    decoded.fields["wind-10m-v"].values,
-                )
-                components[field] = (gust_u, gust_v, latitudes, longitudes)
-            else:
-                decoded.require(f"{field}-u", f"{field}-v")
-                latitudes, longitudes = decoded.coordinates(
-                    [f"{field}-u", f"{field}-v"]
-                )
-                components[field] = (
-                    decoded.fields[f"{field}-u"].values,
-                    decoded.fields[f"{field}-v"].values,
-                    latitudes,
-                    longitudes,
-                )
+        decoded.require("wind-10m-u", "wind-10m-v")
+        latitudes, longitudes = decoded.coordinates(["wind-10m-u", "wind-10m-v"])
+        components = {
+            "wind-10m": (
+                decoded.fields["wind-10m-u"].values,
+                decoded.fields["wind-10m-v"].values,
+                latitudes,
+                longitudes,
+            )
+        }
 
-        frame_grids = field_grids(fields, components)
+        frame_grids = field_grids(components)
         frame = build_frame(
             grids=frame_grids,
             geometry=geometry,
@@ -826,7 +779,7 @@ def build_artifacts(
         if reference_grid is None:
             reference_grid = frame_grids["wind-10m"]
 
-        for field, metadata in frame["grids"].items():
+        for metadata in frame["grids"].values():
             grids[metadata["url"].rsplit("/", 1)[-1]] = metadata.pop("_bytes")
         frames.append(frame)
 
@@ -901,7 +854,7 @@ def build_artifacts(
     report = {
         "runId": run.run_id,
         "schemaVersion": MANIFEST_SCHEMA_VERSION,
-        "fields": list(fields),
+        "fields": list(WIND_FIELDS),
         "steps": [frame["step"] for frame in frames],
         "frames": report_frames,
         "validation": {
@@ -915,7 +868,6 @@ def build_artifacts(
                 float(np.max(np.hypot(reference_grid.u, reference_grid.v))), 4
             ),
             "plausibleSpeedLimitMs": MAX_PLAUSIBLE_SPEED_MS,
-            "gustDirection": "derived-from-wind-10m",
             "comparisonPoints": comparison_points,
         },
         "statistics": dict(manifest["statistics"]),
@@ -1051,15 +1003,12 @@ def capture_fixture(
     *,
     run: RunSpec,
     fixture_directory: Path,
-    fields: Sequence[str] = WIND_FIELDS,
     fetcher: FetchBytes = fetch_bytes,
 ) -> dict[str, Any]:
     step = run.forecast_hour
     index_text = fetcher(f"{run.base_url_for(step)}.idx", None).decode("utf-8")
-    ranges = select_wind_ranges(parse_index(index_text), step, fields)
-    payload = download_wind_records(
-        run, ranges, step=step, fields=fields, fetcher=fetcher
-    )
+    ranges = select_wind_ranges(parse_index(index_text), step)
+    payload = download_wind_records(run, ranges, step=step, fetcher=fetcher)
     fixture_directory.mkdir(parents=True, exist_ok=True)
     (fixture_directory / "source.idx").write_text(index_text, encoding="utf-8")
     (fixture_directory / "wind-records.grib2").write_bytes(payload)
@@ -1067,7 +1016,7 @@ def capture_fixture(
         "date": run.date,
         "hour": run.hour,
         "forecastHour": step,
-        "fields": list(fields),
+        "fields": list(WIND_FIELDS),
         "sourceUrl": run.base_url_for(step),
         "sourceSha256": hashlib.sha256(payload).hexdigest(),
         "recordRanges": {
@@ -1112,7 +1061,6 @@ def frames_from_plan(
     indexes: Mapping[int, str] | None = None,
     *,
     fetcher: FetchBytes = fetch_bytes,
-    fields: Sequence[str] = WIND_FIELDS,
 ) -> list[FrameSource]:
     """Fetch the index (unless cached) and byte-range payload for every step."""
     sources: list[FrameSource] = []
@@ -1121,9 +1069,7 @@ def frames_from_plan(
             index_text = indexes[step]
         else:
             index_text = fetcher(f"{run.base_url_for(step)}.idx", None).decode("utf-8")
-        ranges = select_wind_ranges(parse_index(index_text), step, fields)
-        payload = download_wind_records(
-            run, ranges, step=step, fields=fields, fetcher=fetcher
-        )
+        ranges = select_wind_ranges(parse_index(index_text), step)
+        payload = download_wind_records(run, ranges, step=step, fetcher=fetcher)
         sources.append(FrameSource(step=step, index_text=index_text, payload=payload))
     return sources

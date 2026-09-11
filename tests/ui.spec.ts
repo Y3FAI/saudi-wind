@@ -56,7 +56,7 @@ test("advances the visible wind trails between frames", async ({ page }) => {
   expect(Buffer.compare(firstFrame, secondFrame)).not.toBe(0);
 });
 
-test("keeps trails populated through inspection and zoom", async ({ page }) => {
+test("keeps trails populated through a tap and zoom", async ({ page }) => {
   await page.goto("/");
   const map = page.getByRole("application");
   const canvas = map.locator(".map-canvas--wind");
@@ -67,12 +67,13 @@ test("keeps trails populated through inspection and zoom", async ({ page }) => {
   const before = await countVisibleTrailPixels(canvas);
   expect(before).toBeGreaterThan(200);
 
+  // A tap on the map is inert now: it must not blank the moving trails.
   await map.click({
     position: { x: bounds.width * 0.63, y: bounds.height * 0.51 },
   });
   await page.waitForTimeout(80);
-  const afterInspection = await countVisibleTrailPixels(canvas);
-  expect(afterInspection).toBeGreaterThan(before * 0.35);
+  const afterTap = await countVisibleTrailPixels(canvas);
+  expect(afterTap).toBeGreaterThan(before * 0.35);
 
   await page.getByRole("button", { name: "تكبير" }).click();
   await page.waitForTimeout(80);
@@ -90,7 +91,7 @@ test("zooms and returns to the approved initial framing", async ({ page }) => {
   await expect(map).toHaveAttribute("data-zoom", "1.00");
 });
 
-test("supports keyboard navigation and inspection", async ({ page }) => {
+test("supports keyboard navigation", async ({ page }) => {
   await page.goto("/");
   const map = page.getByRole("application");
   await map.focus();
@@ -99,30 +100,6 @@ test("supports keyboard navigation and inspection", async ({ page }) => {
   await expect(map).not.toHaveAttribute("data-zoom", "1.00");
   await page.keyboard.press("Home");
   await expect(map).toHaveAttribute("data-zoom", "1.00");
-  await page.keyboard.press("Enter");
-  await expect(page.getByText("الموقع المحدد")).toBeVisible();
-  await expect(page.locator(".location-coordinates bdi")).toHaveCount(2);
-});
-
-test("inspects an inside point and ignores an outside point", async ({
-  page,
-}) => {
-  await page.goto("/");
-  const map = page.getByRole("application");
-  const bounds = await map.boundingBox();
-  if (!bounds) throw new Error("Map bounds are unavailable.");
-
-  await map.click({
-    position: { x: bounds.width * 0.63, y: bounds.height * 0.51 },
-  });
-  await expect(page.getByText("الموقع المحدد")).toBeVisible();
-  const readout = page.locator(".location-readout");
-  const selectedText = await readout.textContent();
-
-  await map.click({
-    position: { x: bounds.width * 0.5, y: bounds.height - 8 },
-  });
-  await expect(readout).toHaveText(selectedText ?? "");
 });
 
 test("shows a static frame when reduced motion is requested", async ({

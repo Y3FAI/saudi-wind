@@ -170,74 +170,6 @@ h1 {
   font-size: 0.67rem;
 }
 
-.location-readout {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.75rem;
-  align-items: center;
-  margin-top: 1.75rem;
-  color: rgba(229, 232, 230, 0.62);
-  font-size: 0.72rem;
-  line-height: 1.7;
-}
-
-.location-readout p {
-  margin: 0;
-}
-
-.location-readout--active {
-  align-items: start;
-  color: rgba(229, 232, 230, 0.62);
-}
-
-.location-cross {
-  display: grid;
-  width: 1.55rem;
-  height: 1.55rem;
-  place-items: center;
-  border: 1px solid rgba(229, 232, 230, 0.18);
-  border-radius: 50%;
-  font-size: 1rem;
-  font-weight: 300;
-}
-
-.location-title {
-  color: rgba(229, 232, 230, 0.62);
-  font-size: 0.66rem;
-}
-
-.location-coordinates {
-  margin-top: 0.15rem !important;
-  color: rgba(229, 232, 230, 0.66);
-  direction: rtl;
-  font-size: 0.72rem;
-}
-
-.location-wind {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.25rem 0.7rem;
-  margin-top: 0.45rem !important;
-}
-
-.location-wind strong {
-  color: rgba(235, 238, 236, 0.92);
-  direction: ltr;
-  font-size: 1.15rem;
-  font-weight: 300;
-}
-
-.location-wind strong span {
-  color: rgba(229, 232, 230, 0.64);
-  font-size: 0.66rem;
-}
-
-.location-wind > span {
-  color: rgba(229, 232, 230, 0.66);
-  font-size: 0.7rem;
-}
-
 .source-line {
   display: flex;
   flex-wrap: wrap;
@@ -514,17 +446,9 @@ h1 {
     gap: 0.25rem;
   }
 
-  .location-readout {
-    position: absolute;
-    top: calc(10.5rem + min(55svh, 32rem) + 7.5rem);
-    right: 1.5rem;
-    left: 1.5rem;
-    margin-top: 0;
-  }
-
   .source-line {
     position: absolute;
-    top: calc(10.5rem + min(55svh, 32rem) + 13.5rem);
+    top: calc(10.5rem + min(55svh, 32rem) + 7.5rem);
     right: 1.5rem;
   }
 

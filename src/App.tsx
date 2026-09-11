@@ -1,14 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 
-import { WindMap, type WindSelection } from "./components/WindMap";
-import { WindTimeline } from "./components/WindTimeline";
+import { WindMap } from "./components/WindMap";
 import { formatKmh, formatSaudiDate } from "./lib/format";
 import {
   availableGridKeys,
-  availableLevels,
   frameForTime,
   frameGridIndex,
-  gridKeyForLevel,
   loadWindManifest,
 } from "./lib/wind";
 import { WindGridCache } from "./lib/windGridCache";
@@ -26,16 +23,22 @@ const WIND_MANIFEST_URL =
   import.meta.env.VITE_WIND_MANIFEST_URL ??
   (import.meta.env.DEV ? "/data/processed/latest.json" : "/api/wind/latest");
 
+/**
+ * The map renders one field: the 10 m wind. A run that does not publish 10 m
+ * wind falls back to whichever grid it does publish, so a version-one or
+ * 100 m-only manifest still renders instead of blanking.
+ */
+function primaryGridKey(manifest: WindManifest): WindGridKey | null {
+  const keys = availableGridKeys(manifest.frames);
+  return keys.includes("wind-10m") ? "wind-10m" : (keys[0] ?? null);
+}
+
 export function App() {
   const [state, setState] = useState<AppState | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [selection, setSelection] = useState<WindSelection | null>(null);
-  const [level, setLevel] = useState(10);
-  const [gusts, setGusts] = useState(false);
   const [frameIndex, setFrameIndex] = useState(0);
   const [dataset, setDataset] = useState<WindDataset | null>(null);
   const [gridError, setGridError] = useState<string | null>(null);
-  const [now, setNow] = useState(() => Date.now());
   const [cache] = useState(() => new WindGridCache());
 
   useEffect(() => {
@@ -59,13 +62,9 @@ export function App() {
           return;
         }
         currentRunId = manifest.runId;
-        setSelection(null);
         setState({ boundary, manifest });
-        setNow(Date.now());
-        const levels = availableLevels(manifest.frames);
-        setLevel((current) =>
-          levels.includes(current) ? current : (levels[0] ?? 10),
-        );
+        // The map shows the forecast frame nearest to now; there is no
+        // timeline to scrub, so this is the only frame selection.
         const currentFrameIndex = manifest.frames.indexOf(
           frameForTime(manifest.frames, Date.now()),
         );
@@ -88,23 +87,13 @@ export function App() {
     };
   }, []);
 
-  const activeGridKey: WindGridKey = gridKeyForLevel(level, gusts);
-  const gridKeys = useMemo(
-    () => (state ? availableGridKeys(state.manifest.frames) : []),
+  const activeGridKey = useMemo(
+    () => (state ? primaryGridKey(state.manifest) : null),
     [state],
   );
-  const levels = useMemo(
-    () => (state ? availableLevels(state.manifest.frames) : [10]),
-    [state],
-  );
-  const gustsAvailable = gridKeys.includes("gust-10m") && level === 10;
 
   useEffect(() => {
-    if (!gustsAvailable && gusts) setGusts(false);
-  }, [gusts, gustsAvailable]);
-
-  useEffect(() => {
-    if (!state) return;
+    if (!state || !activeGridKey) return;
     const { frames } = state.manifest;
     const index = frameGridIndex(
       frames,
@@ -142,18 +131,6 @@ export function App() {
     };
   }, [activeGridKey, cache, frameIndex, state]);
 
-  useEffect(() => {
-    if (!state || !dataset) return;
-    const { frames } = state.manifest;
-    const nextIndex = frameGridIndex(
-      frames,
-      Math.min(frameIndex + 1, frames.length - 1),
-      activeGridKey,
-    );
-    if (nextIndex < 0) return;
-    cache.preload(frames[nextIndex].grids[activeGridKey]);
-  }, [activeGridKey, cache, dataset, frameIndex, state]);
-
   const displayedTime = dataset?.frame.validTime ?? state?.manifest.validTime;
   const stale = displayedTime
     ? Date.now() - Date.parse(displayedTime) > STALE_AFTER_MS
@@ -164,7 +141,7 @@ export function App() {
       ? "NOAA GFS · آخر بيانات متاحة"
       : "NOAA GFS · بيانات حديثة";
   const statistics =
-    dataset?.frame.statistics[activeGridKey] ??
+    dataset?.frame.statistics[activeGridKey ?? "wind-10m"] ??
     state?.manifest.statistics ??
     null;
 
@@ -172,25 +149,7 @@ export function App() {
     <main className="app-shell">
       <section className="map-stage" aria-busy={!state && !error}>
         {state && dataset ? (
-          <WindMap
-            boundary={state.boundary}
-            dataset={dataset}
-            selection={selection}
-            onSelection={setSelection}
-          >
-            <WindTimeline
-              frames={state.manifest.frames}
-              frameIndex={frameIndex}
-              onFrameIndexChange={setFrameIndex}
-              level={level}
-              availableLevels={levels}
-              onLevelChange={setLevel}
-              gusts={gusts}
-              gustsAvailable={gustsAvailable}
-              onGustsChange={setGusts}
-              now={now}
-            />
-          </WindMap>
+          <WindMap boundary={state.boundary} dataset={dataset} />
         ) : (
           <div className="loading-state" role={error ? "alert" : "status"}>
             <span className="loading-mark" aria-hidden="true" />
@@ -253,45 +212,9 @@ export function App() {
               </div>
             </dl>
 
-            <div
-              className={
-                selection
-                  ? "location-readout location-readout--active"
-                  : "location-readout"
-              }
-              aria-live="polite"
-            >
-              <span className="location-cross" aria-hidden="true">
-                +
-              </span>
-              {selection ? (
-                <div>
-                  <p className="location-title">الموقع المحدد</p>
-                  <p className="location-coordinates">
-                    <bdi>{selection.latitude.toFixed(2)}°</bdi> شمالاً ·{" "}
-                    <bdi>{selection.longitude.toFixed(2)}°</bdi> شرقاً
-                  </p>
-                  <p className="location-wind">
-                    <strong>
-                      <bdi>{formatKmh(selection.speedKmh)}</bdi>
-                      <span> كم/س</span>
-                    </strong>
-                    <span>
-                      {selection.directionLabel} ·{" "}
-                      <bdi>{Math.round(selection.directionDegrees)}°</bdi>
-                    </span>
-                  </p>
-                </div>
-              ) : (
-                <p>اضغط داخل المملكة لعرض اتجاه الرياح وسرعتها.</p>
-              )}
-            </div>
-
             <div className="source-line">
               <span>NOAA GFS</span>
               <span>دقة 0.25°</span>
-              <span>ارتفاع {level} م</span>
-              {gusts && <span>هبّات</span>}
             </div>
           </aside>
         )}

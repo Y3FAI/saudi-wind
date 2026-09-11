@@ -10,6 +10,9 @@ import pytest
 from saudi_wind_pipeline.core import (
     ENCODING,
     FORECAST_STEPS,
+    PUBLISHED_LEVELS,
+    PUBLISHED_VARIABLES,
+    WIND_FIELDS,
     ByteRange,
     FrameSource,
     GridValidationError,
@@ -36,7 +39,10 @@ INDEX = """\
 4:40:d=2026072812:ICEG:surface:anl:
 """
 
-MULTILEVEL_INDEX = """\
+#: A realistic full GFS .idx: it carries the 100 m wind and the surface gust
+#: records NOAA publishes next to the 10 m wind. The pipeline must select the
+#: 10 m pair and ignore everything else.
+SUPERSET_INDEX = """\
 1:0:d=2026072812:PRMSL:mean sea level:anl:
 2:100:d=2026072812:GUST:surface:anl:
 3:200:d=2026072812:UGRD:10 m above ground:anl:
@@ -46,10 +52,28 @@ MULTILEVEL_INDEX = """\
 7:600:d=2026072812:TMP:surface:anl:
 """
 
+#: No 10 m wind at all: only the 100 m pair and the surface gust.
+NO_TEN_METRE_WIND_INDEX = """\
+1:0:d=2026072812:PRMSL:mean sea level:anl:
+2:100:d=2026072812:GUST:surface:anl:
+3:200:d=2026072812:UGRD:100 m above ground:anl:
+4:300:d=2026072812:VGRD:100 m above ground:anl:
+"""
 
-def index_for_step(step: int, *, template: str = MULTILEVEL_INDEX) -> str:
+WORKING_FIELDS = ("wind-10m-u", "wind-10m-v")
+
+
+def index_for_step(step: int, *, template: str = SUPERSET_INDEX) -> str:
     label = "anl" if step == 0 else f"{step} hour fcst"
     return template.replace(":anl:", f":{label}:")
+
+
+def test_publishes_a_single_ten_metre_wind_field() -> None:
+    """The product is one field; nothing may advertise a second one."""
+    assert WIND_FIELDS == ("wind-10m",)
+    assert PUBLISHED_LEVELS == (10,)
+    assert PUBLISHED_VARIABLES == ("wind",)
+    assert ordered_record_keys() == ("wind-10m-u", "wind-10m-v")
 
 
 def test_forecast_steps_are_three_hourly_through_f120() -> None:
@@ -87,7 +111,7 @@ def test_runspec_accepts_forecast_steps_and_names_the_cycle() -> None:
 
     assert run.forecast_hour == 3
     assert run.run_id == "gfs-20260728-12"
-    assert run.grid_filename(3, "wind-100m") == "gfs-20260728-12-f003-wind-100m.bin"
+    assert run.grid_filename(3, "wind-10m") == "gfs-20260728-12-f003-wind-10m.bin"
     assert run.base_url_for(3).endswith("gfs.t12z.pgrb2.0p25.f003")
     assert run.valid_time(3) == datetime(2026, 7, 28, 15, tzinfo=UTC)
 
@@ -100,7 +124,7 @@ def test_runspec_rejects_unaligned_or_out_of_range_steps(forecast_hour: int) -> 
 
 def test_parses_exact_uv_byte_ranges_for_the_analysis() -> None:
     records = parse_index(INDEX)
-    ranges = select_wind_ranges(records, step=0, fields=("wind-10m",))
+    ranges = select_wind_ranges(records, step=0)
 
     assert ranges == {
         "wind-10m-u": ByteRange("wind-10m-u", 12, 23),
@@ -108,44 +132,34 @@ def test_parses_exact_uv_byte_ranges_for_the_analysis() -> None:
     }
 
 
-def test_selects_every_multilevel_and_gust_record() -> None:
-    ranges = select_wind_ranges(parse_index(MULTILEVEL_INDEX), step=0)
+def test_selects_only_the_ten_metre_wind_records() -> None:
+    """100 m wind and gusts are ignored, not merely deprioritised."""
+    ranges = select_wind_ranges(parse_index(SUPERSET_INDEX), step=0)
 
     assert ranges == {
-        "gust-10m-speed": ByteRange("gust-10m-speed", 100, 199),
         "wind-10m-u": ByteRange("wind-10m-u", 200, 299),
         "wind-10m-v": ByteRange("wind-10m-v", 300, 399),
-        "wind-100m-u": ByteRange("wind-100m-u", 400, 499),
-        "wind-100m-v": ByteRange("wind-100m-v", 500, 599),
     }
-    assert ordered_record_keys() == (
-        "wind-10m-u",
-        "wind-10m-v",
-        "wind-100m-u",
-        "wind-100m-v",
-        "gust-10m-speed",
-    )
-    assert record_key("gust-10m", "speed") == "gust-10m-speed"
+    assert record_key("wind-10m", "u") == "wind-10m-u"
 
 
 def test_selects_forecast_step_labels_for_positive_steps() -> None:
     ranges = select_wind_ranges(parse_index(index_for_step(3)), step=3)
 
-    assert set(ranges) == {
-        "wind-10m-u",
-        "wind-10m-v",
-        "wind-100m-u",
-        "wind-100m-v",
-        "gust-10m-speed",
-    }
+    assert set(ranges) == set(WORKING_FIELDS)
 
 
 @pytest.mark.parametrize(
     "index_text",
     [
-        MULTILEVEL_INDEX.replace("UGRD:100 m above ground", "UGRD:80 m above ground"),
-        MULTILEVEL_INDEX.replace("GUST:surface", "GUST:10 m above ground"),
-        MULTILEVEL_INDEX.replace("GUST:surface", "GUST:surface:3 hour fcst"),
+        # Only the 100 m pair and the gust: no 10 m wind to publish.
+        NO_TEN_METRE_WIND_INDEX,
+        # 10 m wind mislabelled at another level.
+        SUPERSET_INDEX.replace("UGRD:10 m above ground", "UGRD:80 m above ground"),
+        # 10 m wind at the wrong height type.
+        SUPERSET_INDEX.replace(
+            "VGRD:10 m above ground", "VGRD:10 m above mean sea level"
+        ),
     ],
 )
 def test_rejects_missing_or_mislabeled_records(index_text: str) -> None:
@@ -155,7 +169,7 @@ def test_rejects_missing_or_mislabeled_records(index_text: str) -> None:
 
 def test_rejects_step_labels_that_do_not_match_the_requested_step() -> None:
     with pytest.raises(IncompleteCycleError):
-        select_wind_ranges(parse_index(MULTILEVEL_INDEX), step=3)
+        select_wind_ranges(parse_index(SUPERSET_INDEX), step=3)
 
 
 def test_range_download_requests_only_selected_records() -> None:
@@ -172,37 +186,26 @@ def test_range_download_requests_only_selected_records() -> None:
         {
             "wind-10m-u": ByteRange("wind-10m-u", 200, 299),
             "wind-10m-v": ByteRange("wind-10m-v", 300, 399),
-            "wind-100m-u": ByteRange("wind-100m-u", 400, 499),
-            "wind-100m-v": ByteRange("wind-100m-v", 500, 599),
-            "gust-10m-speed": ByteRange("gust-10m-speed", 100, 199),
         },
         step=3,
         fetcher=fake_fetch,
     )
 
-    assert len(payload) == 500
-    assert [call[1] for call in calls] == [
-        (200, 299),
-        (300, 399),
-        (400, 499),
-        (500, 599),
-        (100, 199),
-    ]
+    assert len(payload) == 200
+    assert [call[1] for call in calls] == [(200, 299), (300, 399)]
     assert all(call[0] == run.base_url_for(3) for call in calls)
 
 
 def test_discovery_skips_incomplete_newest_cycle() -> None:
     calls: list[str] = []
-    break_100m = MULTILEVEL_INDEX.replace(
-        "UGRD:100 m above ground", "UGRD:80 m above ground"
-    )
+    broken = SUPERSET_INDEX.replace("UGRD:10 m above ground", "UGRD:80 m above ground")
 
     def fake_fetch(url: str, byte_range: tuple[int, int] | None) -> bytes:
         calls.append(url)
         assert url.endswith(".idx")
         step = int(url.rsplit("f", 1)[-1].split(".")[0])
         if "gfs.20260728/18" in url:
-            return index_for_step(step, template=break_100m).encode()
+            return index_for_step(step, template=broken).encode()
         return index_for_step(step).encode()
 
     plan = discover_latest_complete(

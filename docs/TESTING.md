@@ -2,17 +2,18 @@
 
 ## What runs where
 
-| Gate                 | Command                                    | Runs                             | Covers                                                                            |
-| -------------------- | ------------------------------------------ | -------------------------------- | --------------------------------------------------------------------------------- |
-| Types                | `bunx tsc -b` / `bun run typecheck`        | local + CI                       | `src/` and the Vite config                                                        |
-| Functions types      | `bun run typecheck:functions`              | local + CI                       | `functions/`                                                                      |
-| Unit + contract      | `bun run test` (Vitest)                    | local + CI                       | `src/**/*.test.ts`, `functions/**/*.test.ts`, `tests/**/*.test.ts`                |
-| Format               | `bunx prettier --check .`                  | local + CI                       | every tracked file                                                                |
-| Build                | `bun run build`                            | local + CI                       | production bundle                                                                 |
-| Browser suite        | `bun run test:ui`                          | **CI only**                      | `tests/*.spec.ts` on desktop + mobile Chromium, plus Firefox/WebKit compatibility |
-| Performance          | `bun run test:performance`                 | **CI only**                      | `tests/performance.spec.ts`, one worker                                           |
-| Pipeline             | `bun run check:pipeline` (`uv run pytest`) | local + CI                       | `pipeline/`                                                                       |
-| Production freshness | `Production freshness guard` job           | **CI only**, schedule + dispatch | deployed manifest age and shape                                                   |
+| Gate                 | Command                                    | Runs                             | Covers                                                                                                       |
+| -------------------- | ------------------------------------------ | -------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Types                | `bunx tsc -b` / `bun run typecheck`        | local + CI                       | `src/` and the Vite config                                                                                   |
+| Functions types      | `bun run typecheck:functions`              | local + CI                       | `functions/`                                                                                                 |
+| Unit + contract      | `bun run test` (Vitest)                    | local + CI                       | `src/**/*.test.ts`, `functions/**/*.test.ts`, `tests/**/*.test.ts`                                           |
+| Format               | `bunx prettier --check .`                  | local + CI                       | every tracked file                                                                                           |
+| Build                | `bun run build`                            | local + CI                       | production bundle                                                                                            |
+| Bundle guard         | part of `bun run build`                    | local + CI                       | `scripts/check-dist-manifest.mjs`: no dev fixture and no `schemaVersion: 1` / zero-frame manifest in `dist/` |
+| Browser suite        | `bun run test:ui`                          | **CI only**                      | `tests/*.spec.ts` on desktop + mobile Chromium, plus Firefox/WebKit compatibility                            |
+| Performance          | `bun run test:performance`                 | **CI only**                      | `tests/performance.spec.ts`, one worker                                                                      |
+| Pipeline             | `bun run check:pipeline` (`uv run pytest`) | local + CI                       | `pipeline/`                                                                                                  |
+| Production freshness | `Production freshness guard` job           | **CI only**, schedule + dispatch | deployed manifest age and shape                                                                              |
 
 `bun run check` is the single local command that runs the Vitest, type, format and
 build gates; `bun run test` alone is the fast inner loop.
@@ -46,9 +47,13 @@ Playwright boots a `webServer` before the run: it builds with
 `tests/support/preview-server.mjs`. That server exists because `vite preview` has
 no Cloudflare Functions: the committed manifest references
 `/api/wind/grids/<name>.bin`, which `vite preview` answers with `index.html`, so
-the grid length check fails and no dataset ever loads. The server maps
-`/api/wind/latest` and `/api/wind/grids/*` onto the committed fixture under
-`public/data/processed/` and mirrors Vite's SPA fallback. It needs no secrets.
+the grid length check fails and no dataset ever loads.
+
+The build deliberately strips the dev-only fixture directories out of `dist/`
+(see Fixtures below), so the server serves the built site from `dist/` and falls
+back to the fixture in `public/data/{processed,sample}` for
+`/api/wind/latest`, `/api/wind/grids/*`, `/data/processed/*` and
+`/data/sample/*`, mirroring Vite's SPA fallback. It needs no secrets.
 
 ## Spec collection rule
 
@@ -62,10 +67,15 @@ Vitest files ending in `.test.ts` and new browser files ending in `.spec.ts`.
 
 ## Fixtures
 
-The committed `public/data/processed/latest.json` is whatever run was last
-published, so its schema version and available grids change over time. Specs that
-assert how levels, gusts or the scrubber behave must not depend on it: they serve
-their own manifest and grids through `page.route`, built by
+`public/data/processed/latest.json` is whatever run was last copied in for local
+work, so its schema version and available grids change over time. Both
+`public/data/processed/` and `public/data/sample/` are **dev-only**: `vite build`
+removes them from `dist/` (`vite.config.ts`) and `scripts/check-dist-manifest.mjs`
+fails the build if a fixture, a `schemaVersion: 1` manifest, or a zero-frame
+`latest.json` is present in `dist/` again.
+
+Specs that assert how levels, gusts or the scrubber behave must not depend on the
+fixture: they serve their own manifest and grids through `page.route`, built by
 `tests/helpers/windFixture.ts`. `tests/wind-fixture.test.ts` checks that the
 synthetic manifest still satisfies the real `parseWindManifest`, so a contract
 change breaks that unit test instead of the browser suite.

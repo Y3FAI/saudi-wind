@@ -16,11 +16,6 @@ public `noaa-gfs-bdp-pds` bucket on AWS Open Data.
 - Attribution is offered as a matter of good practice. It does **not** imply
   that NOAA, NCEP, or the U.S. Government endorses Saudi Wind.
 
-Note that the wind **gust direction** published for the `gust-10m` grid is a
-Saudi Wind derivation from GFS data (the 10 m wind direction applied to the GFS
-gust speed), not a value NOAA publishes directly. See
-[docs/DATA.md](docs/DATA.md).
-
 ## Natural Earth
 
 The Saudi boundary in `public/data/saudi-boundary.geo.json` is derived from
