@@ -15,10 +15,10 @@ A publishable run is 41 frames × 1 grid = **41 grid objects**, each
 
 Runs published before 11 September 2026 also carried two extra grids per frame:
 41 × 3 = **123 objects**, 7,158,600 bytes ≈ 6.8 MiB, measured on 11 September
-2026 from the manifest the site was serving then (run `gfs-20260910-18`). The
-narrowed single-field run is one third of that in both object count and stored
-bytes (−66.7%). Those older objects stay in R2 until the 30-day `grids/`
-lifecycle removes them and are still referenced by that manifest — see
+2026 from that run's manifest (`gfs-20260910-18`). The narrowed single-field run
+that replaced it (run `gfs-20260911-00`) is one third of that in both object
+count and stored bytes (−66.7%) and references only `wind-10m`. Those older
+objects stay in R2 until the 30-day `grids/` lifecycle removes them — see
 [OPERATIONS.md](OPERATIONS.md#grids-from-earlier-pipelines).
 
 ## R2

@@ -98,13 +98,14 @@ Private bucket `saudi-wind-data`, bound to the Pages project as `WIND_DATA`
 | `grids/gfs-YYYYMMDD-HH-fNNN-wind-10m.bin` | immutable  | one frame's 10 m wind, Float32 LE `[u,v]` |
 | `latest.json`                             | mutable    | the current manifest                      |
 
-Grids written before 11 September 2026 also exist under
+Runs published before 11 September 2026 also wrote
 `grids/gfs-YYYYMMDD-HH-fNNN-wind-100m.bin` and
-`grids/gfs-YYYYMMDD-HH-fNNN-gust-10m.bin`, and the manifest the site is serving
-today still references them. The narrowed pipeline neither writes nor reads them;
-the Pages Function's grid-name pattern keeps accepting the names, and the
-production monitor keeps allowing the keys, until a narrowed run replaces that
-manifest. See
+`grids/gfs-YYYYMMDD-HH-fNNN-gust-10m.bin`. The narrowed pipeline writes only the
+single `wind-10m` grid per frame and never reads the legacy names, and the
+manifest it is serving now (run `gfs-20260911-00`) references only `wind-10m`.
+The Pages Function's grid-name pattern and the production monitor's allowed-key
+list still accept the legacy variable/level names, so any pre-narrowing manifest
+kept inside the retention window keeps resolving. See
 [OPERATIONS.md](OPERATIONS.md#grids-from-earlier-pipelines).
 
 `r2.dev` is not enabled; all public traffic passes through the Pages Function.
@@ -123,9 +124,10 @@ Shared rules in `functions/_shared/responses.ts`:
 
 - only `GET` and `HEAD` are accepted (anything else is `405` with
   `Allow: GET, HEAD`);
-- grid names must match
-  `gfs-YYYYMMDD-HH-fNNN-(wind|gust)-<level>m.bin` (the variable/level suffix is
-  optional so legacy v1 single-grid names still resolve);
+- grid names must match `gfs-YYYYMMDD-HH-fNNN-wind-10m.bin` — the only name the
+  pipeline publishes. For compatibility the accepted pattern is looser: the
+  `-(wind|gust)-<level>m` suffix is optional (version-one runs carry no suffix)
+  and any `wind`/`gust` level form resolves, so pre-narrowing runs keep working;
 - no bucket listing, no writes, and no arbitrary object paths;
 - failures return Arabic JSON with a `404` or `503` and are logged as structured
   events.

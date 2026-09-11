@@ -74,30 +74,27 @@ runs at four cycles a day) to accumulate in R2. Capacity implications are in
 
 ### Grids from earlier pipelines
 
-Runs published before 11 September 2026 carry two extra grids per frame, and the
-manifest the site is serving at the time of writing (run `gfs-20260910-18`,
-verified with `curl https://saudi-wind.pages.dev/api/wind/latest`) still
-references them:
+Runs published before 11 September 2026 carried two extra grids per frame,
+`grids/gfs-YYYYMMDD-HH-fNNN-wind-100m.bin` and
+`grids/gfs-YYYYMMDD-HH-fNNN-gust-10m.bin`. Those objects may still sit in R2
+until the 30-day `grids/` lifecycle removes them, but the manifest the site is
+serving now is a narrowed run — `gfs-20260911-00`, referencing only `wind-10m`
+(verified with `curl https://saudi-wind.pages.dev/api/wind/latest`).
 
-```text
-grids/gfs-YYYYMMDD-HH-fNNN-wind-100m.bin
-grids/gfs-YYYYMMDD-HH-fNNN-gust-10m.bin
-```
+The narrowed pipeline neither writes nor reads the legacy keys, and two things
+still accept them so any pre-narrowing manifest kept inside the retention window
+keeps resolving:
 
-The narrowed pipeline neither writes nor reads these keys, but three things must
-keep accepting them until a narrowed run replaces that manifest:
-
-- the Pages Function grid-name pattern (`functions/_shared/responses.ts`), or the
-  deployed manifest's grids would 404;
+- the Pages Function grid-name pattern (`functions/_shared/responses.ts`), or a
+  legacy manifest's grids would 404;
 - the production monitor's allowed-key list (`scripts/check-production.mjs`), or
-  the six-hourly job would fail;
-- R2 retention, since the objects sit inside the 30-day `grids/` lifecycle window
-  and are removed by the expiry rule rather than by `--prune` (which only deletes
-  whole runs older than its window).
+  the six-hourly job would fail on such a manifest.
 
-Tightening either pattern to `wind-10m` is a deliberate follow-up that must wait
-for the first narrowed production run. Removing the objects early is a separate
-bucket operation.
+The legacy objects themselves are removed by the 30-day `grids/` expiry rule
+rather than by `--prune` (which only deletes whole runs older than its window).
+Now that the first narrowed production run has replaced the last pre-narrowing
+manifest, tightening both patterns to `wind-10m` is a straightforward follow-up;
+the version-one shape is the only reason to keep the suffix-free name.
 
 ## Failure behaviour
 

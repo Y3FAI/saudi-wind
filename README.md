@@ -198,17 +198,14 @@ includes a real gap worth stating plainly.
   production run (the `gfs-20260910-12` cycle) was published, replacing the
   frozen July analysis.
 - **Five-day forecast.** The pipeline builds the five-day, three-hourly forecast
-  described above — 41 frames of 10 m wind, one grid per frame. The map
-  renders the 10 m field at the step nearest now.
+  described above — 41 frames of 10 m wind, one grid per frame — and the
+  deployed API serves it: the production manifest (run `gfs-20260911-00`) is
+  `schemaVersion: 2` with 41 frames from `f000` to `f120`. The map renders the
+  10 m field at the step nearest now (`bun run monitor:production` reprints the
+  deployed run id, schema version, and frame count).
 
 ### What is still missing
 
-- **Rollout of the multi-frame contract.** The deployed API contract has
-  historically been the single-frame `schemaVersion: 1` manifest. The schema-v2
-  manifest is implemented and tested in this repository; confirm which shape the
-  deployed manifest is serving before assuming the full forecast is live
-  (`bun run monitor:production` prints the run id, schema version, and frame
-  count).
 - **No history or archive.** Only the single forecast step nearest now is drawn;
   the rest of the five-day window and older runs are not browsable.
 - **One provider.** NOAA GFS only. The manifest and grid contract are
