@@ -1,5 +1,11 @@
 # Milestone 5 — Production hardening and release
 
+> **Historical — July 2026.** This is a delivery record for the v1.0.0 build.
+> Its test counts, frame-rate medians, and Lighthouse scores are v1.0.0
+> measurements and have not been re-measured since; the "known limitation" at
+> the end (hourly ingestion skipped until R2 secrets were added) was resolved on
+> 10 September 2026. See the [docs index](README.md) for current documentation.
+
 ## Delivered
 
 - Reused WebGL buffers and cached shader locations to remove avoidable

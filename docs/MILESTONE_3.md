@@ -1,5 +1,11 @@
 # Milestone 3 — NOAA processing pipeline
 
+> **Historical — July 2026.** This is a delivery record for the v1.0.0 build.
+> It describes single-step `f000`, 10 m-only processing against the frozen July
+> fixture; the current pipeline publishes a five-day, three-hourly forecast at
+> 10 m and 100 m with 10 m gusts. See the [docs index](README.md) for current
+> documentation.
+
 ## Delivered
 
 - Python 3.12 project managed and locked with `uv`.

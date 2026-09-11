@@ -1,5 +1,10 @@
 # Milestone 1 — Foundation and visual direction
 
+> **Historical — July 2026.** This is a delivery record for the v1.0.0 build.
+> Statements below such as "the fixture is frozen and the display is not live"
+> were true at the time and no longer describe the current system. See the
+> [docs index](README.md) for current documentation.
+
 ## Delivered
 
 - React, Vite, TypeScript, and Bun foundation.

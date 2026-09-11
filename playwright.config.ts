@@ -1,7 +1,18 @@
 import { defineConfig, devices } from "@playwright/test";
 
+/**
+ * Playwright owns the browser specs. Only `*.spec.ts` are collected here;
+ * `tests/**\/*.test.ts` are Vitest files and must never be picked up by
+ * Playwright's default `**\/*.@(spec|test).ts` rule.
+ */
+const localBaseUrl = "http://127.0.0.1:4173";
+/** Point the suite at a deploy (e.g. the freshness guard) instead of a build. */
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? localBaseUrl;
+const useLocalServer = baseURL === localBaseUrl;
+
 export default defineConfig({
   testDir: "./tests",
+  testMatch: /\.spec\.ts$/,
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
@@ -9,7 +20,7 @@ export default defineConfig({
   snapshotPathTemplate:
     "{testDir}/{testFilePath}-snapshots/{arg}-{projectName}{ext}",
   use: {
-    baseURL: "http://127.0.0.1:4173",
+    baseURL,
     locale: "ar-SA",
     screenshot: "only-on-failure",
     trace: "retain-on-failure",
@@ -52,10 +63,15 @@ export default defineConfig({
       },
     },
   ],
-  webServer: {
-    command:
-      "VITE_WIND_MANIFEST_URL=/data/processed/latest.json bun run build && bun run preview --host 127.0.0.1",
-    url: "http://127.0.0.1:4173",
-    reuseExistingServer: !process.env.CI,
-  },
+  // The preview server mirrors the production API paths over the committed
+  // fixture grids; `vite preview` alone cannot serve `/api/wind/grids/*.bin`.
+  webServer: useLocalServer
+    ? {
+        command:
+          "VITE_WIND_MANIFEST_URL=/data/processed/latest.json bun run build && bun tests/support/preview-server.mjs",
+        url: localBaseUrl,
+        reuseExistingServer: !process.env.CI,
+        timeout: 120_000,
+      }
+    : undefined,
 });

@@ -1,5 +1,9 @@
 # Version 1 release checklist
 
+> **Historical — July 2026.** The checklist used for the v1.0.0 release. Records
+> the state as of that release, including the then-unconfigured R2 secrets. See
+> the [docs index](README.md) for current documentation.
+
 ## Source and review
 
 - [ ] Milestone 5 pull request passes CI.

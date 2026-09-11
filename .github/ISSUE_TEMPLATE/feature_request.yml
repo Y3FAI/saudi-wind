@@ -1,0 +1,60 @@
+name: Feature request
+description: Suggest a change to the map, the data, or the tooling.
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Saudi Wind is intentionally narrow: one country, Arabic-first, NOAA GFS,
+        and wind-only. Proposals that keep it focused are most likely to land.
+        Note that the interface is Arabic/RTL by design, so "add English" is a
+        scope question rather than a small feature.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is hard or missing today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: What you would like to see, and where.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Map rendering / animation
+        - Timeline, levels, or gusts
+        - Point inspection / statistics
+        - Public API (manifest or grid)
+        - Ingestion pipeline / data source
+        - Accessibility
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: honesty
+    attributes:
+      label: Data honesty
+      options:
+        - label: >
+            This request does not require presenting model output as live
+            observation, or inventing data that NOAA does not publish.
+          required: true

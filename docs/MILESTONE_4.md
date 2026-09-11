@@ -1,5 +1,10 @@
 # Milestone 4 — Live Cloudflare delivery
 
+> **Historical — July 2026.** This is a delivery record for the v1.0.0 build.
+> It describes the first single-frame live manifest; the current pipeline
+> publishes a multi-frame forecast. See the [docs index](README.md) for current
+> documentation.
+
 ## Delivered
 
 - Private `saudi-wind-data` R2 Standard bucket.

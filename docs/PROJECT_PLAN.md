@@ -1,5 +1,11 @@
 # Saudi Wind — Approval-Gated Project Plan
 
+> **Historical — July 2026.** This is the original version-1 plan. Its scope,
+> exclusions ("version 1 excludes forecast timelines"), and milestone approval
+> process describe the v1.0.0 build, not the current workflow. See
+> [CONTRIBUTING.md](../CONTRIBUTING.md) and the [docs index](README.md) for how
+> to work on the project today.
+
 ## Product contract
 
 Build an Arabic-only, current-condition wind visualization focused on Saudi

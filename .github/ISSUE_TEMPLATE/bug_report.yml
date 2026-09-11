@@ -1,0 +1,72 @@
+name: Bug report
+description: Something on the map, the API, or in the pipeline is wrong.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing: this project publishes **NOAA GFS forecast model output**,
+        not live observations. A forecast that disagrees with the weather
+        outside your window is expected behaviour, not necessarily a bug.
+        For data-correctness reports, the run id from the API is very helpful.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Map rendering / animation
+        - Timeline, levels, or gusts
+        - Point inspection / statistics
+        - Public API (manifest or grid)
+        - Ingestion pipeline
+        - Production monitor / CI
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open https://saudi-wind.pages.dev
+        2. …
+    validations:
+      required: true
+
+  - type: input
+    id: run-id
+    attributes:
+      label: Run id / manifest details (if data-related)
+      description: >
+        The `runId` and `schemaVersion` from
+        https://saudi-wind.pages.dev/api/wind/latest, if you can get them.
+    validations:
+      required: false
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser and version, operating system, and device if relevant.
+      placeholder: "Chrome 151 · Android 16 · Pixel 7"
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshots, console output, or logs
+      description: Paste anything that helps. Do not include credentials.
+    validations:
+      required: false

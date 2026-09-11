@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Live site
+    url: https://saudi-wind.pages.dev
+    about: Check the deployed behaviour before filing.
+  - name: Architecture and data methodology
+    url: https://github.com/Y3FAI/saudi-wind/blob/main/docs/ARCHITECTURE.md
+    about: How the pipeline, manifest, and renderer fit together.
+  - name: Operations
+    url: https://github.com/Y3FAI/saudi-wind/blob/main/docs/OPERATIONS.md
+    about: Publication, retention, and how to diagnose a stale run.
