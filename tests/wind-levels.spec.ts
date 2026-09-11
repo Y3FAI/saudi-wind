@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
+import type { WindGridKey } from "../src/types/wind";
 import { gridName, openWithFixture } from "./helpers/windFixture";
 
 /**
@@ -19,32 +20,35 @@ function requestedUrls(page: Page): string[] {
 test("switching the height requests the matching grid and marks the selection", async ({
   page,
 }) => {
-  const { runId } = await openWithFixture(page, { steps: [0, 3] });
+  // Registered before the app loads: the opening frame's 10 m grid is fetched
+  // at startup, and `WindGridCache` keys decoded grids by URL so it must never
+  // be fetched a second time when the level comes back to 10 m.
   const urls = requestedUrls(page);
+  const { runId } = await openWithFixture(page, { steps: [0, 3] });
+  const fetches = (key: WindGridKey) =>
+    urls.filter((url) => url.endsWith(`/${gridName(runId, 0, key)}`)).length;
 
   const ten = page.locator('[data-level="10"]');
   const hundred = page.locator('[data-level="100"]');
   await expect(ten).toHaveAttribute("aria-checked", "true");
   await expect(hundred).toHaveAttribute("aria-checked", "false");
+  await expect.poll(() => fetches("wind-10m")).toBe(1);
 
   await hundred.click();
 
   await expect(hundred).toHaveAttribute("aria-checked", "true");
   await expect(ten).toHaveAttribute("aria-checked", "false");
   await expect(page.locator(".source-line")).toContainText("ارتفاع 100 م");
-  await expect
-    .poll(() =>
-      urls.some((url) => url.endsWith(`/${gridName(runId, 0, "wind-100m")}`)),
-    )
-    .toBe(true);
+  await expect.poll(() => fetches("wind-100m")).toBe(1);
 
   await ten.click();
+
   await expect(ten).toHaveAttribute("aria-checked", "true");
-  await expect
-    .poll(() =>
-      urls.some((url) => url.endsWith(`/${gridName(runId, 0, "wind-10m")}`)),
-    )
-    .toBe(true);
+  await expect(hundred).toHaveAttribute("aria-checked", "false");
+  await expect(page.locator(".source-line")).toContainText("ارتفاع 10 م");
+  // The 10 m grid is already decoded and cached, so switching back reuses it
+  // instead of requesting the same URL again.
+  await expect.poll(() => fetches("wind-10m")).toBe(1);
 });
 
 test("the gusts toggle requests the gust grid and reports its state", async ({

@@ -101,7 +101,23 @@ test("tap to inspect opens the readout and an outside tap does not", async ({
   expect(box, "the map must have a layout box").not.toBeNull();
   if (!box) return;
 
-  await map.tap({ position: { x: box.width * 0.63, y: box.height * 0.51 } });
+  // The timeline is an overlay that deliberately stops pointer events so a
+  // scrub never pans the map (see WindTimeline.tsx). On this 360x640 phone the
+  // map is only 352 px tall and the overlay is anchored to its bottom edge, so
+  // the tap has to land on bare map: 20% down sits above the overlay, and 28%
+  // across is northern Saudi (~40.0E, 30.9N) at this projection, inside the
+  // Kingdom.
+  const inside = { x: box.width * 0.28, y: box.height * 0.2 };
+  const timeline = await page.locator(".wind-timeline").boundingBox();
+  expect(timeline, "the timeline overlay must be laid out").not.toBeNull();
+  if (timeline) {
+    expect(
+      timeline.y,
+      "the inside tap point must sit above the timeline overlay, which swallows pointer events",
+    ).toBeGreaterThan(box.y + inside.y);
+  }
+
+  await map.tap({ position: inside });
 
   await expect(page.getByText("الموقع المحدد")).toBeVisible();
   await expect(page.locator(".location-readout--active")).toBeVisible();
@@ -111,6 +127,7 @@ test("tap to inspect opens the readout and an outside tap does not", async ({
 
   // A tap outside the Kingdom must not fabricate a new selection. There is no
   // explicit dismiss control: the last valid reading stays until the next one.
+  // This point is the strip of bare map below the overlay, south of the border.
   await map.tap({ position: { x: box.width * 0.5, y: box.height - 8 } });
   await expect(readout).toHaveText(selected ?? "");
   await expect(page.locator(".location-readout--active")).toBeVisible();
