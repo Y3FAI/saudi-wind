@@ -10,6 +10,15 @@ on:
   schedule:
     - cron: "48 */6 * * *"
   workflow_dispatch:
+    inputs:
+      # Regenerate the Playwright visual baselines in CI (removing UI legitimately
+      # changes the frame): the run uploads tests/visual.spec.ts-snapshots/ as an
+      # artifact, which a human then commits. Browser rendering never happens on
+      # the gateway host.
+      update_snapshots:
+        description: "Regenerate the visual snapshots and upload them as an artifact"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -17,7 +26,7 @@ permissions:
 jobs:
   quality:
     name: Typecheck, unit tests, build, browser suite and pipeline
-    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -43,7 +52,22 @@ jobs:
       - name: Ruff and pytest for the pipeline
         run: bun run check:pipeline
       - name: Playwright desktop and mobile suite
-        run: bun run test:ui
+        env:
+          UPDATE_SNAPSHOTS: ${{ inputs.update_snapshots }}
+        run: |
+          if [ "$UPDATE_SNAPSHOTS" = "true" ]; then
+            echo "regenerating visual baselines"
+            bunx playwright test --grep-invert @performance --update-snapshots
+          else
+            bun run test:ui
+          fi
+      - name: Upload regenerated visual snapshots
+        if: ${{ inputs.update_snapshots }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-snapshots
+          path: tests/visual.spec.ts-snapshots/
+          if-no-files-found: error
       - name: Playwright performance budgets
         run: bun run test:performance
         env:
