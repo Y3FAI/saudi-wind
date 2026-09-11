@@ -13,10 +13,13 @@ A publishable run is 41 frames × 1 grid = **41 grid objects**, each
 41 × 58,200 bytes ≈ 2,386,200 bytes ≈ 2.3 MiB per run
 ```
 
-Before the 11 September 2026 narrowing every frame also carried a 100 m wind and
-a 10 m gust grid — 41 × 3 = 123 objects, ≈ 7,158,600 bytes ≈ 6.8 MiB per run.
-Dropping the two extra fields cut a run to **one third** of both its object
-count and its stored bytes (−66.7%).
+Runs published before 11 September 2026 also carried two extra grids per frame:
+41 × 3 = **123 objects**, 7,158,600 bytes ≈ 6.8 MiB, measured on 11 September
+2026 from the manifest the site was serving then (run `gfs-20260910-18`). The
+narrowed single-field run is one third of that in both object count and stored
+bytes (−66.7%). Those older objects stay in R2 until the 30-day `grids/`
+lifecycle removes them and are still referenced by that manifest — see
+[OPERATIONS.md](OPERATIONS.md#grids-from-earlier-pipelines).
 
 ## R2
 
@@ -52,12 +55,10 @@ deploys well under 40 static files with no oversized assets.
 
 Pages Function requests count against the Workers Free plan: **100,000 requests
 per day** with 10 ms of CPU per invocation. Static assets do not consume the
-request allowance. Per visit, the Function serves the manifest once and each
-grid that the user actually views; the client caches decoded frames and preloads
-the next frame, but scrubbing the full timeline can request many grids. A new
-uncached visit is two requests (manifest + one grid); a full 41-frame playback
-approaches 41. Keep an eye on the daily request count if traffic or per-session
-scrubbing grows.
+request allowance. Per visit, the Function serves the manifest once and the grid
+the map draws; a cached second request costs nothing because the client keeps
+decoded grids by URL. A new uncached visit is therefore two requests (manifest +
+one grid), and there is no way to request more than one grid per page load.
 
 Sources:
 

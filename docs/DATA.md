@@ -20,14 +20,14 @@ trusted. Contract-level detail is in [ARCHITECTURE.md](ARCHITECTURE.md).
 
 Each run publishes a **five-day, three-hourly forecast**: 41 frames from `f000`
 (analysis) to `f120`, at the model steps `0, 3, 6, … 120` hours after the cycle
-time. Every frame carries one field:
+time. Every frame carries one field — a single 10 m wind vector per grid cell:
 
 | Grid key   | Quantity                         | GFS records                        |
 | ---------- | -------------------------------- | ---------------------------------- |
 | `wind-10m` | wind vector at 10 m above ground | `UGRD`/`VGRD` at 10 m above ground |
 
-The 100 m wind and the 10 m gust layers were removed on 11 September 2026 so the
-service does one thing well: a single 10 m wind field per frame.
+A run is **41 frames × 1 grid = 41 grid objects** of 58,200 bytes each
+(≈ 2.3 MiB), plus the manifest (21,758 bytes) and the validation report.
 
 ## Processing
 
@@ -91,15 +91,17 @@ single-frame manifest and reference grid.
 | Source ranges                      | `UGRD` 413,206,422–414,185,566 (`VGRD` 414,185,567–415,140,803)    |
 
 The machine-readable report is committed at
-`public/data/processed/reports/gfs-20260728-12-f000.validation.json`. These
+`public/data/processed/reports/gfs-20260728-12.validation.json`. These
 values describe that frozen fixture only; live runs have their own manifest and
-per-run report.
+per-run report. Every number above was re-measured on 11 September 2026 from
+that fixture with `saudi_wind_pipeline.core`.
 
-`public/data/processed/` and `public/data/sample/` are **dev-only** trees: they
-exist so `bun run dev` and the Playwright harness can render without Cloudflare
-credentials. `bun run build` strips both from `dist/`, and
-`scripts/check-dist-manifest.mjs` fails the build if a fixture (or any
-`schemaVersion: 1` or zero-frame manifest) turns up in the bundle again.
+`public/data/processed/` is a **dev-only** tree: it exists so `bun run dev` and
+the Playwright harness can render without Cloudflare credentials. `bun run build`
+strips it from `dist/`, and `scripts/check-dist-manifest.mjs` fails the build if a
+fixture (or any `schemaVersion: 1` or zero-frame manifest) turns up in the bundle
+again. `public/data/sample/` — the Milestone 1 NOAA sample pair — is guarded the
+same way but is not committed; `scripts/build_frozen_fixture.py` regenerates it.
 
 ## Live delivery
 

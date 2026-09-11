@@ -10,7 +10,8 @@ These describe the system as it is now. Start here.
 | [DATA.md](DATA.md)                 | Source, what is published, processing, validation, interpretation limits                         |
 | [OPERATIONS.md](OPERATIONS.md)     | Cloudflare resources, secrets, publication sequence, retention, diagnosing a stale run, rotation |
 | [QUOTAS.md](QUOTAS.md)             | Provider limits and the per-run R2/GitHub footprint                                              |
-| [PERFORMANCE.md](PERFORMANCE.md)   | Device tiers and performance budgets — targets, not measured results                             |
+| [PERFORMANCE.md](PERFORMANCE.md)   | Measured transfer cost and the performance budgets — targets, not device results                 |
+| [TESTING.md](TESTING.md)           | What runs where, fixtures, the freshness guard, and the CI performance budgets                   |
 
 ## Historical
 

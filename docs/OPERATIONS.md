@@ -49,8 +49,7 @@ result.
 7. Read the manifest back and verify its run ID.
 
 A full run is **41 frames × 1 grid = 41 objects** (≈ 2.3 MiB) plus the manifest
-and report; before the 11 September 2026 narrowing it was 41 × 3 = 123 objects
-(≈ 6.8 MiB). The workflow's concurrency group (`noaa-wind-ingestion`) permits one
+and report. The workflow's concurrency group (`noaa-wind-ingestion`) permits one
 ingestion at a time; GitHub's manual dispatch and rerun controls provide manual
 retry.
 
@@ -73,22 +72,32 @@ it is not enabled in the workflow, expect up to 30 days of runs (roughly 120
 runs at four cycles a day) to accumulate in R2. Capacity implications are in
 [QUOTAS.md](QUOTAS.md).
 
-### Unreferenced 100 m and gust grids
+### Grids from earlier pipelines
 
-Once the narrowed pipeline publishes its first 10 m-only manifest, no live
-manifest refers to these objects any more:
+Runs published before 11 September 2026 carry two extra grids per frame, and the
+manifest the site is serving at the time of writing (run `gfs-20260910-18`,
+verified with `curl https://saudi-wind.pages.dev/api/wind/latest`) still
+references them:
 
 ```text
 grids/gfs-YYYYMMDD-HH-fNNN-wind-100m.bin
 grids/gfs-YYYYMMDD-HH-fNNN-gust-10m.bin
 ```
 
-They sit inside the 30-day `grids/` lifecycle window, so the expiry rule
-eventually removes them. `--prune` does **not** remove them sooner: it only
-deletes whole runs older than its window. Deleting them deliberately is a
-separate bucket operation, and the Pages Function's grid-name pattern still
-accepts the names so the currently-deployed manifest keeps resolving while it is
-live.
+The narrowed pipeline neither writes nor reads these keys, but three things must
+keep accepting them until a narrowed run replaces that manifest:
+
+- the Pages Function grid-name pattern (`functions/_shared/responses.ts`), or the
+  deployed manifest's grids would 404;
+- the production monitor's allowed-key list (`scripts/check-production.mjs`), or
+  the six-hourly job would fail;
+- R2 retention, since the objects sit inside the 30-day `grids/` lifecycle window
+  and are removed by the expiry rule rather than by `--prune` (which only deletes
+  whole runs older than its window).
+
+Tightening either pattern to `wind-10m` is a deliberate follow-up that must wait
+for the first narrowed production run. Removing the objects early is a separate
+bucket operation.
 
 ## Failure behaviour
 

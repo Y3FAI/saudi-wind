@@ -34,9 +34,9 @@ Locally you may still run: `bunx tsc -b`, `bun run test`, `bun run build`,
 ```sh
 bun install --frozen-lockfile
 bunx playwright install --with-deps chromium      # once
-bunx playwright test tests/forecast-timeline.spec.ts --project=desktop-chromium
-bunx playwright test tests/forecast-timeline.spec.ts --project=desktop-chromium \
-  --grep "scrubbing"                              # a single case
+bunx playwright test tests/wind-grid-selection.spec.ts --project=desktop-chromium
+bunx playwright test tests/wind-grid-selection.spec.ts --project=desktop-chromium \
+  --grep "falls back"                            # a single case
 bunx playwright test tests/performance.spec.ts --project=desktop-chromium --workers=1
 bunx playwright test tests/mobile.spec.ts --project=mobile-chromium --headed
 bunx playwright test --ui                         # interactive runner
@@ -49,11 +49,11 @@ no Cloudflare Functions: the committed manifest references
 `/api/wind/grids/<name>.bin`, which `vite preview` answers with `index.html`, so
 the grid length check fails and no dataset ever loads.
 
-The build deliberately strips the dev-only fixture directories out of `dist/`
+The build deliberately strips the dev-only fixture directory out of `dist/`
 (see Fixtures below), so the server serves the built site from `dist/` and falls
-back to the fixture in `public/data/{processed,sample}` for
-`/api/wind/latest`, `/api/wind/grids/*`, `/data/processed/*` and
-`/data/sample/*`, mirroring Vite's SPA fallback. It needs no secrets.
+back to the fixture in `public/data/processed` for `/api/wind/latest`,
+`/api/wind/grids/*` and `/data/processed/*`, mirroring Vite's SPA fallback. It
+needs no secrets.
 
 ## Spec collection rule
 
@@ -68,17 +68,20 @@ Vitest files ending in `.test.ts` and new browser files ending in `.spec.ts`.
 ## Fixtures
 
 `public/data/processed/latest.json` is whatever run was last copied in for local
-work, so its schema version and available grids change over time. Both
-`public/data/processed/` and `public/data/sample/` are **dev-only**: `vite build`
-removes them from `dist/` (`vite.config.ts`) and `scripts/check-dist-manifest.mjs`
-fails the build if a fixture, a `schemaVersion: 1` manifest, or a zero-frame
-`latest.json` is present in `dist/` again.
+work, so its schema version and available grids change over time. It is
+**dev-only**: `vite build` removes `public/data/processed/` from `dist/`
+(`vite.config.ts`) and `scripts/check-dist-manifest.mjs` fails the build if a
+fixture, a `schemaVersion: 1` manifest, or a zero-frame `latest.json` is present
+in `dist/` again. `public/data/sample/` is guarded the same way but is not
+committed — `scripts/build_frozen_fixture.py` regenerates it for the Milestone 1
+review artifacts.
 
-Specs that assert how levels, gusts or the scrubber behave must not depend on the
-fixture: they serve their own manifest and grids through `page.route`, built by
-`tests/helpers/windFixture.ts`. `tests/wind-fixture.test.ts` checks that the
-synthetic manifest still satisfies the real `parseWindManifest`, so a contract
-change breaks that unit test instead of the browser suite.
+Specs that assert how the client selects or falls back between grids must not
+depend on that fixture: they serve their own manifest and grids through
+`page.route`, built by `tests/helpers/windFixture.ts`.
+`tests/wind-fixture.test.ts` checks that the synthetic manifest still satisfies
+the real `parseWindManifest`, so a contract change breaks that unit test instead
+of the browser suite.
 
 Specs that exercise the real stack (mobile layout, performance) use the served
 fixture and are the ones that catch integration problems.
@@ -113,17 +116,17 @@ Override the budget with `WIND_FRESHNESS_MAX_AGE_HOURS`.
 
 `tests/performance.spec.ts` documents its thresholds in one `BUDGETS` object.
 They are regression floors for a shared, GPU-less CI runner, not device targets;
-the device targets and their rationale live in `src/lib/deviceProfile.ts` and
+the device targets and their rationale live in `src/lib/windStyle.ts` and
 [`PERFORMANCE.md`](PERFORMANCE.md).
 
-| Budget                               | Threshold | Rationale                                                  |
-| ------------------------------------ | --------- | ---------------------------------------------------------- |
-| first contentful paint               | ≤ 3000 ms | device target ~1800 ms; headless runners are slower        |
-| interactive map (first decoded grid) | ≤ 5000 ms | measured to the timeline mounting, i.e. a dataset rendered |
-| frame interval median, 120 frames    | ≤ 45 ms   | ~30 fps sustained even on a shared CPU                     |
-| frame interval p95, 120 frames       | ≤ 90 ms   | tolerates a scheduling hiccup, not a stall                 |
-| JS heap after 30 s                   | ≤ 220 MB  | decoded grids plus WebGL targets are tens of MB            |
-| heap growth per 3 zoom/pan cycles    | ≤ 32 MB   | catches per-frame leaks without GC instrumentation         |
+| Budget                               | Threshold | Rationale                                             |
+| ------------------------------------ | --------- | ----------------------------------------------------- |
+| first contentful paint               | ≤ 3000 ms | device target ~1800 ms; headless runners are slower   |
+| interactive map (first decoded grid) | ≤ 5000 ms | measured to the map mounting, i.e. a dataset rendered |
+| frame interval median, 120 frames    | ≤ 45 ms   | ~30 fps sustained even on a shared CPU                |
+| frame interval p95, 120 frames       | ≤ 90 ms   | tolerates a scheduling hiccup, not a stall            |
+| JS heap after 30 s                   | ≤ 220 MB  | decoded grids plus WebGL targets are tens of MB       |
+| heap growth per 3 zoom/pan cycles    | ≤ 32 MB   | catches per-frame leaks without GC instrumentation    |
 
 The animation frame-rate floor (`data-fps`) is separate: it honours
 `PERFORMANCE_DESKTOP_FPS_MINIMUM` / `PERFORMANCE_MOBILE_FPS_MINIMUM` (CI sets 30

@@ -1,36 +1,49 @@
 # Performance budgets
 
-`src/lib/deviceProfile.ts` classifies the viewing device into a render budget and
-references this document. Read this as a statement of **design targets and
-guards**, not as a benchmark report: no real-hardware measurement is committed
-to this repository, and a headless CI host cannot produce one.
+Read this as a statement of **design targets and guards**, not as a benchmark
+report: no real-hardware frame-time measurement is committed to this repository,
+and a headless CI host cannot produce one. What _is_ measured here is the
+transfer cost, which is reproducible anywhere with `bun run build`.
+
+The renderer's own knobs live in `src/lib/windStyle.ts` (`FLOW_WIND_STYLE`) and
+`src/lib/webglWindRenderer.ts` (particle budget governor); `WindMap.tsx` caps the
+device pixel ratio at 2.
 
 ## Design targets
 
-| Budget                        | Target                                               |
-| ----------------------------- | ---------------------------------------------------- |
-| Initial JS for the map view   | ≤ 260 kB raw / ≤ 90 kB gzip                          |
-| First interactive (mid phone) | ≤ 2.5 s on a simulated 4G profile                    |
-| Steady-state frame time       | ≤ 16.7 ms desktop, ≤ 22 ms mobile (per tier)         |
-| Particles per tier            | low 400–900, mid 600–1900, high 900–2600             |
-| Peak GPU / CPU memory         | ≤ 26 MB WebGL render targets, ≤ 3 MB JS typed arrays |
+| Budget                      | Target                                        | Where it is enforced                                   |
+| --------------------------- | --------------------------------------------- | ------------------------------------------------------ |
+| Initial JS for the map view | ≤ 260 kB raw / ≤ 90 kB gzip                   | build output (see the measurement below)               |
+| First interactive (phone)   | ≤ 2.5 s on a simulated 4G profile             | not automated                                          |
+| Steady-state frame time     | ≤ 16.7 ms desktop / ≤ 22 ms mobile            | particle governor thresholds (12 ms / 24 ms)           |
+| Particles                   | desktop 1,800–2,600, mobile 1,100–1,550       | `FLOW_WIND_STYLE.density` (screen area ÷ 340)          |
+| Peak CPU typed arrays       | ≈ 250 kB of particle state at 2,600 particles | 24 Float32 values per particle, plus one 58,200 B grid |
 
-These are heuristics derived from screen area, device pixel ratio, core count,
-and (where the browser exposes it) `navigator.deviceMemory`.
+The governor samples the renderer's own frame duration at most every 250 ms: over
+budget (12 ms desktop, 24 ms mobile) it drops 20% of the active particles, never
+below 600 desktop / 450 mobile; comfortably under budget it grows back by at
+least 60 or 8% of the target. The animation starts at 900 desktop / 700 mobile
+particles and climbs, so the first frames after load are the cheapest.
 
-## Device tiers
+## Measured transfer cost
 
-From `TIER_SETTINGS` in `src/lib/deviceProfile.ts`:
+Measured on 11 September 2026 with `bun run build` on the committed tree
+(raw bytes; gzip is `gzip -9` of the built file):
 
-| Tier | DPR cap | Particle scale | Frame budget | Governor floor (mobile / desktop) |
-| ---- | ------- | -------------- | ------------ | --------------------------------- |
-| low  | 1.5     | 0.45           | 26 ms        | 380 / 520                         |
-| mid  | 2       | 0.72           | 22 ms        | 450 / 600                         |
-| high | 2       | 1.0            | 16.7 ms      | 450 / 600                         |
+| Artifact                                 | Raw           | Gzip         |
+| ---------------------------------------- | ------------- | ------------ |
+| `index.html`                             | 789 B         | 499 B        |
+| single JS chunk                          | 254,005 B     | 81,685 B     |
+| single CSS chunk                         | 7,560 B       | 2,316 B      |
+| **initial document payload (sum)**       | **262,354 B** | **84,500 B** |
+| 6 web-font subsets (3 Arabic, 3 Latin)   | 192,728 B     | —            |
+| `data/saudi-boundary.geo.json`           | 47,011 B      | 17,418 B     |
+| `latest.json`, 41-frame single-field run | 21,758 B      | —            |
+| one wind grid                            | 58,200 B      | —            |
 
-Render-target pixels are additionally capped at `MAX_RENDER_PIXELS` (5.2 Mpx,
-roughly 26 MB of colour + stencil memory) so large retina desktops stay bounded
-without changing the 1440×900 desktop baseline.
+A first visit therefore pulls the document (≈ 84.5 kB gzip), the boundary (≈ 17 kB
+gzip), one manifest and one 58,200 B grid. Fonts are the largest fixed cost and
+are frozen with the visual design.
 
 ## What CI can and cannot check
 
@@ -53,6 +66,11 @@ Locally, with no environment override, the spec defaults to a 55 FPS desktop /
 30 FPS mobile minimum and samples the renderer-reported FPS three times, taking
 the median (`tests/performance.spec.ts`). The 55 FPS desktop / 30 FPS mobile
 device targets are unchanged: the env override only relaxes CI.
+
+The full budget object CI asserts is documented in
+[TESTING.md](TESTING.md#performance-budgets): first contentful paint ≤ 3000 ms,
+interactive map ≤ 5000 ms, frame-interval median ≤ 45 ms, p95 ≤ 90 ms, heap after
+30 s ≤ 220 MB, and heap growth across three zoom/pan cycles ≤ 32 MB.
 
 CI therefore catches large regressions. It does **not** validate frame time,
 first-interactive, or memory numbers on real hardware.

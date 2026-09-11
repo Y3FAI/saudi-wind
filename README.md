@@ -19,7 +19,10 @@ ground and zoom controls.
 
 </div>
 
-<!-- TODO: asset — the screenshot above is the v1.0.0 (Milestone 5) interface. It predates the removal of the timeline, the 10 m/100 m and gust toggles, and the tap-to-inspect readout, so it no longer matches the interface: the map now draws the animated 10 m field with zoom, zoom-out and reset only. Replace it with a current capture once one can be produced from a real device. No current capture exists in the repository. -->
+<!-- TODO: asset — the screenshot above is the v1.0.0 (Milestone 5) interface and no
+longer matches the current build, which draws the animated 10 m field with zoom,
+zoom-out and reset only. Replace it with a current capture once one can be
+produced from a real device. No current capture exists in the repository. -->
 
 ## What it is
 
@@ -37,7 +40,7 @@ not a network of Saudi weather stations.
 - **Animated WebGL2 trails** — thousands of continuously advected particles,
   clipped exactly to the Saudi boundary.
 - **The current forecast step** — the run is five days of 41 three-hourly frames
-  (`f000`–`f120`); the map renders the step nearest now and there is no timeline.
+  (`f000`–`f120`); the map always renders the step nearest now.
 - **10 m wind** — the field the map draws, from the GFS 10 m `UGRD`/`VGRD`
   records. A run that publishes no 10 m wind falls back to the grid it does
   publish rather than blanking.
@@ -125,12 +128,13 @@ bun run dev
 
 In development the app reads the committed manifest at
 `public/data/processed/latest.json`, so the map works without Cloudflare
-credentials or a NOAA download. `public/data/processed/` and
-`public/data/sample/` are dev-only: `bun run build` strips both out of `dist/`
-and `scripts/check-dist-manifest.mjs` fails the build if a fixture — or any
-`schemaVersion: 1` or zero-frame manifest — is found in the bundle, so a stale
-local fixture can never be deployed. The Playwright preview server serves them
-from `public/` for the same reason.
+credentials or a NOAA download. `public/data/processed/` is dev-only:
+`bun run build` strips it out of `dist/` and `scripts/check-dist-manifest.mjs`
+fails the build if a fixture — or any `schemaVersion: 1` or zero-frame manifest —
+is found in the bundle, so a stale local fixture can never be deployed. The
+Playwright preview server serves it from `public/` for the same reason.
+`public/data/sample/` (regenerable with `scripts/build_frozen_fixture.py`) is
+guarded exactly the same way but is not committed.
 
 Run the same gates CI runs:
 
@@ -149,7 +153,8 @@ uv run saudi-wind-pipeline fixture
 ```
 
 Process the newest complete NOAA cycle into a separate review directory (a full
-run makes roughly 125 HTTP byte-range requests across the 41 steps):
+run makes 123 HTTP requests: one `.idx` plus two byte ranges per step, across the
+41 steps):
 
 ```sh
 uv run saudi-wind-pipeline latest --output /tmp/saudi-wind-latest
@@ -210,9 +215,9 @@ includes a real gap worth stating plainly.
   provider-neutral, but no Saudi NCM adapter is implemented.
 - **Arabic and km/h only.** No English interface and no unit switching.
 - **No accounts or alerts.**
-- **No committed real-hardware performance report.** The device budgets in
-  `src/lib/deviceProfile.ts` are heuristics that headless CI cannot validate;
-  see [docs/PERFORMANCE.md](docs/PERFORMANCE.md).
+- **No committed real-hardware performance report.** The frame budgets in
+  [docs/PERFORMANCE.md](docs/PERFORMANCE.md) are design targets that headless CI
+  cannot validate.
 
 Historical, approval-gated milestone records are kept — clearly marked as
 historical — in [docs/MILESTONE_1.md](docs/MILESTONE_1.md) through

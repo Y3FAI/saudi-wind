@@ -33,9 +33,9 @@ flowchart TB
 
     subgraph Client["Client (React 19 + Vite)"]
         FETCH["manifest + grid loader<br/>length + SHA-256 verification"]
-        CACHE["WindGridCache<br/>decoded frame cache + preload"]
+        CACHE["WindGridCache<br/>decoded grid cache"]
         RENDER["WebGL2 particle renderer"]
-        TIMELINE["UI"]
+        VIEW["map view: zoom · pan · reset"]
     end
 
     subgraph Ops["Automation (GitHub Actions)"]
@@ -50,7 +50,7 @@ flowchart TB
     GRIDS --> GRID --> FETCH
     MANIFEST --> LATEST --> FETCH
     FETCH --> CACHE --> RENDER
-    TIMELINE --> CACHE
+    VIEW --> CACHE
     INGEST --> DISCOVER
     MONITOR --> LATEST
 ```
@@ -83,10 +83,10 @@ Key behaviours:
   collision is an error, not a silent replace.
 
 A single run produces **41 frames × 1 grid field = 41 grid objects**
-(58,200 bytes each ≈ 2.3 MiB per run) plus one manifest and one validation
-report. Before the 11 September 2026 narrowing it was 41 × 3 = 123 objects
-(≈ 6.8 MiB), because every frame also carried a 100 m wind and a 10 m gust
-grid.
+(58,200 bytes each ≈ 2.3 MiB per run) plus one manifest (21,758 bytes) and one
+validation report (52,219 bytes) — measured with
+`pipeline/saudi_wind_pipeline/` replayed over the committed fixture for all 41
+steps.
 
 ### 2. Storage — Cloudflare R2
 
@@ -98,11 +98,14 @@ Private bucket `saudi-wind-data`, bound to the Pages project as `WIND_DATA`
 | `grids/gfs-YYYYMMDD-HH-fNNN-wind-10m.bin` | immutable  | one frame's 10 m wind, Float32 LE `[u,v]` |
 | `latest.json`                             | mutable    | the current manifest                      |
 
-Grids written by the pre-11-September-2026 pipeline also exist under
+Grids written before 11 September 2026 also exist under
 `grids/gfs-YYYYMMDD-HH-fNNN-wind-100m.bin` and
-`grids/gfs-YYYYMMDD-HH-fNNN-gust-10m.bin`. Nothing refers to them any more once
-the pipeline narrows — removing them is a separate, deliberate R2 operation (see
-[OPERATIONS.md](OPERATIONS.md#retention)).
+`grids/gfs-YYYYMMDD-HH-fNNN-gust-10m.bin`, and the manifest the site is serving
+today still references them. The narrowed pipeline neither writes nor reads them;
+the Pages Function's grid-name pattern keeps accepting the names, and the
+production monitor keeps allowing the keys, until a narrowed run replaces that
+manifest. See
+[OPERATIONS.md](OPERATIONS.md#grids-from-earlier-pipelines).
 
 `r2.dev` is not enabled; all public traffic passes through the Pages Function.
 Lifecycle and retention are in [OPERATIONS.md](OPERATIONS.md).
@@ -132,19 +135,18 @@ Shared rules in `functions/_shared/responses.ts`:
 React 19 + Vite. No charting or rendering library — the particle renderer is
 hand-written.
 
-| File                                                          | Responsibility                                                                                                         |
-| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `src/App.tsx`                                                 | Loads the boundary + manifest, owns frame state and the 15-minute revalidation loop                                    |
-| `src/lib/wind.ts`                                             | Manifest parser (`schemaVersion` 1 and 2), frame selection, grid download + SHA-256 verification, speed/direction math |
-| `src/lib/windGridCache.ts`                                    | Caches decoded `Float32Array` frames and preloads the next frame                                                       |
-| `src/lib/deviceProfile.ts`                                    | Classifies the device (cores, memory, DPR, screen area) into a render budget                                           |
-| `src/lib/webglWindRenderer.ts`                                | WebGL2 advection, fading trails, stencil clipping to the Saudi polygon                                                 |
-| `src/lib/map.ts`, `src/lib/format.ts`, `src/lib/windStyle.ts` | Map projection, formatting, and the visual style presets                                                               |
-| `src/components/WindMap.tsx`                                  | Canvas host plus pointer/keyboard interaction and point inspection                                                     |
+| File                                                          | Responsibility                                                                                               |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `src/App.tsx`                                                 | Loads the boundary + manifest, owns frame/grid selection and the 15-minute revalidation loop                 |
+| `src/lib/wind.ts`                                             | Manifest parser (`schemaVersion` 1 and 2), frame selection, grid download + SHA-256 verification, speed math |
+| `src/lib/windGridCache.ts`                                    | Caches decoded `Float32Array` grids by URL and de-duplicates concurrent loads                                |
+| `src/lib/webglWindRenderer.ts`                                | WebGL2 advection, fading trails, stencil clipping to the Saudi polygon                                       |
+| `src/lib/map.ts`, `src/lib/format.ts`, `src/lib/windStyle.ts` | Map projection, formatting, and the visual style presets                                                     |
+| `src/components/WindMap.tsx`                                  | Canvas host plus pointer/keyboard interaction (zoom, pan, reset)                                             |
 
-The renderer only reads `vectors` and `manifest.grid`, so swapping frames never
-involves the renderer. A missing level or variable in a frame degrades to the
-nearest frame that carries it rather than rendering nothing.
+The renderer only reads `vectors` and `manifest.grid`, so swapping grids never
+involves the renderer. A frame that does not carry the selected grid key degrades
+to the nearest frame that does rather than rendering nothing.
 
 ### 5. Automation — `.github/workflows/`
 
@@ -205,9 +207,9 @@ and top-level `data`/`statistics`. The client wraps it into one frame at step 0.
 The `data`, `statistics`, and `validTime` mirrors exist so a v1-era client can
 still read a v2 manifest's first frame.
 
-`levels` and `variables` are **derived from the grids the frames actually
-publish**, never hard-coded: the narrowed pipeline emits exactly `[10]` and
-`["wind"]`, and a run that omits a field does not advertise it.
+`levels` and `variables` are **frozen constants for the published contract**
+(`[10]` and `["wind"]`), not per-run derivations: a run publishes exactly one
+field, and the pipeline refuses a frame that does not carry it.
 
 Rejection rules the parser enforces: unsupported schema/provider/units/scan
 order, non-ISO timestamps, non-increasing frame steps, `validTime` not equal to
