@@ -515,15 +515,35 @@ export class WebglWindRenderer {
     if (!this.viewport) return;
     const gl = this.gl;
     this.fadeTrails(elapsed);
-    const clipScaleX = 2 / this.viewport.width;
-    const clipScaleY = 2 / this.viewport.height;
+    const viewport = this.viewport;
+    const clipScaleX = 2 / viewport.width;
+    const clipScaleY = 2 / viewport.height;
+    // Loop invariants: these depend on the frame's elapsed time and the
+    // viewport, never on the particle, so they are computed once per frame.
+    const mobile = viewport.width < 680;
+    const advection =
+      elapsed * (mobile ? this.style.advection[1] : this.style.advection[0]);
+    const minimumLength = mobile
+      ? this.style.minimumLength[1]
+      : this.style.minimumLength[0];
+    const widthScale = mobile
+      ? this.style.width.mobileScale
+      : this.style.width.desktopScale;
+    const widthBase = this.style.width.base;
+    const widthSpeed = this.style.width.speed;
+    const alphaBase = this.style.alpha[0];
+    const alphaSpeed = this.style.alpha[1];
+    const fadeInSeconds = this.style.fadeInSeconds;
+    const fadeOutSeconds = this.style.fadeOutSeconds;
+    const vectors = this.dataset.vectors;
+    const grid = this.dataset.manifest.grid;
     let used = 0;
     for (let index = 0; index < this.activeParticleCount; index += 1) {
       const longitude = this.longitude[index];
       const latitude = this.latitude[index];
       const wind = sampleWind(
-        this.dataset.vectors,
-        this.dataset.manifest.grid,
+        vectors,
+        grid,
         longitude,
         latitude,
         this.windSample,
@@ -537,9 +557,9 @@ export class WebglWindRenderer {
         !Number.isFinite(previousX) ||
         !Number.isFinite(previousY) ||
         previousX < -12 ||
-        previousX > this.viewport.width + 12 ||
+        previousX > viewport.width + 12 ||
         previousY < -12 ||
-        previousY > this.viewport.height + 12 ||
+        previousY > viewport.height + 12 ||
         this.age[index] > this.lifetime[index]
       ) {
         this.resetParticle(index, false);
@@ -547,9 +567,6 @@ export class WebglWindRenderer {
       }
 
       const latitudeRadians = (latitude * Math.PI) / 180;
-      const mobile = this.viewport.width < 680;
-      const advection =
-        elapsed * (mobile ? this.style.advection[1] : this.style.advection[0]);
       const nextLongitude =
         longitude +
         (wind[0] * advection) / Math.max(Math.cos(latitudeRadians), 0.32);
@@ -567,37 +584,24 @@ export class WebglWindRenderer {
       if (this.age[index] <= 0) continue;
 
       const intensity = Math.min(1, speedKmh(wind) / 45);
-      const fadeIn = Math.min(1, this.age[index] / this.style.fadeInSeconds);
+      const fadeIn = Math.min(1, this.age[index] / fadeInSeconds);
       const fadeOut = Math.min(
         1,
-        Math.max(
-          0,
-          (this.lifetime[index] - this.age[index]) / this.style.fadeOutSeconds,
-        ),
+        Math.max(0, (this.lifetime[index] - this.age[index]) / fadeOutSeconds),
       );
       const smoothFadeIn = fadeIn * fadeIn * (3 - 2 * fadeIn);
       const smoothFadeOut = fadeOut * fadeOut * (3 - 2 * fadeOut);
       const opacityEnvelope = smoothFadeIn * smoothFadeOut;
-      const alpha =
-        (this.style.alpha[0] + intensity * this.style.alpha[1]) *
-        opacityEnvelope;
+      const alpha = (alphaBase + intensity * alphaSpeed) * opacityEnvelope;
       const movementX = next[0] - previousX;
       const movementY = next[1] - previousY;
       const movementLength = Math.max(0.001, Math.hypot(movementX, movementY));
-      const minimumLength = mobile
-        ? this.style.minimumLength[1]
-        : this.style.minimumLength[0];
       const length = Math.max(minimumLength, movementLength);
       const directionX = movementX / movementLength;
       const directionY = movementY / movementLength;
       const renderStartX = next[0] - directionX * length;
       const renderStartY = next[1] - directionY * length;
-      const widthScale = mobile
-        ? this.style.width.mobileScale
-        : this.style.width.desktopScale;
-      const halfWidth =
-        (this.style.width.base + intensity * this.style.width.speed) *
-        widthScale;
+      const halfWidth = (widthBase + intensity * widthSpeed) * widthScale;
       const offsetX = -directionY * halfWidth;
       const offsetY = directionX * halfWidth;
       const startAX = (renderStartX + offsetX) * clipScaleX - 1;
