@@ -204,6 +204,8 @@ test("holds steady frame time over the animation sample @performance", async ({
 test("holds the JS heap after thirty seconds of animation @performance", async ({
   page,
 }) => {
+  // Default 30 s test timeout is shorter than navigation + the 30 s observation window below.
+  test.setTimeout(120_000);
   test.skip(skipBudgets, "PERFORMANCE_SKIP_BUDGETS=1");
 
   await page.goto("/");
